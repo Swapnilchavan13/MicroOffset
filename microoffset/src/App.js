@@ -8,12 +8,13 @@ import { OffsetPacks } from './Component/OffsetPacks';
 function App() {
   return (
     <BrowserRouter>
-      <Navbar />
-      <Routes>
-        <Route path="/" element={<Homepage />} />
-        <Route path="/packs" element={<OffsetPacks />} />
-      </Routes>
-    </BrowserRouter>
+    <Navbar />
+  <Routes>
+    <Route path="/" element={<Homepage />} />
+    <Route path="/packs" element={<OffsetPacks />} />
+  </Routes>
+</BrowserRouter>
+
   );
 }
 
