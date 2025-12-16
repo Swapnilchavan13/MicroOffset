@@ -1,0 +1,132 @@
+/* =============================
+   Navbar Base
+   ============================= */
+
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  backdrop-filter: saturate(180%) blur(6px);
+}
+
+.navbar-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: clamp(0.75rem, 2vw, 1rem) clamp(1rem, 3vw, 1.5rem);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* =============================
+   Logo
+   ============================= */
+
+.navbar-logo {
+  font-size: clamp(1.1rem, 2.5vw, 1.25rem);
+  font-weight: 700;
+  color: #16a34a;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+
+
+/* =============================
+   Links (Desktop)
+   ============================= */
+
+.navbar-links {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.75rem, 2vw, 1.25rem);
+}
+
+.navbar-links a {
+  text-decoration: none;
+  font-size: clamp(0.85rem, 1.2vw, 0.95rem);
+  font-weight: 500;
+  color: #374151;
+  padding: 0.25rem 0;
+  position: relative;
+  transition: color 0.2s ease;
+}
+
+.navbar-links a:hover {
+  color: #16a34a;
+}
+
+/* Underline hover effect */
+.navbar-links a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 0;
+  height: 2px;
+  background: #16a34a;
+  transition: width 0.25s ease;
+}
+
+.navbar-links a:hover::after {
+  width: 100%;
+}
+
+/* =============================
+   Tablet Adjustments
+   ============================= */
+
+@media (max-width: 1024px) {
+  .navbar-links {
+    gap: 1rem;
+  }
+}
+
+/* =============================
+   Mobile Navigation
+   ============================= */
+
+@media (max-width: 900px) {
+  .navbar-container {
+    padding: 0.75rem 1rem;
+  }
+
+  .navbar-links {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #ffffff;
+    flex-direction: column;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #e5e7eb;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  }
+
+  /* When menu is active (future toggle class) */
+  .navbar-links.open {
+    display: flex;
+  }
+
+  .navbar-links a {
+    padding: 0.75rem 0;
+    font-size: 1rem;
+  }
+
+  .navbar-links a::after {
+    display: none;
+  }
+}
+
+/* =============================
+   Small Phones
+   ============================= */
+
+@media (max-width: 420px) {
+  .navbar-logo {
+    font-size: 1.05rem;
+  }
+}
