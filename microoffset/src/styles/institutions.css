@@ -1,0 +1,104 @@
+.institutions {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #1f2933;
+  line-height: 1.6;
+}
+
+/* Hero */
+.inst-hero {
+  padding: clamp(3rem, 8vw, 6rem) 1.5rem;
+  background: linear-gradient(180deg, #ecfdf5, #ffffff);
+  text-align: center;
+}
+
+.inst-hero h1 {
+  font-size: clamp(1.9rem, 5vw, 3.1rem);
+  font-weight: 700;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.inst-hero p {
+  margin-top: 1.25rem;
+  max-width: 680px;
+  margin-inline: auto;
+  font-size: clamp(1rem, 2.5vw, 1.15rem);
+  color: #4b5563;
+}
+
+/* Sections */
+.inst-section {
+  padding: clamp(3rem, 6vw, 5rem) 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.inst-section.light {
+  background: #f9fafb;
+}
+
+.inst-section.green {
+  background: #ecfdf5;
+  text-align: center;
+}
+
+.inst-section h2 {
+  text-align: center;
+  font-size: clamp(1.4rem, 4vw, 2rem);
+  margin-bottom: clamp(1.5rem, 4vw, 2.5rem);
+}
+
+/* Cards */
+.inst-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: clamp(1rem, 3vw, 2rem);
+}
+
+.inst-cards.three {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.inst-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  padding: clamp(1.25rem, 3vw, 1.75rem);
+  text-align: center;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.inst-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+}
+
+.inst-card p {
+  margin-top: 0.5rem;
+  font-weight: 600;
+  color: #16a34a;
+}
+
+.inst-card.featured {
+  border: 2px solid #16a34a;
+  background: #ecfdf5;
+}
+
+/* CTA */
+.inst-ctas {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.inst-ctas .btn {
+  min-width: 240px;
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .inst-ctas .btn {
+    width: 100%;
+  }
+}
