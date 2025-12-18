@@ -6,6 +6,8 @@ import { Homepage } from './Component/Homepage';
 import { OffsetPacks } from './Component/OffsetPacks';
 import { Businesses } from './Component/Businesses';
 import { Institutions } from './Component/Institutions';
+import { HowWork } from './Component/HowWork';
+import { Individuals } from './Component/Individuals';
 
 function App() {
   return (
@@ -16,6 +18,9 @@ function App() {
     <Route path="/packs" element={<OffsetPacks />} />
     <Route path="/business" element={<Businesses />} />
     <Route path="/institutions" element={<Institutions />} />
+    <Route path="/individuals" element={<Individuals />} />
+    <Route path="/howitwork" element={<HowWork />} />
+
 
 
   </Routes>
