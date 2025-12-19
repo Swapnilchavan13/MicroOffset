@@ -8,6 +8,8 @@ import { Businesses } from './Component/Businesses';
 import { Institutions } from './Component/Institutions';
 import { HowWork } from './Component/HowWork';
 import { Individuals } from './Component/Individuals';
+import { Impact } from './Component/Impact';
+import { Developer } from './Component/Developer';
 
 function App() {
   return (
@@ -20,6 +22,10 @@ function App() {
     <Route path="/institutions" element={<Institutions />} />
     <Route path="/individuals" element={<Individuals />} />
     <Route path="/howitwork" element={<HowWork />} />
+    <Route path="/impact" element={<Impact />} />
+    <Route path="/developer" element={<Developer />} />
+
+
 
 
 

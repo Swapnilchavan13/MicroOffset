@@ -18,7 +18,7 @@ export const Navbar = () => {
           <Link to="/individuals">For Individuals</Link>
           <Link to="/howitwork">How It Works</Link>
           <Link to="/impact">Impact & Projects</Link>
-          <Link to="/developers">Developers (API)</Link>
+          <Link to="/developer">Developers (API)</Link>
           <Link to="/about">About & FAQ</Link>
         </nav>
       </div>

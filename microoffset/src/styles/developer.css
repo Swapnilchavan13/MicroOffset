@@ -1,0 +1,87 @@
+.developers-page {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #1f2933;
+  line-height: 1.6;
+}
+
+/* HERO */
+.dev-hero {
+  padding: clamp(4rem, 8vw, 6.5rem) 1.5rem;
+  text-align: center;
+  background: linear-gradient(180deg, #ecfdf5, #ffffff);
+}
+
+.dev-hero h1 {
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: 700;
+}
+
+.dev-hero p {
+  margin: 1.25rem auto 2rem;
+  max-width: 720px;
+  font-size: clamp(1rem, 2.6vw, 1.15rem);
+  color: #4b5563;
+}
+
+/* SECTIONS */
+.dev-section {
+  padding: clamp(3rem, 6vw, 5rem) 1.5rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.dev-section.light {
+  background: #f9fafb;
+}
+
+.dev-section h2 {
+  text-align: center;
+  font-size: clamp(1.4rem, 4vw, 2rem);
+  margin-bottom: 1.5rem;
+}
+
+/* TEXT */
+.dev-text {
+  max-width: 720px;
+  margin: 0 auto;
+  text-align: center;
+  color: #4b5563;
+}
+
+/* DOC CARDS */
+.doc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.doc-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 1.5rem;
+  border: 1px solid #e5e7eb;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.doc-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+}
+
+.doc-card h3 {
+  margin-bottom: 0.5rem;
+  font-size: 1.05rem;
+}
+
+.doc-card p {
+  color: #4b5563;
+  font-size: 0.95rem;
+}
+
+/* MOBILE */
+@media (max-width: 480px) {
+  .doc-card {
+    padding: 1.25rem;
+  }
+}
