@@ -10,6 +10,7 @@ import { HowWork } from './Component/HowWork';
 import { Individuals } from './Component/Individuals';
 import { Impact } from './Component/Impact';
 import { Developer } from './Component/Developer';
+import { BundleCreator } from './Cms/BundleCreator';
 
 function App() {
   return (
@@ -24,6 +25,10 @@ function App() {
     <Route path="/howitwork" element={<HowWork />} />
     <Route path="/impact" element={<Impact />} />
     <Route path="/developer" element={<Developer />} />
+
+
+    <Route path="/cms" element={<BundleCreator />} />
+
 
 
 
