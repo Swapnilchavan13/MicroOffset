@@ -1,0 +1,143 @@
+.impact-page {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #1f2933;
+  line-height: 1.65;
+}
+
+/* HERO */
+.impact-hero {
+  padding: clamp(3.5rem, 9vw, 6.5rem) 1.5rem;
+  text-align: center;
+  background: linear-gradient(180deg, #ecfdf5, #ffffff);
+}
+
+.impact-hero h1 {
+  font-size: clamp(2.2rem, 5vw, 3.3rem);
+  font-weight: 700;
+}
+
+.impact-hero p {
+  margin-top: 1.25rem;
+  max-width: 760px;
+  margin-inline: auto;
+  font-size: clamp(1rem, 2.6vw, 1.2rem);
+  color: #4b5563;
+}
+
+/* SECTIONS */
+.impact-section {
+  padding: clamp(3rem, 6vw, 5.5rem) 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.impact-section.light {
+  background: #f9fafb;
+}
+
+.impact-section.green {
+  background: #ecfdf5;
+  text-align: center;
+}
+
+.impact-section h2 {
+  text-align: center;
+  font-size: clamp(1.5rem, 4vw, 2.1rem);
+  margin-bottom: 2rem;
+}
+
+/* COUNTERS */
+.impact-counters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 2rem;
+  text-align: center;
+}
+
+.counter strong {
+  display: block;
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
+  font-weight: 700;
+  color: #16a34a;
+}
+
+.counter span {
+  color: #4b5563;
+  font-size: 0.95rem;
+}
+
+/* EQUIVALENTS */
+.impact-equivalents {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+}
+
+.equivalent-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 1.5rem;
+  text-align: center;
+  border: 1px solid #e5e7eb;
+}
+
+/* PROJECTS */
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+.project-card {
+  background: #ffffff;
+  border-radius: 18px;
+  border: 1px solid #e5e7eb;
+  padding: 1.5rem;
+}
+
+.project-image {
+  height: 160px;
+  background: #e5e7eb;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.project-link {
+  display: inline-block;
+  margin-top: 0.75rem;
+  color: #16a34a;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.project-link:hover {
+  text-decoration: underline;
+}
+
+/* TEXT */
+.impact-text {
+  max-width: 760px;
+  margin: 0.75rem auto 0;
+  color: #4b5563;
+}
+
+.project-card img {
+  transition: transform 0.3s ease;
+}
+
+.project-card:hover img {
+  transform: scale(1.05);
+}
+
+
+/* MOBILE */
+@media (max-width: 480px) {
+  .project-card {
+    padding: 1.25rem;
+  }
+}
