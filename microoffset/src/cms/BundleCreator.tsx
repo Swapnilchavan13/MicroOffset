@@ -16,6 +16,11 @@ interface SelectedEmitter extends Emitter {
 }
 
 export const BundleCreator = () => {
+const [imageFile, setImageFile] = useState<File | null>(null);
+const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+
+
   const [emitters, setEmitters] = useState<Emitter[]>([]);
   const [selected, setSelected] = useState<SelectedEmitter[]>([]);
   const [packName, setPackName] = useState("");
@@ -123,60 +128,51 @@ export const BundleCreator = () => {
   qty * factor;
 
 
-  /** Image */
-  const handleImage = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.[0]) {
-      setImage(URL.createObjectURL(e.target.files[0]));
-    }
-  };
-
-  const createPack = async () => {
+ const createPack = async () => {
   try {
-    if (!packName || selected.length === 0) {
-      alert("Pack name and at least one emitter are required");
-      return;
+    const formData = new FormData();
+
+    formData.append("pack_name", packName);
+    formData.append("description", description);
+    formData.append(
+      "emitters",
+      JSON.stringify(
+        selected.map((e) => ({
+          emitter_id: e._id,
+          emitter_name_standard: e.emitter_name_standard,
+          category: e.category,
+          sub_category: e.sub_category,
+          tags: e.tags,
+          quantity: e.quantity,
+          unit: "kWh",
+          factor_kgco2e_per_unit:
+            e.factor_kgco2e_per_unit,
+          total_emission_kgco2e:
+            e.quantity * e.factor_kgco2e_per_unit,
+        }))
+      )
+    );
+
+    formData.append(
+      "total_emission_kgco2e",
+      totalEmission.toString()
+    );
+
+    if (imageFile) {
+      formData.append("image", imageFile); // ✅ ONE IMAGE
     }
 
-    const payload = {
-      pack_name: packName,
-      description,
-      image_url: image,
-      emitters: selected.map((e) => ({
-        emitter_id: e._id,
-        emitter_name_standard: e.emitter_name_standard,
-        category: e.category,
-        sub_category: e.sub_category,
-        tags: e.tags,
-        quantity: e.quantity,
-        unit: e.unit || "kWh",
-        factor_kgco2e_per_unit: e.factor_kgco2e_per_unit,
-        total_emission_kgco2e:
-          e.quantity * e.factor_kgco2e_per_unit,
-      })),
-      total_emission_kgco2e: totalEmission,
-    };
-
-    // 🔥 SAVE TO DB
-    const res = await axios.post(
+    await axios.post(
       "http://62.72.59.146:5000/addemitterpacks",
-      payload
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } }
     );
 
-    // 💾 Save draft locally (for Edit)
-    localStorage.setItem(
-      "emitterPackDraft",
-      JSON.stringify({
-        ...payload,
-        _id: res.data.data._id,
-      })
-    );
-
-    alert("Emitter Pack Saved Successfully 🚀");
-  } catch (error: any) {
-    console.error(error);
+    alert("Emitter Pack Created 🚀");
+  } catch (err: any) {
     alert(
-      error.response?.data?.message ||
-        "Failed to save emitter pack"
+      err.response?.data?.message ||
+        "Failed to create pack"
     );
   }
 };
@@ -207,9 +203,29 @@ export const BundleCreator = () => {
       {/* Image */}
       <div>
         <label className="bg-emerald-600 text-white px-4 py-2 rounded cursor-pointer">
-          Add Image
-          <input type="file" hidden onChange={handleImage} />
-        </label>
+  Add Image
+  <input
+    type="file"
+    accept="image/*"
+    hidden
+    onChange={(e) => {
+      if (e.target.files?.[0]) {
+        setImageFile(e.target.files[0]);
+        setImagePreview(
+          URL.createObjectURL(e.target.files[0])
+        );
+      }
+    }}
+  />
+</label>
+
+{imagePreview && (
+  <img
+    src={imagePreview}
+    className="mt-3 h-32 rounded object-cover"
+  />
+)}
+
       </div>
 
       {/* Filters */}
