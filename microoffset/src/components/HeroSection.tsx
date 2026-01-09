@@ -1,8 +1,12 @@
 import { ArrowRight, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import heroEarth from "@/assets/hero-earth.jpg";
+import { useNavigate } from "react-router-dom";
+
 
 const HeroSection = () => {
+  const navigate = useNavigate();
+
   return (
     <section className="relative min-h-screen overflow-hidden pt-20">
       {/* Background Image with Overlay */}
@@ -62,10 +66,15 @@ const HeroSection = () => {
 
           {/* CTA Buttons */}
           <div className="animate-fade-up animation-delay-400 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Button variant="cta" size="xl">
-              Build Your MicroOffset Pack
-              <ArrowRight className="h-5 w-5" />
-            </Button>
+            <Button
+  variant="cta"
+  size="xl"
+  onClick={() => navigate("/cms")}
+>
+  Build Your MicroOffset Pack
+  <ArrowRight className="h-5 w-5" />
+</Button>
+
             <Button variant="glass" size="lg" className="text-white border-white/20 hover:bg-white/10">
               <Play className="h-4 w-4" />
               How it works
