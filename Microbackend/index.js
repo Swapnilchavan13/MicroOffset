@@ -1,9 +1,10 @@
 const express = require("express");
 const cors = require("cors");
+const multer = require("multer");
+const path = require("path");
 const mongoose = require("mongoose");
 require("dotenv").config();
 
-const MicroOffsetPack = require("./models/MicroOffsetPack");
 const Emitter = require("./models/Emitter");
 const EmitterPack = require("./models/EmitterPack");
 
@@ -11,10 +12,10 @@ const EmitterPack = require("./models/EmitterPack");
 
 
 const app = express();
-
-// Middlewares
 app.use(cors());
 app.use(express.json());
+app.use("/uploads", express.static("uploads"));
+
 
 // MongoDB Connection
 mongoose.set("strictQuery", false);
@@ -35,24 +36,38 @@ const connectDB = async () => {
 // Call DB connection
 connectDB();
 
+
+
+const storage = multer.diskStorage({
+  destination: "uploads/",
+  filename: (req, file, cb) => {
+    const unique =
+      Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, unique + path.extname(file.originalname));
+  },
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith("image/")) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only images allowed"));
+    }
+  },
+});
+
+
+
+
 // Routes
 app.get("/", (req, res) => {
   res.send("Backend is running and MongoDB is connected!");
 });
 
 
-
-app.get("/api/microoffsetpacks", async (req, res) => {
-  try {
-    const packs = await MicroOffsetPack.find().sort({ createdAt: -1 });
-    res.status(200).json({
-      success: true,
-      data: packs
-    });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-});
 
 app.get("/emitters", async (req, res) => {
   try {
@@ -67,44 +82,46 @@ app.get("/emitters", async (req, res) => {
 });
 
 
-app.post("/addemitterpacks", async (req, res) => {
-  try {
-    const {
-      pack_name,
-      description,
-      image_url,
-      emitters,
-      total_emission_kgco2e,
-    } = req.body;
+app.post(
+  "/addemitterpacks",
+  upload.single("image"), // ✅ ONE IMAGE
+  async (req, res) => {
+    try {
+      const {
+        pack_name,
+        description,
+        emitters,
+        total_emission_kgco2e,
+      } = req.body;
 
-    if (!pack_name || !emitters?.length) {
-      return res.status(400).json({
+      if (!pack_name || !emitters) {
+        return res.status(400).json({
+          success: false,
+          message: "Pack name and emitters are required",
+        });
+      }
+
+      const image_url = req.file
+        ? `/uploads/${req.file.filename}`
+        : null;
+
+      const pack = await EmitterPack.create({
+        pack_name,
+        description,
+        image_url,
+        emitters: JSON.parse(emitters),
+        total_emission_kgco2e,
+      });
+
+      res.status(201).json({ success: true, data: pack });
+    } catch (err) {
+      res.status(500).json({
         success: false,
-        message: "Pack name and at least one emitter are required",
+        message: err.message,
       });
     }
-
-    const pack = await EmitterPack.create({
-      pack_name,
-      description,
-      image_url,
-      emitters,
-      total_emission_kgco2e,
-      status: "draft",
-    });
-
-    res.status(201).json({
-      success: true,
-      data: pack,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
   }
-});
+);
 
 
 app.get("/getemitterpacks", async (req, res) => {
