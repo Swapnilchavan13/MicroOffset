@@ -84,20 +84,31 @@ app.get("/emitters", async (req, res) => {
 
 app.post(
   "/addemitterpacks",
-  upload.single("image"), // ✅ ONE IMAGE
+  upload.single("image"),
   async (req, res) => {
     try {
-      const {
-        pack_name,
-        description,
-        emitters,
-        total_emission_kgco2e,
-      } = req.body;
+      // ✅ SAFELY READ BODY
+      const body = req.body || {};
+
+      const pack_name = body.pack_name;
+      const description = body.description;
+      const emitters = body.emitters;
+      const total_emission_kgco2e = body.total_emission_kgco2e;
 
       if (!pack_name || !emitters) {
         return res.status(400).json({
           success: false,
           message: "Pack name and emitters are required",
+        });
+      }
+
+      let parsedEmitters;
+      try {
+        parsedEmitters = JSON.parse(emitters);
+      } catch {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid emitters format",
         });
       }
 
@@ -109,12 +120,16 @@ app.post(
         pack_name,
         description,
         image_url,
-        emitters: JSON.parse(emitters),
+        emitters: parsedEmitters,
         total_emission_kgco2e,
       });
 
-      res.status(201).json({ success: true, data: pack });
+      res.status(201).json({
+        success: true,
+        data: pack,
+      });
     } catch (err) {
+      console.error(err);
       res.status(500).json({
         success: false,
         message: err.message,
