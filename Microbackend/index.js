@@ -64,7 +64,7 @@ const upload = multer({
 
 // Routes
 app.get("/", (req, res) => {
-  res.send("Backend is running and MongoDB is connected!");
+  res.send("Backend is running live and MongoDB is connected!");
 });
 
 
