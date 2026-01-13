@@ -39,6 +39,27 @@ export const BundleCreator = () => {
   /* ---------- UI ---------- */
   const [previewOpen, setPreviewOpen] = useState(false);
 
+
+
+  /* ---------- Project ---------- */
+const [useProjectCredits, setUseProjectCredits] = useState(false);
+
+const project = {
+  id: "CDR-2024-BC001",
+  title: "Sustainable Biochar Karnataka",
+  description:
+    "Converting agricultural waste into long-term carbon storage through pyrolysis, enriching soil health while sequestering CO₂ for centuries.",
+  location: "Karnataka, India",
+  status: "MicroOffsets Retired",
+  retiredPercent: 67,
+  retired: 8340,
+  available: 12500,
+  sdgs: [13, 15, 12],
+  price: "$0.045 per kg CO₂",
+  image:
+    "https://images.unsplash.com/photo-1501004318641-b39e6451bec6" // placeholder
+};
+
   /* ================= FETCH ================= */
 
   useEffect(() => {
@@ -168,6 +189,13 @@ export const BundleCreator = () => {
     setSelectedSectors([]);
     setSelectedCategories([]);
   };
+
+  const canShowProjectSelection =
+  packName.trim() !== "" &&
+  description.trim() !== "" &&
+  selected.length > 0 &&
+  totalEmission > 0;
+
 
   /* ================= UI ================= */
 
@@ -356,6 +384,109 @@ export const BundleCreator = () => {
           </div>
         </div>
       )}
+
+  
+
+  {/* ---------- PROJECT SELECTION ---------- */}
+{canShowProjectSelection && (
+  <div className="bg-gradient-to-br from-emerald-50 to-white p-6 rounded-2xl shadow-lg border border-emerald-200 space-y-4">
+
+    <div className="flex justify-between items-center">
+      <h2 className="text-xl font-bold text-emerald-700">
+        Select Offset Project
+      </h2>
+
+      {useProjectCredits && (
+        <span className="bg-emerald-600 text-white text-xs px-3 py-1 rounded-full">
+          100% Credits Applied
+        </span>
+      )}
+    </div>
+
+    <label className="flex gap-5 cursor-pointer items-start">
+      <input
+        type="checkbox"
+        checked={useProjectCredits}
+        onChange={() => setUseProjectCredits(!useProjectCredits)}
+        className="mt-2 scale-125 accent-emerald-600"
+      />
+
+      <div className="flex gap-5 w-full">
+        {/* IMAGE */}
+        <img
+          src={project.image}
+          className="w-40 h-40 object-cover rounded-xl shadow"
+          alt="Project"
+        />
+
+        {/* CONTENT */}
+        <div className="flex-1 space-y-2">
+          <p className="text-xs text-gray-500">{project.id}</p>
+
+          <h3 className="text-lg font-semibold text-gray-900">
+            {project.title}
+          </h3>
+
+          <p className="text-sm text-gray-600">
+            {project.description}
+          </p>
+
+          <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+            <span>📍 {project.location}</span>
+            <span className="font-medium text-emerald-600">
+              {project.status}
+            </span>
+          </div>
+
+          {/* PROGRESS */}
+          <div className="mt-2">
+            <div className="flex justify-between text-xs text-gray-500 mb-1">
+              <span>{project.retiredPercent}% retired</span>
+              <span>
+                {project.retired.toLocaleString()} /{" "}
+                {project.available.toLocaleString()} kg
+              </span>
+            </div>
+
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div
+                className="bg-emerald-600 h-2 rounded-full"
+                style={{ width: `${project.retiredPercent}%` }}
+              />
+            </div>
+          </div>
+
+          {/* SDGs */}
+          <div className="flex gap-2 mt-2">
+            {project.sdgs.map((sdg) => (
+              <span
+                key={sdg}
+                className="bg-emerald-100 text-emerald-700 text-xs px-2 py-1 rounded-md"
+              >
+                SDG {sdg}
+              </span>
+            ))}
+          </div>
+
+          {/* PRICE + STATUS */}
+          <div className="flex justify-between items-center mt-3">
+            <span className="font-semibold text-gray-800">
+              {project.price}
+            </span>
+
+            {useProjectCredits && (
+              <span className="text-sm font-bold text-emerald-700">
+                ✔ 100% credits sourced from this project
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+    </label>
+  </div>
+)}
+
+
 
       {/* ---------- ACTIONS ---------- */}
       <div className="flex gap-4">
