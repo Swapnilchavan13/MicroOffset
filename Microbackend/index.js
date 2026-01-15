@@ -7,6 +7,8 @@ require("dotenv").config();
 
 const Emitter = require("./models/Emitter");
 const EmitterPack = require("./models/EmitterPack");
+const Project = require("./models/Project");
+
 
 
 
@@ -156,6 +158,38 @@ app.get("/getemitterpacks", async (req, res) => {
     });
   }
 });
+
+app.get("/projects", async (req, res) => {
+  try {
+    const { status, sdg, minPrice, maxPrice } = req.query;
+
+    const filter = {};
+
+    if (status) filter.status = status;
+    if (sdg) filter.sdgs = Number(sdg);
+
+    if (minPrice || maxPrice) {
+      filter.pricePerKgCO2 = {};
+      if (minPrice) filter.pricePerKgCO2.$gte = Number(minPrice);
+      if (maxPrice) filter.pricePerKgCO2.$lte = Number(maxPrice);
+    }
+
+    const projects = await Project.find(filter);
+
+    res.status(200).json({
+      success: true,
+      count: projects.length,
+      data: projects,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch projects",
+      error: error.message,
+    });
+  }
+});
+
 
 
 
