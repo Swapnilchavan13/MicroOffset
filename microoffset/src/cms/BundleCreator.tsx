@@ -111,10 +111,10 @@ export const BundleCreator = () => {
           ...p,
           pricePerKg: [18, 12, 22, 15, 35][idx % 5], // Mock price
           imageUrl: [
-            "https://images.unsplash.com/photo-1622383563227-044011358d20?auto=format&fit=crop&w=600&q=80", // Biochar
+            "https://thecharmaker.com/wp-content/uploads/2024/06/Biochar.webp", // Biochar
             "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=600&q=80", // Forest
             "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?auto=format&fit=crop&w=600&q=80", // Agriculture
-            "https://images.unsplash.com/photo-1497435334941-8c699ee63e0e?auto=format&fit=crop&w=600&q=80", // Solar
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSCGAddLD4bdBbjTeq6P8OYBtMFmXmir2GH7g&s", // Solar
           ][idx % 4],
         }));
         setProjects(enrichedProjects);
