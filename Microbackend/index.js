@@ -89,13 +89,20 @@ app.post(
   upload.single("image"),
   async (req, res) => {
     try {
-      // ✅ SAFELY READ BODY
       const body = req.body || {};
 
-      const pack_name = body.pack_name;
-      const description = body.description;
-      const emitters = body.emitters;
-      const total_emission_kgco2e = body.total_emission_kgco2e;
+      const {
+        pack_name,
+        description,
+        packType,
+        intendedBuyer,
+        duration,
+        emitters,
+        projects,
+        total_emission_kgco2e,
+        weighted_price_per_kg,
+        total_pack_price,
+      } = body;
 
       if (!pack_name || !emitters) {
         return res.status(400).json({
@@ -104,15 +111,22 @@ app.post(
         });
       }
 
-      let parsedEmitters;
-      try {
-        parsedEmitters = JSON.parse(emitters);
-      } catch {
-        return res.status(400).json({
-          success: false,
-          message: "Invalid emitters format",
-        });
-      }
+const parsedEmitters = JSON.parse(emitters).map((e) => ({
+  ...e,
+  calculated_emission_kgco2e:
+    e.calculated_emission_kgco2e ??
+    e.quantity * e.factor_kgco2e_per_unit,
+}));
+
+const parsedProjects = projects
+  ? JSON.parse(projects).map((p) => ({
+      ...p,
+      allocated_emission_kgco2e:
+        p.allocated_emission_kgco2e ??
+        (total_emission_kgco2e / JSON.parse(projects).length),
+    }))
+  : [];
+
 
       const image_url = req.file
         ? `/uploads/${req.file.filename}`
@@ -122,8 +136,18 @@ app.post(
         pack_name,
         description,
         image_url,
+        packType,
+        intendedBuyer,
+        duration,
+
         emitters: parsedEmitters,
+        projects: parsedProjects,
+
         total_emission_kgco2e,
+        weighted_price_per_kg,
+        total_pack_price,
+
+        frozenAt: new Date(),
       });
 
       res.status(201).json({
@@ -139,6 +163,7 @@ app.post(
     }
   }
 );
+
 
 
 app.get("/getemitterpacks", async (req, res) => {
