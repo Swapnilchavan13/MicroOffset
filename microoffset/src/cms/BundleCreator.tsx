@@ -85,6 +85,12 @@ export const BundleCreator = () => {
 
   const MAX_PROJECTS = 4;
 
+
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+
+
+  
+
   /* ================= FETCH DATA ================= */
 
   useEffect(() => {
@@ -208,32 +214,109 @@ export const BundleCreator = () => {
   };
 
   const handleCreatePack = async () => {
-    try {
-      const formData = new FormData();
-      formData.append("pack_name", packName);
-      formData.append("description", description || "Custom Pack");
-      // Add other fields as necessary for your backend
-      formData.append(
-        "emitters",
-        JSON.stringify(
-          selected.map((e) => ({
-            emitter_id: e._id,
-            emitter_name_standard: e.emitter_name_standard,
-            quantity: e.quantity,
-            factor: e.factor_kgco2e_per_unit,
-          }))
-        )
-      );
-      formData.append("total_emission", totalEmission.toString());
-      if (imageFile) formData.append("image", imageFile);
+  try {
+    const formData = new FormData();
 
-      // Simulating API call
-      console.log("Creating pack with projects:", selectedProjects);
-      alert("Pack Created Successfully! 🚀");
-    } catch (err) {
-      alert("Failed to create pack");
-    }
-  };
+    formData.append("pack_name", packName);
+    formData.append("description", description || "Custom Pack");
+    formData.append("packType", packType);
+    formData.append("intendedBuyer", intendedBuyer);
+    formData.append("duration", duration);
+
+    // Emitters snapshot
+   formData.append(
+  "emitters",
+  JSON.stringify(
+    selected.map((e) => ({
+      emitter_id: e._id,
+      emitter_name_standard: e.emitter_name_standard,
+      sector: e.sector,
+      category: e.category,
+      sub_category: e.sub_category,
+      unit: e.unit,
+      quantity: e.quantity,
+      factor_kgco2e_per_unit: e.factor_kgco2e_per_unit,
+
+      // ✅ FIXED KEY
+      calculated_emission_kgco2e:
+        e.quantity * e.factor_kgco2e_per_unit,
+
+      source_type: e.source_type,
+    }))
+  )
+);
+
+
+    // Projects snapshot
+   formData.append(
+  "projects",
+  JSON.stringify(
+    selectedProjectDetails.map((p) => ({
+      projectId: p.projectId,
+      allocation_percent: allocationPercent,
+      price_per_kg: p.pricePerKg,
+
+      // ✅ FIXED KEY
+      allocated_emission_kgco2e:
+        totalEmission / selectedProjects.length,
+
+      allocated_cost:
+        (totalEmission / selectedProjects.length) *
+        (p.pricePerKg || 0),
+    }))
+  )
+);
+
+    formData.append(
+      "total_emission_kgco2e",
+      totalEmission.toString()
+    );
+    formData.append(
+      "weighted_price_per_kg",
+      weightedPricePerKg.toString()
+    );
+    formData.append(
+      "total_pack_price",
+      totalPackPrice.toString()
+    );
+
+    if (imageFile) formData.append("image", imageFile);
+
+    await axios.post(
+      "http://62.72.59.146:5000/addemitterpacks",
+      formData
+    );
+
+    alert("Pack Created Successfully 🚀");
+  } catch (err) {
+    console.error(err);
+    alert("Failed to create pack");
+  }
+};
+
+const resetPack = () => {
+  // Pack Details
+  setPackName("My Office Carbon Pack");
+  setPackType("Office / Workplace");
+  setIntendedBuyer("Company");
+  setDuration("Per Month");
+  setDescription("");
+
+  // Image
+  setImageFile(null);
+  setImagePreview(null);
+
+  // Emitters
+  setSelected([]);
+  setSearchQuery("");
+  setActiveFilter("All");
+
+  // Projects
+  setSelectedProjects([]);
+  setExpandedSummary(false);
+};
+
+
 
   /* ================= RENDER HELPERS ================= */
 
@@ -253,6 +336,45 @@ export const BundleCreator = () => {
         return <Home size={14} />;
     }
   };
+
+
+
+  const packPreview = {
+  pack_name: packName,
+  description: description || "Custom Pack",
+  packType,
+  intendedBuyer,
+  duration,
+  imagePreview,
+
+  emitters: selected.map((e) => ({
+    name: e.emitter_name_standard,
+    sector: e.sector,
+    unit: e.unit,
+    quantity: e.quantity,
+    factor: e.factor_kgco2e_per_unit,
+    emission: e.quantity * e.factor_kgco2e_per_unit,
+  })),
+
+  totalEmission,
+
+  projects: selectedProjectDetails.map((p) => ({
+    title: p.title,
+    location: p.location,
+    allocationPercent,
+    pricePerKg: p.pricePerKg,
+    allocatedEmission:
+      totalEmission / selectedProjects.length,
+    allocatedCost:
+      (totalEmission / selectedProjects.length) *
+      (p.pricePerKg || 0),
+    imageUrl: p.imageUrl,
+  })),
+
+  weightedPricePerKg,
+  totalPackPrice,
+};
+
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24 font-sans text-slate-800">
@@ -809,9 +931,13 @@ export const BundleCreator = () => {
       <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 p-4 shadow-xl z-50">
         <div className="max-w-[1400px] mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex gap-3">
-            <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50 text-sm font-medium transition">
-              <RefreshCw size={16} /> Reset
-            </button>
+            <button
+  onClick={resetPack}
+  className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50 text-sm font-medium transition"
+>
+  <RefreshCw size={16} /> Reset
+</button>
+
             <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50 text-sm font-medium transition">
               <Copy size={16} /> Duplicate
             </button>
@@ -821,9 +947,13 @@ export const BundleCreator = () => {
             <button className="flex items-center gap-2 px-5 py-2 rounded-lg border border-emerald-600 text-emerald-700 hover:bg-emerald-50 text-sm font-medium transition">
               <Save size={16} /> Save Draft
             </button>
-            <button className="flex items-center gap-2 px-5 py-2 rounded-lg border border-emerald-600 text-emerald-700 hover:bg-emerald-50 text-sm font-medium transition">
-              <Eye size={16} /> Preview
-            </button>
+            <button
+  onClick={() => setIsPreviewOpen(true)}
+  className="flex items-center gap-2 px-5 py-2 rounded-lg border border-emerald-600 text-emerald-700 hover:bg-emerald-50 text-sm font-medium transition"
+>
+  <Eye size={16} /> Preview
+</button>
+
             <button
               onClick={handleCreatePack}
               className="flex items-center gap-2 px-6 py-2 rounded-lg bg-emerald-700 text-white hover:bg-emerald-800 text-sm font-bold shadow-lg shadow-emerald-200 transition"
@@ -833,6 +963,153 @@ export const BundleCreator = () => {
           </div>
         </div>
       </div>
+
+      {isPreviewOpen && (
+  <div className="fixed inset-0 z-[999] bg-black/40 flex items-center justify-center p-4">
+    <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+      
+      {/* Header */}
+      <div className="p-6 border-b flex justify-between items-center">
+        <h2 className="text-xl font-bold text-slate-800">
+          Pack Preview
+        </h2>
+        <button
+          onClick={() => setIsPreviewOpen(false)}
+          className="text-gray-400 hover:text-gray-700"
+        >
+          <X />
+        </button>
+      </div>
+
+      {/* Image */}
+      {packPreview.imagePreview && (
+        <img
+          src={packPreview.imagePreview}
+          className="w-full h-56 object-cover"
+          alt="Pack"
+        />
+      )}
+
+      {/* Content */}
+      <div className="p-6 space-y-8">
+
+        {/* Pack Meta */}
+        <div>
+          <h3 className="text-2xl font-bold text-emerald-700">
+            {packPreview.pack_name}
+          </h3>
+          <p className="text-gray-500 mt-1">
+            {packPreview.description}
+          </p>
+
+          <div className="flex gap-4 mt-3 text-xs text-gray-400">
+            <span>{packType}</span>
+            <span>•</span>
+            <span>{intendedBuyer}</span>
+            <span>•</span>
+            <span>{duration}</span>
+          </div>
+        </div>
+
+        {/* Emitters */}
+        <div>
+          <h4 className="font-bold text-slate-800 mb-3">
+            Included Emitters
+          </h4>
+          <div className="space-y-2">
+            {packPreview.emitters.map((e, i) => (
+              <div
+                key={i}
+                className="flex justify-between bg-gray-50 p-3 rounded-lg text-sm"
+              >
+                <div>
+                  <div className="font-semibold">
+                    {e.name}
+                  </div>
+                  <div className="text-xs text-gray-400">
+                    {e.quantity} × {e.unit}
+                  </div>
+                </div>
+                <div className="font-bold text-emerald-700">
+                  {e.emission.toFixed(2)} kg CO₂e
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Projects */}
+        <div>
+          <h4 className="font-bold text-slate-800 mb-3">
+            Offset Projects
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {packPreview.projects.map((p, i) => (
+              <div
+                key={i}
+                className="border rounded-xl overflow-hidden"
+              >
+                <img
+                  src={p.imageUrl}
+                  className="h-32 w-full object-cover"
+                />
+                <div className="p-4">
+                  <div className="font-bold text-sm">
+                    {p.title}
+                  </div>
+                  <div className="text-xs text-gray-400 mb-2">
+                    {p.location}
+                  </div>
+                  <div className="text-xs">
+                    {p.allocationPercent.toFixed(0)}% • ₹
+                    {p.pricePerKg}/kg
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Summary */}
+        <div className="bg-emerald-50 p-6 rounded-xl flex justify-between items-center">
+          <div>
+            <div className="text-sm text-gray-500">
+              Total Emissions
+            </div>
+            <div className="font-bold text-xl">
+              {packPreview.totalEmission.toFixed(2)} kg CO₂e
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="text-sm text-gray-500">
+              Total Price
+            </div>
+            <div className="font-bold text-2xl text-emerald-700">
+              ₹{Math.ceil(packPreview.totalPackPrice)}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="p-6 border-t flex justify-end gap-3">
+        <button
+          onClick={() => setIsPreviewOpen(false)}
+          className="px-4 py-2 border rounded-lg text-sm"
+        >
+          Close
+        </button>
+        <button
+          onClick={handleCreatePack}
+          className="px-6 py-2 bg-emerald-700 text-white rounded-lg text-sm font-bold"
+        >
+          Publish Pack
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
     </div>
   );
 };
