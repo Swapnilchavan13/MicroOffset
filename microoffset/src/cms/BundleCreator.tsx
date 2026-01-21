@@ -48,12 +48,16 @@ interface Project {
   subtitle?: string;
   location: string;
   status: string;
-  tCO2eRemoved?: number;
-  biomassTonnes?: number; // using for availability calc
-  pricePerKg?: number; // Mocking price for calculation
-  imageUrl?: string; // Mocking image
+
+  // ✅ FROM API (NO MOCKS)
+  pricePerKgCO2: number;
+  image: string;
+
+  // ✅ availability tracking
+  totalCreditsKg: number;     // total available credits (kg)
+  retiredCreditsKg: number;   // retired credits (kg)
+
   sdgs?: number[];
-  farmersEngaged?: number;
 }
 
 /* ================= COMPONENT ================= */
@@ -85,11 +89,8 @@ export const BundleCreator = () => {
 
   const MAX_PROJECTS = 4;
 
-
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
-
-  
 
   /* ================= FETCH DATA ================= */
 
@@ -115,13 +116,7 @@ export const BundleCreator = () => {
         // Enriching data to match UI screenshots
         const enrichedProjects = json.data.map((p: any, idx: number) => ({
           ...p,
-          pricePerKg: [18, 12, 22, 15, 35][idx % 5], // Mock price
-          imageUrl: [
-            "https://thecharmaker.com/wp-content/uploads/2024/06/Biochar.webp", // Biochar
-            "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=600&q=80", // Forest
-            "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?auto=format&fit=crop&w=600&q=80", // Agriculture
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSCGAddLD4bdBbjTeq6P8OYBtMFmXmir2GH7g&s", // Solar
-          ][idx % 4],
+         
         }));
         setProjects(enrichedProjects);
         // Default select first two for demo
@@ -176,7 +171,7 @@ export const BundleCreator = () => {
 
   const weightedPricePerKg =
     selectedProjects.length > 0
-      ? selectedProjectDetails.reduce((sum, p) => sum + (p.pricePerKg || 0), 0) /
+      ? selectedProjectDetails.reduce((sum, p) => sum + (p.pricePerKgCO2 || 0), 0) /
         selectedProjects.length
       : 0;
 
@@ -254,7 +249,7 @@ export const BundleCreator = () => {
     selectedProjectDetails.map((p) => ({
       projectId: p.projectId,
       allocation_percent: allocationPercent,
-      price_per_kg: p.pricePerKg,
+      price_per_kg: p.pricePerKgCO2,
 
       // ✅ FIXED KEY
       allocated_emission_kgco2e:
@@ -262,7 +257,7 @@ export const BundleCreator = () => {
 
       allocated_cost:
         (totalEmission / selectedProjects.length) *
-        (p.pricePerKg || 0),
+        (p.pricePerKgCO2 || 0),
     }))
   )
 );
@@ -362,13 +357,13 @@ const resetPack = () => {
     title: p.title,
     location: p.location,
     allocationPercent,
-    pricePerKg: p.pricePerKg,
+    pricePerKg: p.pricePerKgCO2,
     allocatedEmission:
       totalEmission / selectedProjects.length,
     allocatedCost:
       (totalEmission / selectedProjects.length) *
-      (p.pricePerKg || 0),
-    imageUrl: p.imageUrl,
+      (p.pricePerKgCO2 || 0),
+    imageUrl: p.image,
   })),
 
   weightedPricePerKg,
@@ -742,7 +737,7 @@ const resetPack = () => {
                       {/* Image Banner */}
                       <div className="h-32 bg-gray-200 relative">
                         <img
-                          src={project.imageUrl}
+                          src={project.image}
                           alt={project.title}
                           className="w-full h-full object-cover"
                         />
@@ -781,7 +776,7 @@ const resetPack = () => {
                         <div className="flex items-center justify-between border-t border-gray-100 pt-3">
                           <div>
                             <span className="text-emerald-700 font-bold text-sm">
-                              ₹{project.pricePerKg}
+                              ₹{project.pricePerKgCO2}
                             </span>
                             <span className="text-gray-400 text-xs">/kg</span>
                           </div>
@@ -894,7 +889,7 @@ const resetPack = () => {
                     >
                       <span className="truncate max-w-[150px]">{p.title}</span>
                       <span>
-                        {allocationPercent.toFixed(0)}% × ₹{p.pricePerKg}
+                        {allocationPercent.toFixed(0)}% × ₹{p.pricePerKgCO2}
                       </span>
                     </div>
                   ))}

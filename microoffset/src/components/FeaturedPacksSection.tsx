@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { ArrowRight, Laptop } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const API_URL = "http://62.72.59.146:5000/getemitterpacks";
 const IMAGE_BASE_URL = "http://62.72.59.146:5000";
@@ -14,6 +15,8 @@ const colorClasses = {
 };
 
 const FeaturedPacksSection = () => {
+    const navigate = useNavigate();
+  
   const [packs, setPacks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -128,10 +131,14 @@ const FeaturedPacksSection = () => {
                       </span>
                     </div>
 
-                    <Button variant="ghost" size="sm">
-                      Offset Now
-                      <ArrowRight className="h-4 w-4 ml-1" />
-                    </Button>
+                    <Button
+  variant="ghost"
+  size="sm"
+  onClick={() => navigate(`/emitter-pack/${pack._id}`)}
+>
+  Offset Now
+  <ArrowRight className="h-4 w-4 ml-1" />
+</Button>
                   </div>
                 </div>
               </div>

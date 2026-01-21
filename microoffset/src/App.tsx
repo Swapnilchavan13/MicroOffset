@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 
 import NotFound from "./pages/NotFound";
 import { BundleCreator } from "./cms/BundleCreator";
+import EmitterPackDetails from "./pages/EmitterPackDetails";
 
 const queryClient = new QueryClient();
 
@@ -19,6 +20,8 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/cms" element={<BundleCreator />} />
+          <Route path="/emitter-pack/:id" element={<EmitterPackDetails />} />
+
 
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
