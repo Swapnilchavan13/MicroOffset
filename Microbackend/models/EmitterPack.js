@@ -32,12 +32,23 @@ const PackEmitterSchema = new mongoose.Schema(
 // Snapshot of selected offset projects
 const PackProjectSchema = new mongoose.Schema(
   {
+     // 🔗 Reference
+    project_ref: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Project",
+      required: true,
+    },
+
     projectId: { type: String, required: true },
     allocation_percent: { type: Number, required: true },
 
     price_per_kg: { type: Number, required: true },
     allocated_emission_kgco2e: { type: Number, required: true },
     allocated_cost: { type: Number, required: true },
+
+      // 📦 Availability snapshot (NEW)
+    total_credits_kg: { type: Number },
+    retired_credits_kg: { type: Number },
   },
   { _id: false }
 );
