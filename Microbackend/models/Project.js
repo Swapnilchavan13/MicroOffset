@@ -74,7 +74,7 @@ const projectSchema = new mongoose.Schema(
 
 // Optional virtual (no DB storage)
 projectSchema.virtual("retiredPercent").get(function () {
-  const total = this.retired + this.available;
+  const total = this.available;
   return total > 0 ? Math.round((this.retired / total) * 100) : 0;
 });
 
