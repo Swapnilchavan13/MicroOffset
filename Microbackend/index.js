@@ -184,6 +184,33 @@ app.get("/getemitterpacks", async (req, res) => {
   }
 });
 
+
+app.get("/getemitterpacks/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const pack = await EmitterPack.findById(id);
+
+    if (!pack) {
+      return res.status(404).json({
+        success: false,
+        message: "Emitter pack not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: pack,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+
+
 app.get("/projects", async (req, res) => {
   try {
     const { status, sdg, minPrice, maxPrice } = req.query;
