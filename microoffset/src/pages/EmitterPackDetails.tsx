@@ -401,11 +401,9 @@ const EquivalentCard = ({ icon, value, label, desc }: any) => (
   </div>
 );
 
-
 const ProjectCard = ({ project }: { project: Project }) => {
   return (
     <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
-      
       {/* Image / Header */}
       <div className="relative h-44 bg-slate-100">
         <img
@@ -414,12 +412,10 @@ const ProjectCard = ({ project }: { project: Project }) => {
           className="w-full h-full object-cover"
         />
 
-        {/* Allocation badge */}
         <div className="absolute top-4 right-4 bg-orange-500 text-white text-xs font-semibold px-3 py-1 rounded-full shadow">
           {project.allocation_percent.toFixed(0)}% contribution
         </div>
 
-        {/* Project type tag */}
         <div className="absolute top-4 left-4 bg-emerald-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
           CDR
         </div>
@@ -427,17 +423,14 @@ const ProjectCard = ({ project }: { project: Project }) => {
 
       {/* Content */}
       <div className="p-5 space-y-3">
-        {/* Title */}
         <h3 className="font-semibold text-slate-800 text-lg">
           {project.projectId}
         </h3>
 
-        {/* Location / description */}
         <p className="text-sm text-slate-500 leading-snug">
           Capturing CO₂ through verified carbon removal solutions.
         </p>
 
-        {/* Progress bar (allocated emission visual) */}
         <div className="space-y-1">
           <div className="flex justify-between text-xs text-slate-500">
             <span>Emission allocated</span>
@@ -451,9 +444,7 @@ const ProjectCard = ({ project }: { project: Project }) => {
           </div>
         </div>
 
-        {/* Footer */}
         <div className="flex items-center justify-between pt-2">
-          {/* SDG-like indicators */}
           <div className="flex gap-1">
             {[13, 15, 12].map(n => (
               <span
@@ -465,7 +456,6 @@ const ProjectCard = ({ project }: { project: Project }) => {
             ))}
           </div>
 
-          {/* Pricing */}
           <div className="text-right">
             <div className="font-semibold text-emerald-600">
               ₹{project.price_per_kg}
