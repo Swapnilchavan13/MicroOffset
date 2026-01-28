@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { BundleCreator } from "./cms/BundleCreator";
 import EmitterPackDetails from "./pages/EmitterPackDetails";
+import AddProject from "./cms/AddProject";
 
 const queryClient = new QueryClient();
 
@@ -20,6 +21,8 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/cms" element={<BundleCreator />} />
+          <Route path="/projectcms" element={<AddProject />} />
+
           <Route path="/emitter-pack/:id" element={<EmitterPackDetails />} />
 
 
