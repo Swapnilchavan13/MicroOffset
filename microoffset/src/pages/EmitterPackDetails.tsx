@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
+import { useRef } from "react";
+
+
 import {
   Mail,
   Video,
@@ -61,6 +65,10 @@ interface CarbonPack {
 const API_URL = "http://62.72.59.146:5000/getemitterpacks";
 
 const EmitterPackDetails = () => {
+const printRef = useRef<HTMLDivElement>(null);
+
+    const navigate = useNavigate();
+
   const { id } = useParams();
   const [pack, setPack] = useState<CarbonPack | null>(null);
   const [loading, setLoading] = useState(true);
@@ -122,9 +130,47 @@ const EmitterPackDetails = () => {
     </div>
   );
 
+  const handlePrint = () => {
+  if (!printRef.current) return;
+
+  const printContents = printRef.current.innerHTML;
+  const originalContents = document.body.innerHTML;
+
+  document.body.innerHTML = `
+    <html>
+      <head>
+        <title>Certificate</title>
+        <style>
+          body {
+            font-family: ui-sans-serif, system-ui;
+            padding: 10px;
+          }
+          @page {
+            size: A4;
+            margin: 20mm;
+          }
+        </style>
+      </head>
+      <body>${printContents}</body>
+    </html>
+  `;
+
+  window.print();
+  document.body.innerHTML = originalContents;
+  window.location.reload();
+};
+
+
   return (
     <div className="bg-slate-50 min-h-screen font-sans text-slate-800 pb-20">
-      
+      <button
+  onClick={() => navigate("/")} // or navigate(-1) if you want browser back
+  className="fixed top-6 left-6 z-50 flex items-center gap-2 bg-white border border-slate-200 px-4 py-2 rounded-full shadow-sm hover:bg-slate-50 transition"
+>
+  <ArrowLeft className="w-4 h-4 text-slate-600" />
+  <span className="text-sm font-medium text-slate-700">Back to Packs</span>
+</button>
+
       {/* ================= HEADER SECTION ================= */}
       <div className="relative w-full bg-white overflow-hidden">
         {/* Background Gradient/Image Overlay */}
@@ -315,47 +361,122 @@ const EmitterPackDetails = () => {
 
         </div>
 
-        {/* ================= CERTIFICATE PREVIEW ================= */}
-        <div className="bg-emerald-50/30 rounded-3xl p-8 border border-emerald-100 text-center">
-            <h3 className="text-lg font-bold text-emerald-800 mb-6 flex items-center gap-2 justify-center">
-              <Leaf className="w-4 h-4" /> Your Certificate Preview
-            </h3>
-            
-            <div className="bg-white border-4 border-double border-emerald-100 rounded-lg p-10 max-w-2xl mx-auto shadow-sm relative">
-                <div className="absolute top-4 left-4 text-slate-300 font-serif italic text-xl">NettZero</div>
-                <div className="text-center space-y-4">
-                  <div className="text-xs uppercase tracking-widest text-slate-400">Emissions Retirement Certificate</div>
-                  <div className="text-lg font-bold text-slate-800">Carbon Dioxide Removal Verification</div>
-                  
-                  <div className="py-4">
-                    <div className="text-sm text-slate-500">This certifies that</div>
-                    <div className="text-2xl font-bold text-slate-900 my-2">Company / Individual Name</div>
-                    <div className="text-sm text-slate-500">has successfully retired</div>
-                  </div>
+     {/* ================= CERTIFICATE PREVIEW ================= */}
+     <div ref={printRef}>
+<div className="bg-emerald-50/40 rounded-3xl p-10 border border-emerald-100">
+  <div className="bg-white max-w-3xl mx-auto rounded-2xl border-2 border-emerald-200 shadow-sm px-14 py-12 relative">
 
-                  <div className="text-4xl font-bold text-emerald-500">{(pack.total_emission_kgco2e * quantity).toFixed(2)} kg CO₂e</div>
-                  <div className="text-xs text-slate-400">through verified Carbon Dioxide Removal</div>
+    {/* Header */}
+    <div className="flex items-center justify-between mb-10">
+      <div className="text-2xl font-serif text-slate-700 tracking-wide">
+        NettZero<span className="text-emerald-500">.</span>
+      </div>
+      <div className="text-sm text-slate-500">
+        PURO.earth Registry Partner
+      </div>
+      <div className="text-sm text-slate-400">
+        ClimeGroove
+      </div>
+    </div>
 
-                  <div className="flex justify-between items-end mt-8 pt-8 border-t border-slate-100">
-                     <div className="text-left">
-                       <div className="text-xs text-slate-400">Pack</div>
-                       <div className="font-semibold text-sm">{pack.pack_name}</div>
-                     </div>
-                     <div className="w-16 h-16 bg-slate-100 rounded-lg flex items-center justify-center">
-                        <div className="w-10 h-10 border-2 border-slate-300 rounded grid grid-cols-2 gap-1 p-1">
-                          <div className="bg-slate-300 rounded-sm"></div>
-                          <div className="bg-slate-300 rounded-sm"></div>
-                          <div className="bg-slate-300 rounded-sm"></div>
-                        </div>
-                     </div>
-                     <div className="text-right">
-                       <div className="text-xs text-slate-400">Certificate ID</div>
-                       <div className="font-mono text-xs font-semibold">NZ-2026-X-001</div>
-                     </div>
-                  </div>
-                </div>
-            </div>
+    {/* Title */}
+    <div className="text-center mb-10">
+      <div className="text-xs tracking-widest uppercase text-slate-400 mb-2">
+        Emissions Retirement Certificate
+      </div>
+      <h2 className="text-lg font-semibold text-slate-800">
+        Carbon Dioxide Removal Verification
+      </h2>
+    </div>
+
+    {/* Main Content */}
+    <div className="text-center space-y-4">
+      <div className="text-slate-500">This certifies that</div>
+
+      <div className="text-2xl font-bold text-slate-900">
+        Priya Sharma
+      </div>
+
+      <div className="text-slate-500">
+        has successfully retired
+      </div>
+
+      <div className="text-4xl font-extrabold text-emerald-500 mt-4">
+        {(pack.total_emission_kgco2e * quantity).toFixed(1)} kg CO₂e
+      </div>
+
+      <div className="text-sm text-slate-400">
+        through verified Carbon Dioxide Removal
+      </div>
+    </div>
+
+    {/* Middle Meta Row */}
+    <div className="grid grid-cols-3 items-center gap-6 mt-12 text-sm">
+      <div>
+        <div className="text-slate-400">MicroOffset Pack</div>
+        <div className="font-medium text-slate-700">
+          {pack.pack_name}
         </div>
+      </div>
+
+      {/* QR */}
+      <div className="flex flex-col items-center">
+        <div className="w-20 h-20 border rounded-xl flex items-center justify-center bg-slate-50">
+          <div className="grid grid-cols-3 gap-1 w-12 h-12">
+            {[...Array(9)].map((_, i) => (
+              <div key={i} className="bg-slate-400 rounded-sm"></div>
+            ))}
+          </div>
+        </div>
+        <div className="text-xs text-slate-400 mt-2">
+          Scan to verify offset impact
+        </div>
+      </div>
+
+      <div className="text-right">
+        <div className="text-slate-400">Certificate ID</div>
+        <div className="font-mono font-semibold text-slate-700">
+          NZ-2025-BC-XXXXX
+        </div>
+      </div>
+    </div>
+
+    {/* Divider */}
+    <div className="my-12 border-t border-slate-200" />
+
+    {/* Footer */}
+    <div className="flex justify-between items-end">
+      <div>
+        <div className="font-serif text-lg text-slate-700 italic">
+          Gautam Shiknis
+        </div>
+        <div className="text-sm font-semibold text-slate-800">
+          Gautam Shiknis
+        </div>
+        <div className="text-xs text-slate-500">
+          Chairman<br />
+          NettZero Environmental Advisory<br />
+          Technologies Pvt. Ltd.
+        </div>
+      </div>
+
+      <div className="flex gap-6 text-sm text-emerald-600">
+        <span className="flex items-center gap-1 cursor-pointer hover:underline">
+          🔗 Shareable
+        </span>
+       <span
+  onClick={handlePrint}
+  className="flex items-center gap-1 cursor-pointer hover:underline"
+>
+  🖨️ Print Ready
+</span>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
 
         {/* ================= PROJECTS SECTION ================= */}
         <div>
