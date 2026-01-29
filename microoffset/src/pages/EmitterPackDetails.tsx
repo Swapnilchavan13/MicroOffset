@@ -27,6 +27,7 @@ import {
   HardDrive,
   IndianRupee // Added IndianRupee icon
 } from "lucide-react";
+import Header from "@/components/Header";
 
 // --- Types based on your NEW JSON ---
 interface Emitter {
@@ -162,10 +163,12 @@ const printRef = useRef<HTMLDivElement>(null);
 
 
   return (
-    <div className="bg-slate-50 min-h-screen font-sans text-slate-800 pb-20">
+
+      <div className="bg-slate-50 min-h-screen font-sans text-slate-800 pb-20">
+        <Header />
       <button
   onClick={() => navigate("/")} // or navigate(-1) if you want browser back
-  className="fixed top-6 left-6 z-50 flex items-center gap-2 bg-white border border-slate-200 px-4 py-2 rounded-full shadow-sm hover:bg-slate-50 transition"
+  className="fixed top-20 left-6 z-50 flex items-center gap-2 bg-white border border-slate-200 px-4 py-2 rounded-full shadow-sm hover:bg-slate-50 transition"
 >
   <ArrowLeft className="w-4 h-4 text-slate-600" />
   <span className="text-sm font-medium text-slate-700">Back to Packs</span>

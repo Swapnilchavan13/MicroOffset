@@ -120,25 +120,34 @@ const FeaturedPacksSection = () => {
                     </div>
                   </div>
 
-                  {/* Carbon info */}
-                  <div className="flex items-center justify-between border-t border-border pt-4">
-                    <div>
-                      <span className="text-2xl font-bold">
-                        {pack.total_emission_kgco2e.toFixed(2)}
-                      </span>
-                      <span className="ml-1 text-sm text-muted-foreground">
-                        kg CO₂e
-                      </span>
-                    </div>
+                 {/* Carbon info */}
+<div className="flex items-center justify-between border-t border-border pt-4">
+  <div>
+    <span className="text-2xl font-bold">
+      {pack.total_emission_kgco2e.toFixed(2)}
+    </span>
+    <span className="ml-1 text-sm text-muted-foreground">
+      kg CO₂e
+    </span>
 
-                    <Button
-  variant="ghost"
-  size="sm"
-  onClick={() => navigate(`/emitter-pack/${pack._id}`)}
->
-  Offset Now
-  <ArrowRight className="h-4 w-4 ml-1" />
-</Button>
+    {/* Offset Price */}
+    <div className="mt-1 text-sm text-muted-foreground">
+      Offset price:
+      <span className="ml-1 font-semibold text-foreground">
+        ₹ {pack.total_pack_price.toFixed(2)}
+      </span>
+    </div>
+  </div>
+
+  <Button
+    variant="ghost"
+    size="sm"
+    onClick={() => navigate(`/emitter-pack/${pack._id}`)}
+  >
+    Offset Now
+    <ArrowRight className="h-4 w-4 ml-1" />
+  </Button>
+
                   </div>
                 </div>
               </div>

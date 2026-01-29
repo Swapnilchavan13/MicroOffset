@@ -75,10 +75,18 @@ const HeroSection = () => {
   <ArrowRight className="h-5 w-5" />
 </Button>
 
-            <Button variant="glass" size="lg" className="text-white border-white/20 hover:bg-white/10">
-              <Play className="h-4 w-4" />
-              How it works
-            </Button>
+            <Button
+  variant="glass"
+  size="lg"
+  className="text-white border-white/20 hover:bg-white/10"
+  onClick={() => {
+    const el = document.getElementById("how-it-works");
+    el?.scrollIntoView({ behavior: "smooth" });
+  }}
+>
+  <Play className="h-4 w-4" />
+  How it works
+</Button>
           </div>
 
           {/* Stats */}
