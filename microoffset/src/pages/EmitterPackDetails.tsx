@@ -63,6 +63,33 @@ interface CarbonPack {
   projects: Project[];
 }
 
+
+// Project from /projects API
+interface MasterProject {
+  _id: string;
+  projectId: string;
+  title: string;
+  description: string;
+  location: string;
+  status: string;
+  retired: number;
+  available: number;
+  pricePerKgCO2: number;
+  currency: string;
+  image: string;
+}
+
+// Project stored inside a Pack
+interface PackProject {
+  projectId: string;
+  allocation_percent: number;
+  allocated_emission_kgco2e: number;
+  allocated_cost: number;
+  price_per_kg: number;
+  project_image_url: string;
+}
+
+
 const API_URL = "http://62.72.59.146:5000/getemitterpacks";
 
 const EmitterPackDetails = () => {
@@ -75,6 +102,77 @@ const printRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [error, setError] = useState("");
+
+
+ const [allProjects, setAllProjects] = useState<MasterProject[]>([]);
+const [selectedProjects, setSelectedProjects] = useState<MasterProject[]>([]);
+const [isEditing, setIsEditing] = useState(false);
+const [saving, setSaving] = useState(false);
+const [showWarning, setShowWarning] = useState(false);
+
+
+
+useEffect(() => {
+  const fetchProjects = async () => {
+    const res = await fetch("http://62.72.59.146:5000/projects");
+    const json = await res.json();
+
+    if (json.success) {
+      setAllProjects(json.data);
+    }
+  };
+
+  fetchProjects();
+}, []);
+
+
+const saveEdits = async () => {
+  if (selectedProjects.length === 0) return;
+
+  const updatedProjects = redistributeProjects();
+
+  const res = await fetch(
+    `http://62.72.59.146:5000/edit-emitter-pack/${pack!._id}`,
+    {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ projects: updatedProjects })
+    }
+  );
+
+  const json = await res.json();
+
+  if (json.success) {
+    setPack(json.data); // 🔥 UI updates instantly
+    setIsEditing(false);
+    setSelectedProjects([]);
+  }
+};
+
+
+const redistributeProjects = (): PackProject[] => {
+  const totalEmission = pack!.total_emission_kgco2e;
+  const allocationPercent = 100 / selectedProjects.length;
+
+  return selectedProjects.map(project => {
+    const allocatedEmission =
+      (totalEmission * allocationPercent) / 100;
+
+    const allocatedCost =
+      allocatedEmission * project.pricePerKgCO2;
+
+    return {
+      projectId: project.projectId,
+      allocation_percent: allocationPercent,
+      allocated_emission_kgco2e: allocatedEmission,
+      allocated_cost: allocatedCost,
+      price_per_kg: project.pricePerKgCO2,
+      project_image_url: project.image
+    };
+  });
+};
+
+
 
   // Helper to map icons to emitter names
   const getIconForEmitter = (name: string) => {
@@ -161,11 +259,26 @@ const printRef = useRef<HTMLDivElement>(null);
   window.location.reload();
 };
 
+const toggleProject = (project: MasterProject) => {
+  setSelectedProjects(prev => {
+    const exists = prev.some(p => p.projectId === project.projectId);
+    if (exists) {
+      return prev.filter(p => p.projectId !== project.projectId);
+    }
+    return [...prev, project];
+  });
+};
+
+
 
   return (
 
+    
+
       <div className="bg-slate-50 min-h-screen font-sans text-slate-800 pb-20">
         <Header />
+
+        
       <button
   onClick={() => navigate("/")} // or navigate(-1) if you want browser back
   className="fixed top-20 left-6 z-50 flex items-center gap-2 bg-white border border-slate-200 px-4 py-2 rounded-full shadow-sm hover:bg-slate-50 transition"
@@ -482,32 +595,167 @@ const printRef = useRef<HTMLDivElement>(null);
 </div>
 
         {/* ================= PROJECTS SECTION ================= */}
-        <div>
-          <div className="flex justify-between items-center mb-6">
-            <div>
-               <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-                 <Leaf className="text-emerald-500"/> What Your Offset Supports
-               </h2>
-               <p className="text-slate-500 text-sm">Your contribution is distributed across these verified CDR projects</p>
-            </div>
-            {/* Dynamic Weighted Price Display */}
-            <div className="bg-slate-100 px-4 py-2 rounded-lg text-right hidden md:block">
-               <div className="text-xs text-slate-500">Weighted Average Cost</div>
-               <div className="font-bold text-emerald-600 flex items-center gap-1 justify-end">
-                  ₹{pack.weighted_price_per_kg} 
-                  <span className="text-slate-400 text-xs font-normal"> / kg CO₂</span>
-               </div>
-            </div>
-          </div>
+      <div className="flex justify-between items-center mb-6">
+  <div>
+    <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+      <Leaf className="text-emerald-500"/> What Your Offset Supports
+    </h2>
+    <p className="text-slate-500 text-sm">
+      Your contribution is distributed across these verified CDR projects
+    </p>
+  </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {pack.projects.map((proj, i) => (
-              <ProjectCard key={i} project={proj} />
-            ))}
+  {!isEditing && (
+    <button
+  onClick={() => {
+    setIsEditing(true);
+
+    const preselected = pack.projects
+      .map(p => allProjects.find(ap => ap.projectId === p.projectId))
+      .filter(Boolean) as MasterProject[];
+
+    setSelectedProjects(preselected);
+  }}
+  className="
+    inline-flex items-center gap-2
+    px-5 py-2.5
+    bg-emerald-600 text-white
+    rounded-xl
+    text-sm font-medium
+    shadow-sm
+    hover:bg-emerald-700
+    active:scale-[0.98]
+    transition-all duration-200
+  "
+>
+  Edit Projects
+</button>
+
+  )}
+</div>
+
+
+          
+
+         {isEditing && (
+  <div className="bg-white rounded-3xl p-8 border border-slate-200 mt-10">
+    <h2 className="text-2xl font-bold mb-6">
+      Select Projects
+    </h2>
+
+    <div className="grid md:grid-cols-2 gap-6">
+      {allProjects.map(project => {
+        const selected = selectedProjects.some(
+          p => p.projectId === project.projectId
+        );
+
+        return (
+          <div
+            key={project._id}
+            onClick={() => toggleProject(project)}
+            className={`cursor-pointer border rounded-2xl overflow-hidden transition
+              ${selected ? "border-emerald-500 shadow-md" : "border-slate-200"}`}
+          >
+            <img
+              src={project.image}
+              alt={project.title}
+              className="h-40 w-full object-cover"
+            />
+
+            <div className="p-4 space-y-2">
+              <div className="flex justify-between items-center">
+                <h3 className="font-semibold">
+                  {project.projectId}
+                </h3>
+                <input type="checkbox" checked={selected} readOnly />
+              </div>
+
+              <p className="text-sm text-slate-500">
+                {project.title}
+              </p>
+
+              <div className="text-sm text-slate-500">
+                📍 {project.location}
+              </div>
+
+              <div className="font-bold text-emerald-600">
+                ₹{project.pricePerKgCO2} / kg CO₂
+              </div>
+            </div>
           </div>
+        );
+      })}
+    </div>
+
+    <div className="flex justify-end gap-4 mt-8">
+      <button
+        onClick={() => setIsEditing(false)}
+        className="px-6 py-2 border rounded-lg"
+      >
+        Cancel
+      </button>
+     <button
+  disabled={!selectedProjects.length}
+  onClick={() => setShowWarning(true)}
+  className="px-6 py-2 bg-emerald-600 text-white rounded-lg disabled:opacity-50"
+>
+  Save Pack
+</button>
+
+    </div>
+  </div>
+)}
+
+{showWarning && (
+  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div className="bg-white rounded-2xl p-6 max-w-md w-full">
+      <h3 className="text-lg font-bold mb-2">
+        Edit Carbon Pack?
+      </h3>
+
+      <p className="text-sm text-slate-600 mb-6">
+        You are changing the projects for this pack.  
+        Emissions will be redistributed equally across the selected projects.
+        This change will reflect immediately.
+      </p>
+
+      <div className="flex justify-end gap-3">
+        <button
+          onClick={() => setShowWarning(false)}
+          className="px-4 py-2 border rounded-lg"
+        >
+          Cancel
+        </button>
+
+        <button
+          onClick={async () => {
+            setShowWarning(false);
+            setSaving(true);
+            await saveEdits();
+            setSaving(false);
+          }}
+          className="px-4 py-2 bg-emerald-600 text-white rounded-lg"
+        >
+          Confirm Edit
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+
+
+
+          {!isEditing && (
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    {pack.projects.map((proj, i) => (
+      <ProjectCard key={i} project={proj} />
+    ))}
+  </div>
+)}
+
         </div>
 
-      </div>
     </div>
   );
 };
@@ -596,6 +844,9 @@ const ProjectCard = ({ project }: { project: Project }) => {
           </div>
         </div>
       </div>
+
+
+      
     </div>
   );
 };
