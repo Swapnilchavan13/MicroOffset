@@ -42,6 +42,8 @@ const PackProjectSchema = new mongoose.Schema(
     projectId: { type: String, required: true },
     allocation_percent: { type: Number, required: true },
 
+    project_image_url: { type: String, required: true },
+
     price_per_kg: { type: Number, required: true },
     allocated_emission_kgco2e: { type: Number, required: true },
     allocated_cost: { type: Number, required: true },
