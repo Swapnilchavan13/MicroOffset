@@ -1,4 +1,11 @@
 import { AlertCircle, HelpCircle, Sparkles, DollarSign, ArrowRight } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button";
 import problemAnalysis from "@/assets/problem-analysis.jpg";
 
@@ -114,13 +121,66 @@ const ProblemSection = () => {
                       Making small emissions <strong>visible</strong>, <strong>combinable</strong>, and <strong>actionable</strong>.
                     </p>
                   </div>
-                  <Button 
-                    variant="glass" 
-                    className="shrink-0 border-white/30 text-white hover:bg-white/20"
-                  >
-                    Read the Theory
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
+                <Dialog>
+      <DialogTrigger asChild>
+        <Button
+          variant="glass"
+          className="shrink-0 border-white/30 text-white hover:bg-white/20 flex items-center gap-2"
+        >
+          Read the Theory
+          <ArrowRight className="h-4 w-4" />
+        </Button>
+      </DialogTrigger>
+
+      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>The Theory</DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-5 text-sm text-muted-foreground">
+          <section>
+            <h3 className="text-base font-semibold text-foreground">
+              Small Actions Add Up
+            </h3>
+            <p>
+              Everyday digital actions create real emissions — even if they feel
+              invisible on their own.
+            </p>
+          </section>
+
+          <section>
+            <h3 className="text-base font-semibold text-foreground">
+              Why Climate Action Feels Hard
+            </h3>
+            <p>
+              Most solutions are built for tons, budgets, and businesses — not
+              people. That distance slows action.
+            </p>
+          </section>
+
+          <section>
+            <h3 className="text-base font-semibold text-foreground">
+              A Smaller Unit of Impact
+            </h3>
+            <p>
+              MicroOffsets breaks emissions into human-sized pieces that match
+              daily behavior.
+            </p>
+          </section>
+
+          <section>
+            <h3 className="text-base font-semibold text-foreground">
+              Simple. Cumulative. Real.
+            </h3>
+            <p>
+              Small contributions stack over time, turning intent into measurable
+              climate progress.
+            </p>
+          </section>
+        </div>
+      </DialogContent>
+    </Dialog>
+
                 </div>
               </div>
             </div>

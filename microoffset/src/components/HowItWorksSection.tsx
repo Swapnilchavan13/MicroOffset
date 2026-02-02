@@ -109,7 +109,7 @@ const HowItWorksSection = () => {
               <p className="mx-auto mb-6 max-w-lg text-muted-foreground">
                 Don't want to build your own? We've curated ready-to-use MicroOffset Packs for common activities. Start offsetting in seconds.
               </p>
-              <Link to="/#featured-packs">
+              <Link to="/emitter-pack">
                 <Button variant="outline" className="border-violet/30 hover:bg-violet/10">
                   View Featured Packs
                   <ArrowRight className="h-4 w-4" />

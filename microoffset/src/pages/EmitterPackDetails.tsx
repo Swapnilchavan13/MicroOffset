@@ -48,7 +48,7 @@ interface Project {
   allocated_emission_kgco2e: number;
   allocated_cost: number;
   price_per_kg: number; // Added from new JSON
-  image_url: string;
+  project_image_url: string;
 }
 
 interface CarbonPack {
@@ -531,7 +531,10 @@ const ProjectCard = ({ project }: { project: Project }) => {
       {/* Image / Header */}
       <div className="relative h-44 bg-slate-100">
         <img
-          src={project.image_url ?? "/placeholder-project.jpg"}
+          src={
+  project.project_image_url
+}
+
           alt={project.projectId}
           className="w-full h-full object-cover"
         />

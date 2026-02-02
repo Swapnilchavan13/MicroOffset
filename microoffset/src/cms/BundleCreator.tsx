@@ -97,7 +97,7 @@ export const BundleCreator = () => {
   useEffect(() => {
     // 1. Fetch Emitters
     axios
-      .get("http://62.72.59.146:5000/emitters")
+      .get("http://localhost:5000/emitters")
       .then((res) => {
         // Adding dummy source type for UI match if not present
         const mappedData = res.data.data.map((e: any) => ({
@@ -111,7 +111,7 @@ export const BundleCreator = () => {
     // 2. Fetch Projects (Mocking extra fields to match UI)
     const fetchProjects = async () => {
       try {
-        const res = await fetch("http://62.72.59.146:5000/projects");
+        const res = await fetch("http://localhost:5000/projects");
         const json = await res.json();
         // Enriching data to match UI screenshots
         const enrichedProjects = json.data.map((p: any, idx: number) => ({
@@ -243,24 +243,35 @@ export const BundleCreator = () => {
 
 
     // Projects snapshot
-   formData.append(
+formData.append(
   "projects",
   JSON.stringify(
     selectedProjectDetails.map((p) => ({
+      // 🔥 REQUIRED BY MONGOOSE
+      project_ref: p._id,
+
+      // 📦 Snapshot fields
       projectId: p.projectId,
       allocation_percent: allocationPercent,
       price_per_kg: p.pricePerKgCO2,
 
-      // ✅ FIXED KEY
+          // 🖼️ SNAPSHOT IMAGE
+      project_image_url: p.image,
+
       allocated_emission_kgco2e:
         totalEmission / selectedProjects.length,
 
       allocated_cost:
         (totalEmission / selectedProjects.length) *
         (p.pricePerKgCO2 || 0),
+
+      // optional snapshot (you defined these in schema)
+      total_credits_kg: p.totalCreditsKg,
+      retired_credits_kg: p.retiredCreditsKg,
     }))
   )
 );
+
 
     formData.append(
       "total_emission_kgco2e",
@@ -278,7 +289,7 @@ export const BundleCreator = () => {
     if (imageFile) formData.append("image", imageFile);
 
     await axios.post(
-      "http://62.72.59.146:5000/addemitterpacks",
+      "http://localhost:5000/addemitterpacks",
       formData
     );
 
