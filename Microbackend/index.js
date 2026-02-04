@@ -189,6 +189,117 @@ parsedProjects = parsedProjects.map((p) => {
 );
 
 
+app.put(
+  "/emitterpacks/:id",
+  upload.single("image"),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const body = req.body || {};
+
+      const {
+        pack_name,
+        description,
+        packType,
+        intendedBuyer,
+        duration,
+        emitters,
+        projects,
+        total_emission_kgco2e,
+        weighted_price_per_kg,
+        total_pack_price,
+      } = body;
+
+      const existingPack = await EmitterPack.findById(id);
+      if (!existingPack) {
+        return res.status(404).json({
+          success: false,
+          message: "Emitter pack not found",
+        });
+      }
+
+      // 🔒 Emitters stay frozen unless explicitly edited
+      const parsedEmitters = emitters
+        ? JSON.parse(emitters).map((e) => ({
+            ...e,
+            calculated_emission_kgco2e:
+              e.calculated_emission_kgco2e ??
+              e.quantity * e.factor_kgco2e_per_unit,
+          }))
+        : existingPack.emitters;
+
+      let parsedProjects = projects ? JSON.parse(projects) : [];
+
+      // 🧠 Fetch latest project meta (title, image, description)
+      const projectDocs = await Project.find(
+        { _id: { $in: parsedProjects.map(p => p.project_ref) } },
+        { title: 1, description: 1, image: 1 }
+      );
+
+      const projectMap = {};
+      projectDocs.forEach(p => {
+        projectMap[p._id.toString()] = p;
+      });
+
+      // 🔁 Re-enrich project snapshot
+      parsedProjects = parsedProjects.map(p => {
+        const dbProject = projectMap[p.project_ref];
+
+        return {
+          ...p,
+          project_name: dbProject?.title,
+          project_description: dbProject?.description,
+          image: dbProject?.image,
+
+          allocated_emission_kgco2e:
+            p.allocated_emission_kgco2e ??
+            total_emission_kgco2e / parsedProjects.length,
+        };
+      });
+
+      const image_url = req.file
+        ? `/uploads/${req.file.filename}`
+        : existingPack.image_url;
+
+      // ✅ UPDATE PACK
+      const updatedPack = await EmitterPack.findByIdAndUpdate(
+        id,
+        {
+          pack_name,
+          description,
+          image_url,
+          packType,
+          intendedBuyer,
+          duration,
+
+          emitters: parsedEmitters,
+          projects: parsedProjects,
+
+          total_emission_kgco2e,
+          weighted_price_per_kg,
+          total_pack_price,
+
+          updatedAt: new Date(),
+        },
+        { new: true }
+      );
+
+      res.json({
+        success: true,
+        data: updatedPack,
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({
+        success: false,
+        message: err.message,
+      });
+    }
+  }
+);
+
+
+
 
 app.get("/getemitterpacks", async (req, res) => {
   try {
@@ -233,82 +344,6 @@ app.get("/getemitterpacks/:id", async (req, res) => {
     });
   }
 });
-
-// PUT: Update only selected projects in an Emitter Pack
-app.put("/edit-emitter-pack/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { projects: incomingProjects } = req.body;
-
-    if (!incomingProjects || !incomingProjects.length) {
-      return res.status(400).json({
-        success: false,
-        message: "No projects provided for update",
-      });
-    }
-
-    // 1️⃣ Find the existing pack
-    const pack = await EmitterPack.findById(id);
-    if (!pack) {
-      return res.status(404).json({
-        success: false,
-        message: "Emitter pack not found",
-      });
-    }
-
-    // 2️⃣ Fetch project details from DB
-    const projectRefs = incomingProjects.map(p => p.project_ref); // frontend sends project_ref
-    const projectDocs = await Project.find(
-      { _id: { $in: projectRefs } },
-      { title: 1, description: 1, image: 1, pricePerKgCO2: 1 }
-    );
-
-    const projectMap = {};
-    projectDocs.forEach(p => {
-      projectMap[p._id.toString()] = p;
-    });
-
-    // 3️⃣ Enrich incoming projects with DB data
-    const enrichedProjects = incomingProjects.map(p => {
-      const dbProject = projectMap[p.project_ref];
-
-      const allocationPercent = p.allocation_percent ?? (100 / incomingProjects.length);
-      const allocatedEmission = p.allocated_emission_kgco2e ?? (pack.total_emission_kgco2e * allocationPercent / 100);
-      const allocatedCost = allocatedEmission * (dbProject?.pricePerKgCO2 ?? 0);
-
-      return {
-        projectId: dbProject?._id.toString() ?? p.project_ref,
-        allocation_percent: allocationPercent,
-        allocated_emission_kgco2e: allocatedEmission,
-        allocated_cost: allocatedCost,
-        price_per_kg: dbProject?.pricePerKgCO2 ?? 0,
-        project_image_url: dbProject?.image ?? "",
-      };
-    });
-
-    // 4️⃣ Replace only the projects array
-    pack.projects = enrichedProjects;
-
-    // 5️⃣ Save pack
-    await pack.save();
-
-    res.status(200).json({
-      success: true,
-      data: pack,
-      message: "Selected projects updated successfully",
-    });
-
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({
-      success: false,
-      message: "Failed to update projects",
-      error: err.message,
-    });
-  }
-});
-
-
 
 
 app.get("/projects", async (req, res) => {
