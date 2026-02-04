@@ -17,7 +17,7 @@ interface ProjectPayload {
 
 /* ================= API CONFIG ================= */
 // 🔁 Replace with real backend URL later
-const API_URL = "http://localhost:5000/api/projects";
+const API_URL = "http://http://62.72.59.146:5000/api/projects";
 
 /* ================= COMPONENT ================= */
 const AddProject = () => {
