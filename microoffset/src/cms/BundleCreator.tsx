@@ -87,6 +87,11 @@ export const BundleCreator = () => {
   const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
   const [expandedSummary, setExpandedSummary] = useState(false);
 
+  const [projectAllocations, setProjectAllocations] = useState<
+  Record<string, number>
+>({});
+
+
   const MAX_PROJECTS = 4;
 
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -170,10 +175,13 @@ export const BundleCreator = () => {
   );
 
   const weightedPricePerKg =
-    selectedProjects.length > 0
-      ? selectedProjectDetails.reduce((sum, p) => sum + (p.pricePerKgCO2 || 0), 0) /
-        selectedProjects.length
-      : 0;
+  totalEmission > 0
+    ? selectedProjectDetails.reduce((sum, p) => {
+        const percent = projectAllocations[p.projectId] || 0;
+        return sum + (percent / 100) * (p.pricePerKgCO2 || 0);
+      }, 0)
+    : 0;
+
 
   const totalPackPrice = totalEmission * weightedPricePerKg;
 
@@ -198,15 +206,32 @@ export const BundleCreator = () => {
     );
   };
 
-  const toggleProject = (projectId: string) => {
-    setSelectedProjects((prev) => {
-      if (prev.includes(projectId)) {
-        return prev.filter((id) => id !== projectId);
-      }
+const toggleProject = (projectId: string) => {
+  setSelectedProjects((prev) => {
+    let updated: string[];
+
+    if (prev.includes(projectId)) {
+      updated = prev.filter((id) => id !== projectId);
+    } else {
       if (prev.length >= MAX_PROJECTS) return prev;
-      return [...prev, projectId];
+      updated = [...prev, projectId];
+    }
+
+    // 🔥 auto redistribute equally
+    const equalPercent =
+      updated.length > 0 ? 100 / updated.length : 0;
+
+    const newAllocations: Record<string, number> = {};
+    updated.forEach((id) => {
+      newAllocations[id] = equalPercent;
     });
-  };
+
+    setProjectAllocations(newAllocations);
+
+    return updated;
+  });
+};
+
 
   const handleCreatePack = async () => {
   try {
@@ -252,18 +277,18 @@ formData.append(
 
       // 📦 Snapshot fields
       projectId: p.projectId,
-      allocation_percent: allocationPercent,
+allocation_percent: projectAllocations[p.projectId],
       price_per_kg: p.pricePerKgCO2,
 
           // 🖼️ SNAPSHOT IMAGE
       project_image_url: p.image,
 
       allocated_emission_kgco2e:
-        totalEmission / selectedProjects.length,
+  (totalEmission * projectAllocations[p.projectId]) / 100,
 
-      allocated_cost:
-        (totalEmission / selectedProjects.length) *
-        (p.pricePerKgCO2 || 0),
+    allocated_cost:
+  ((totalEmission * projectAllocations[p.projectId]) / 100) *
+  (p.pricePerKgCO2 || 0),
 
       // optional snapshot (you defined these in schema)
       total_credits_kg: p.totalCreditsKg,
@@ -286,12 +311,19 @@ formData.append(
       totalPackPrice.toString()
     );
 
+       if (totalAllocatedPercent !== 100) {
+  alert("Project allocation must total 100%");
+  return;
+}
+
     if (imageFile) formData.append("image", imageFile);
 
     await axios.post(
       "https://microoffsets.nettzero.world/api/addemitterpacks",
       formData
     );
+
+ 
 
     alert("Pack Created Successfully 🚀");
   } catch (err) {
@@ -380,6 +412,30 @@ const resetPack = () => {
   weightedPricePerKg,
   totalPackPrice,
 };
+
+const totalAllocation = Object.values(projectAllocations).reduce(
+  (sum, v) => sum + v,
+  0
+);
+
+
+
+const allocatedEmission = (projectId: string) =>
+  (totalEmission * (projectAllocations[projectId] || 0)) / 100;
+
+
+const allocatedCost = (projectId: string, price: number) =>
+  allocatedEmission(projectId) * price;
+
+
+const totalAllocatedPercent = useMemo(() => {
+  return Object.values(projectAllocations).reduce(
+    (sum, val) => sum + (Number(val) || 0),
+    0
+  );
+}, [projectAllocations]);
+
+
 
 
   return (
@@ -707,10 +763,25 @@ const resetPack = () => {
                   Select Offset Projects
                 </h2>
                 {selectedProjects.length > 0 && (
-                  <span className="bg-emerald-600 text-white text-xs font-bold px-3 py-1 rounded-full">
-                    % 100 allocated
-                  </span>
-                )}
+  <span
+    className={`text-white text-xs font-bold px-3 py-1 rounded-full transition ${
+      totalAllocatedPercent === 100
+        ? "bg-emerald-600"
+        : totalAllocatedPercent > 100
+        ? "bg-red-500"
+        : "bg-yellow-500"
+    }`}
+  >
+    {totalAllocatedPercent}% allocated
+  </span>
+)}
+
+                {totalAllocation !== 100 && (
+  <span className="text-xs text-red-500">
+    Allocation must total 100%
+  </span>
+)}
+
               </div>
               <p className="text-sm text-gray-500 mb-6">
                 Click to select up to 4 projects. Allocations will
@@ -817,7 +888,24 @@ const resetPack = () => {
                           </span>
                           <div className="flex items-center gap-1 bg-gray-50 px-2 py-1 rounded border border-gray-200">
                             <span className="text-xs font-bold text-slate-700">
-                              {isSelected ? allocationPercent.toFixed(0) : 0}
+                              <input
+  type="number"
+  min={0}
+  max={100}
+  disabled={!isSelected}
+  value={projectAllocations[project.projectId] || 0}
+  onChange={(e) => {
+    const value = Number(e.target.value);
+
+    setProjectAllocations((prev) => ({
+      ...prev,
+      [project.projectId]: value,
+    }));
+  }}
+  className="w-12 text-xs font-bold text-center bg-white border border-gray-300 rounded"
+/>
+<span className="text-[10px] text-gray-400">%</span>
+
                             </span>
                             <span className="text-[10px] text-gray-400">%</span>
                           </div>

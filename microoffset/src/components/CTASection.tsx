@@ -35,17 +35,21 @@ const CTASection = () => {
             <Button
               size="xl"
               className="bg-white text-primary shadow-hover hover:bg-white/90 hover:shadow-lg"
+               onClick={() => {
+    const el = document.getElementById("featured-packs");
+    el?.scrollIntoView({ behavior: "smooth" });
+  }}
             >
               Start with a MicroOffset Pack
               <ArrowRight className="h-5 w-5" />
             </Button>
-            <Button
+            {/* <Button
               variant="glass"
               size="lg"
               className="border-white/20 text-white hover:bg-white/10"
             >
               Explore Emitters
-            </Button>
+            </Button> */}
           </div>
         </div>
       </div>

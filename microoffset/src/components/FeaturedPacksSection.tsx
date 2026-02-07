@@ -148,7 +148,7 @@ const FeaturedPacksSection = () => {
     size="sm"
     onClick={() => navigate(`/emitter-pack/${pack._id}`)}
   >
-    Offset Now
+    View Pack Details
     <ArrowRight className="h-4 w-4 ml-1" />
   </Button>
 

@@ -53,7 +53,9 @@ const CertificateSection = () => {
                 </div>
                 <div className="flex flex-col items-center">
                   <div className="h-12 md:h-16 px-4 flex items-center justify-center bg-slate-100 rounded border border-slate-200">
-                    <span className="text-lg font-bold text-slate-600">Carbon Standards International</span>
+                    <span className="text-lg font-bold text-slate-600">
+                      <img className="h-6" src="https://www.carbon-standards.com/img/09287be72bbe3e9d312c3bf4c49a8b59_033_CARBON-STANDARDS-int_rgb-1-.png" alt="" />
+                    </span>
                   </div>
                   <span className="text-xs text-muted-foreground mt-1">Registry Partner</span>
                 </div>
@@ -130,7 +132,7 @@ const CertificateSection = () => {
                   <Shield className="w-12 h-12 text-emerald" />
                   <div>
                     <p className="text-xs text-muted-foreground">Verified by</p>
-                    <p className="font-semibold text-foreground">Puro.earth Registry</p>
+                    <p className="font-semibold text-foreground">Carbon Standards International</p>
                   </div>
                 </div>
                 <div className="text-center md:text-right">
