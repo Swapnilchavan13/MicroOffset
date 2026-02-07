@@ -3,8 +3,8 @@ import { ArrowRight, Laptop } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
-const API_URL = "http://62.72.59.146:5000/getemitterpacks";
-const IMAGE_BASE_URL = "http://62.72.59.146:5000";
+const API_URL = "https://microoffsets.nettzero.world/api/getemitterpacks";
+const IMAGE_BASE_URL = "https://microoffsets.nettzero.world/api";
 
 const colorClasses = {
   emerald: {

@@ -63,7 +63,7 @@ interface CarbonPack {
   projects: Project[];
 }
 
-const API_URL = "http://62.72.59.146:5000/getemitterpacks";
+const API_URL = "https://microoffsets.nettzero.world/api/getemitterpacks";
 
 const EmitterPackDetails = () => {
 const printRef = useRef<HTMLDivElement>(null);
@@ -151,7 +151,7 @@ setEditableProjects(normalizedProjects);
 
 
   const fetchAllProjects = async () => {
-  const res = await fetch("http://62.72.59.146:5000/projects");
+  const res = await fetch("https://microoffsets.nettzero.world/api/projects");
   const json = await res.json();
   if (json.success) {
     setAllProjects(json.data);

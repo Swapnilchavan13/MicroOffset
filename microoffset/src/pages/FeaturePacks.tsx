@@ -28,7 +28,7 @@ export const FeaturePacks: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch("http://62.72.59.146:5000/getemitterpacks")
+    fetch("https://microoffsets.nettzero.world/api/getemitterpacks")
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
@@ -107,7 +107,7 @@ export const FeaturePacks: React.FC = () => {
           >
             <div className="h-48 bg-gray-100 overflow-hidden">
               <img
-                src={`http://62.72.59.146:5000${pack.image_url}`}
+                src={`https://microoffsets.nettzero.world/api${pack.image_url}`}
                 alt={pack.pack_name}
                 className="w-full h-full object-cover"
               />

@@ -24,7 +24,7 @@ const CDRProjectsSection = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://62.72.59.146:5000/projects")
+    fetch("https://microoffsets.nettzero.world/api/projects")
       .then((res) => res.json())
       .then((res) => {
         setProjects(res.data || []);
