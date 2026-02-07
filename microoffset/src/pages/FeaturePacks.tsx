@@ -1,3 +1,4 @@
+import Header from "@/components/Header";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -62,6 +63,10 @@ export const FeaturePacks: React.FC = () => {
 
   return (
     <div className="px-6 py-10">
+      <Header />
+      <br />
+      <br />
+
       <h2 className="text-3xl font-semibold mb-6 text-center">
         🌱 Featured Carbon Offset Packs
       </h2>
