@@ -54,6 +54,10 @@ const FeaturedPacksSection = () => {
           <p className="mt-4 text-lg text-muted-foreground">
             Pre-built packs for your everyday activities.
           </p>
+
+          <p className="mt-4 text-sm text-muted-foreground">
+            We have researched extensively the most common “groups of emissions” - across individuals, professionals, schools, travellers - and built these tailored packs that can be selected to just offset regular activities with ease and accuracy. Select the ones you want to offset, so that you start your individual offsetting journey - one pack at a time.
+          </p>
         </div>
 
         <div className="mx-auto grid max-w-6xl gap-6 md:grid-cols-2 lg:grid-cols-3">

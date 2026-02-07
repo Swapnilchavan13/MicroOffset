@@ -53,7 +53,7 @@ const CertificateSection = () => {
                 </div>
                 <div className="flex flex-col items-center">
                   <div className="h-12 md:h-16 px-4 flex items-center justify-center bg-slate-100 rounded border border-slate-200">
-                    <span className="text-lg font-bold text-slate-600">PURO.earth</span>
+                    <span className="text-lg font-bold text-slate-600">Carbon Standards International</span>
                   </div>
                   <span className="text-xs text-muted-foreground mt-1">Registry Partner</span>
                 </div>
@@ -135,10 +135,10 @@ const CertificateSection = () => {
                 </div>
                 <div className="text-center md:text-right">
                   <div className="font-serif text-2xl italic text-slate-400 mb-1">
-                    R. Krishnamurthy
+                    Gautam Shiknis
                   </div>
                   <div className="w-48 h-px bg-slate-300 mx-auto md:ml-auto md:mr-0" />
-                  <p className="text-sm font-semibold text-foreground mt-2">Dr. R. Krishnamurthy</p>
+                  <p className="text-sm font-semibold text-foreground mt-2">Gautam Shiknis</p>
                   <p className="text-xs text-muted-foreground">Chairman, NettZero Environmental Technologies</p>
                 </div>
               </div>

@@ -97,7 +97,7 @@ export const BundleCreator = () => {
   useEffect(() => {
     // 1. Fetch Emitters
     axios
-      .get("http://http://62.72.59.146:5000/emitters")
+      .get("https://microoffsets.nettzero.world/api/emitters")
       .then((res) => {
         // Adding dummy source type for UI match if not present
         const mappedData = res.data.data.map((e: any) => ({
@@ -111,7 +111,7 @@ export const BundleCreator = () => {
     // 2. Fetch Projects (Mocking extra fields to match UI)
     const fetchProjects = async () => {
       try {
-        const res = await fetch("http://http://62.72.59.146:5000/projects");
+        const res = await fetch("https://microoffsets.nettzero.world/api/projects");
         const json = await res.json();
         // Enriching data to match UI screenshots
         const enrichedProjects = json.data.map((p: any, idx: number) => ({
@@ -289,7 +289,7 @@ formData.append(
     if (imageFile) formData.append("image", imageFile);
 
     await axios.post(
-      "http://http://62.72.59.146:5000/addemitterpacks",
+      "https://microoffsets.nettzero.world/api/addemitterpacks",
       formData
     );
 
