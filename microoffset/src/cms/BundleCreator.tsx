@@ -196,15 +196,19 @@ export const BundleCreator = () => {
     setSelected((prev) => prev.filter((e) => e._id !== id));
   };
 
-  const handleUpdateQty = (id: string, delta: number) => {
-    setSelected((prev) =>
-      prev.map((e) =>
-        e._id === id
-          ? { ...e, quantity: Math.max(1, e.quantity + delta) }
-          : e
-      )
-    );
-  };
+ const handleUpdateQty = (id, delta) => {
+  setSelected((prev) =>
+    prev.map((item) =>
+      item._id === id
+        ? {
+            ...item,
+            quantity: Math.max(1, item.quantity + delta),
+          }
+        : item
+    )
+  );
+};
+
 
 const toggleProject = (projectId: string) => {
   setSelectedProjects((prev) => {
@@ -435,6 +439,20 @@ const totalAllocatedPercent = useMemo(() => {
   );
 }, [projectAllocations]);
 
+
+const handleSetQty = (id, value) => {
+  const qty = parseInt(value, 10);
+
+  if (isNaN(qty) || qty < 1) return;
+
+  setSelected((prev) =>
+    prev.map((item) =>
+      item._id === id
+        ? { ...item, quantity: qty }
+        : item
+    )
+  );
+};
 
 
 
@@ -715,11 +733,16 @@ const totalAllocatedPercent = useMemo(() => {
                           >
                             <Minus size={12} />
                           </button>
-                          <input
-                            readOnly
-                            value={item.quantity}
-                            className="w-8 text-center text-xs font-bold text-slate-700 outline-none"
-                          />
+                         <input
+  type="number"
+  min="1"
+  value={item.quantity}
+  onChange={(e) =>
+    handleSetQty(item._id, e.target.value)
+  }
+  className="w-12 text-center text-xs font-bold text-slate-700 outline-none"
+/>
+
                           <button
                             onClick={() => handleUpdateQty(item._id, 1)}
                             className="px-2 text-gray-400 hover:text-emerald-600 transition"
@@ -843,16 +866,35 @@ const totalAllocatedPercent = useMemo(() => {
                           </span>
                         </div>
 
-                        {/* Progress Bar */}
-                        <div className="mb-4">
-                          <div className="flex justify-between text-[10px] font-medium text-gray-500 mb-1">
-                            <span>Retired</span>
-                            <span>45%</span>
-                          </div>
-                          <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                            <div className="w-[45%] h-full bg-emerald-500 rounded-full"></div>
-                          </div>
-                        </div>
+                     
+                       {/* Progress Bar */}
+<div className="mb-4">
+  {(() => {
+    const totalCredits = project.retired + project.available;
+
+    const retiredPercent =
+      totalCredits > 0
+        ? Math.round((project.retired / totalCredits) * 100)
+        : 0;
+
+    return (
+      <>
+        <div className="flex justify-between text-[10px] font-medium text-gray-500 mb-1">
+          <span>Retired</span>
+          <span>{retiredPercent}%</span>
+        </div>
+
+        <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+          <div
+            style={{ width: `${retiredPercent}%` }}
+            className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+          ></div>
+        </div>
+      </>
+    );
+  })()}
+</div>
+
 
                         {/* Footer: Price & SDGs */}
                         <div className="flex items-center justify-between border-t border-gray-100 pt-3">
