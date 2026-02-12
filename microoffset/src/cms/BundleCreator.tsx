@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
+
 import {
   Search,
   Upload,
@@ -21,6 +22,7 @@ import {
   Droplets,
   Home,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 /* ================= TYPES ================= */
 
@@ -48,6 +50,8 @@ interface Project {
   subtitle?: string;
   location: string;
   status: string;
+  retired: number;
+  available: number;
 
   // ✅ FROM API (NO MOCKS)
   pricePerKgCO2: number;
@@ -96,6 +100,7 @@ export const BundleCreator = () => {
 
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
+const navigate = useNavigate();
 
   /* ================= FETCH DATA ================= */
 
@@ -411,6 +416,7 @@ const resetPack = () => {
       (totalEmission / selectedProjects.length) *
       (p.pricePerKgCO2 || 0),
     imageUrl: p.image,
+    
   })),
 
   weightedPricePerKg,
@@ -458,8 +464,10 @@ const handleSetQty = (id, value) => {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24 font-sans text-slate-800">
+      
       <div className="max-w-[1400px] mx-auto p-4 lg:p-8">
         {/* HEADER */}
+        
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-2">
             <span className="bg-emerald-100 p-2 rounded-lg text-emerald-700">
@@ -1245,7 +1253,16 @@ const handleSetQty = (id, value) => {
     </div>
   </div>
 )}
+<button
+  onClick={() => navigate("/all-packs")}
+  className="flex items-center gap-2 px-6 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 text-sm font-medium transition"
+>
+  <Eye size={16} /> View All Packs
+</button>
+
 
     </div>
+    
   );
+  
 };

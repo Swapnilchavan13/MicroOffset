@@ -10,6 +10,8 @@ import { BundleCreator } from "./cms/BundleCreator";
 import EmitterPackDetails from "./pages/EmitterPackDetails";
 import AddProject from "./cms/AddProject";
 import { FeaturePacks } from "./pages/FeaturePacks";
+import { EditPack } from "./cms/EditPack";
+import { AllPacks } from "./cms/AllPacks";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +27,10 @@ const App = () => (
           <Route path="/projectcms" element={<AddProject />} />
           <Route path="/emitter-pack" element={<FeaturePacks />} />
           <Route path="/emitter-pack/:id" element={<EmitterPackDetails />} />
+          <Route path="/all-packs" element={<AllPacks />} />
+          <Route path="/edit-pack/:id" element={<EditPack />} />
+
+
 
 
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
