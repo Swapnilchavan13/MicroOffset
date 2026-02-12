@@ -299,8 +299,6 @@ app.put(
 );
 
 
-
-
 app.get("/getemitterpacks", async (req, res) => {
   try {
     const packs = await EmitterPack.find()
@@ -346,6 +344,70 @@ app.get("/getemitterpacks/:id", async (req, res) => {
 });
 
 
+// Edit Emitter Pack with optional image
+app.put(
+  "/editemitterpack/:id",
+  upload.single("image"), // <--- multer handles the file
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const {
+        pack_name,
+        description,
+        packType,
+        intendedBuyer,
+        duration,
+        emitters,
+        projects,
+      } = req.body;
+
+      // Build update object
+      const updateData = {
+        pack_name,
+        description,
+        packType,
+        intendedBuyer,
+        duration,
+      };
+
+      if (emitters) updateData.emitters = JSON.parse(emitters);
+      if (projects) updateData.projects = JSON.parse(projects);
+
+      // If new image uploaded, save the path
+      if (req.file) {
+  updateData.image_url = `/uploads/${req.file.filename}`;
+}
+
+
+      const updatedPack = await EmitterPack.findByIdAndUpdate(
+        id,
+        updateData,
+        { new: true }
+      );
+
+      if (!updatedPack) {
+        return res.status(404).json({
+          success: false,
+          message: "Emitter pack not found",
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        data: updatedPack,
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  }
+);
+
+
+
 app.get("/projects", async (req, res) => {
   try {
     const { status, sdg, minPrice, maxPrice } = req.query;
@@ -376,9 +438,6 @@ app.get("/projects", async (req, res) => {
     });
   }
 });
-
-
-
 
 
 // Server
