@@ -188,115 +188,119 @@ parsedProjects = parsedProjects.map((p) => {
   }
 );
 
+app.put("/emitterpacks/:id", upload.single("image"), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const body = req.body || {};
+    const {
+      pack_name,
+      description,
+      packType,
+      intendedBuyer,
+      duration,
+      emitters, // [{ emitter_id, quantity }]
+      projects,
+      weighted_price_per_kg,
+      total_pack_price
+    } = body;
 
-app.put(
-  "/emitterpacks/:id",
-  upload.single("image"),
-  async (req, res) => {
-    try {
-      const { id } = req.params;
-      const body = req.body || {};
+    const existingPack = await EmitterPack.findById(id);
+    if (!existingPack) {
+      return res.status(404).json({ success: false, message: "Emitter pack not found" });
+    }
 
-      const {
-        pack_name,
-        description,
-        packType,
-        intendedBuyer,
-        duration,
-        emitters,
-        projects,
-        total_emission_kgco2e,
-        weighted_price_per_kg,
-        total_pack_price,
-      } = body;
+    let updatedEmitters = [];
+    let totalEmission = 0;
 
-      const existingPack = await EmitterPack.findById(id);
-      if (!existingPack) {
-        return res.status(404).json({
-          success: false,
-          message: "Emitter pack not found",
-        });
-      }
+    if (emitters && emitters.length > 0) {
+      const parsedEmitters = JSON.parse(emitters);
 
-      // 🔒 Emitters stay frozen unless explicitly edited
-      const parsedEmitters = emitters
-        ? JSON.parse(emitters).map((e) => ({
-            ...e,
-            calculated_emission_kgco2e:
-              e.calculated_emission_kgco2e ??
-              e.quantity * e.factor_kgco2e_per_unit,
-          }))
-        : existingPack.emitters;
+      updatedEmitters = await Promise.all(
+        parsedEmitters.map(async (e) => {
+          const emitterDoc = await Emitter.findById(e.emitter_id);
+          if (!emitterDoc) throw new Error(`Emitter not found: ${e.emitter_id}`);
 
-      let parsedProjects = projects ? JSON.parse(projects) : [];
+          const quantity = Number(e.quantity) || 1;
+          const factor = emitterDoc.factor_kgco2e_per_unit || 0;
+          const calculated = quantity * factor;
+          totalEmission += calculated;
 
-      // 🧠 Fetch latest project meta (title, image, description)
+          return {
+            emitter_id: emitterDoc._id,
+            emitter_name_standard: emitterDoc.emitter_name_standard,
+            sector: emitterDoc.sector,
+            category: emitterDoc.category,
+            sub_category: emitterDoc.sub_category,
+            unit: emitterDoc.unit,
+            quantity,
+            factor_kgco2e_per_unit: factor,
+            calculated_emission_kgco2e: calculated,
+            source_type: emitterDoc.source_name ? "Public" : "Est."
+          };
+        })
+      );
+    } else {
+      // Keep existing emitters if none provided
+      updatedEmitters = existingPack.emitters;
+      totalEmission = updatedEmitters.reduce(
+        (sum, e) => sum + (e.calculated_emission_kgco2e || 0),
+        0
+      );
+    }
+
+    // Handle projects
+    let updatedProjects = [];
+    if (projects) {
+      const parsedProjects = JSON.parse(projects);
       const projectDocs = await Project.find(
         { _id: { $in: parsedProjects.map(p => p.project_ref) } },
         { title: 1, description: 1, image: 1 }
       );
 
       const projectMap = {};
-      projectDocs.forEach(p => {
-        projectMap[p._id.toString()] = p;
-      });
+      projectDocs.forEach(p => (projectMap[p._id.toString()] = p));
 
-      // 🔁 Re-enrich project snapshot
-      parsedProjects = parsedProjects.map(p => {
+      updatedProjects = parsedProjects.map(p => {
         const dbProject = projectMap[p.project_ref];
-
         return {
           ...p,
           project_name: dbProject?.title,
           project_description: dbProject?.description,
-          image: dbProject?.image,
-
-          allocated_emission_kgco2e:
-            p.allocated_emission_kgco2e ??
-            total_emission_kgco2e / parsedProjects.length,
+          project_image_url: dbProject?.image,
+          allocated_emission_kgco2e: p.allocated_emission_kgco2e ?? totalEmission / parsedProjects.length
         };
       });
-
-      const image_url = req.file
-        ? `/uploads/${req.file.filename}`
-        : existingPack.image_url;
-
-      // ✅ UPDATE PACK
-      const updatedPack = await EmitterPack.findByIdAndUpdate(
-        id,
-        {
-          pack_name,
-          description,
-          image_url,
-          packType,
-          intendedBuyer,
-          duration,
-
-          emitters: parsedEmitters,
-          projects: parsedProjects,
-
-          total_emission_kgco2e,
-          weighted_price_per_kg,
-          total_pack_price,
-
-          updatedAt: new Date(),
-        },
-        { new: true }
-      );
-
-      res.json({
-        success: true,
-        data: updatedPack,
-      });
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({
-        success: false,
-        message: err.message,
-      });
     }
+
+    // Image handling
+    const image_url = req.file ? `/uploads/${req.file.filename}` : existingPack.image_url;
+
+    // Update pack
+    const updatedPack = await EmitterPack.findByIdAndUpdate(
+      id,
+      {
+        pack_name,
+        description,
+        packType,
+        intendedBuyer,
+        duration,
+        emitters: updatedEmitters,
+        total_emission_kgco2e: totalEmission,
+        projects: updatedProjects,
+        weighted_price_per_kg,
+        total_pack_price,
+        image_url,
+        updatedAt: new Date()
+      },
+      { new: true }
+    );
+
+    res.json({ success: true, data: updatedPack });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: err.message });
   }
-);
+});
 
 
 app.get("/getemitterpacks", async (req, res) => {
