@@ -165,31 +165,64 @@ export const EditPack = () => {
   // =========================
   // UPDATE PACK
   // =========================
-  const handleUpdatePack = async () => {
-    if (!pack) return;
-    try {
-      const formData = new FormData();
-      formData.append("pack_name", packName);
-      formData.append("description", description);
-      formData.append("packType", packType);
-      formData.append("intendedBuyer", intendedBuyer);
-      formData.append("duration", duration);
+ const handleUpdatePack = async () => {
+  if (!pack) return;
 
-      if (pack.emitters) formData.append("emitters", JSON.stringify(pack.emitters));
-      if (pack.projects) formData.append("projects", JSON.stringify(pack.projects));
-      if (imageFile) formData.append("image", imageFile);
+  // recalc total emission
+  const totalEmission = pack.emitters?.reduce(
+    (sum, e) => sum + e.calculated_emission_kgco2e,
+    0
+  ) || 0;
 
-      await axios.put(`${API}/emitterpacks/${id}`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+  // recalc projects
+  const updatedProjects = pack.projects?.map((p) => {
+    const allocatedEmission = (p.allocation_percent / 100) * totalEmission;
+    const allocatedCost = allocatedEmission * p.price_per_kg;
+    return {
+      ...p,
+      allocated_emission_kgco2e: allocatedEmission,
+      allocated_cost: allocatedCost,
+    };
+  }) || [];
 
-      alert("Pack updated successfully!");
-      navigate("/all-packs");
-    } catch (err) {
-      console.error(err);
-      alert("Failed to update pack");
-    }
-  };
+  const weightedPrice = updatedProjects.reduce(
+    (sum, p) => sum + (p.price_per_kg * (p.allocated_emission_kgco2e || 0)),
+    0
+  ) / (totalEmission || 1);
+
+  const totalPackPrice = updatedProjects.reduce(
+    (sum, p) => sum + (p.allocated_cost || 0),
+    0
+  );
+
+  try {
+    const formData = new FormData();
+    formData.append("pack_name", packName);
+    formData.append("description", description);
+    formData.append("packType", packType);
+    formData.append("intendedBuyer", intendedBuyer);
+    formData.append("duration", duration);
+
+    formData.append("emitters", JSON.stringify(pack.emitters || []));
+    formData.append("projects", JSON.stringify(updatedProjects));
+    if (imageFile) formData.append("image", imageFile);
+
+    formData.append("total_emission_kgco2e", totalEmission.toString());
+    formData.append("weighted_price_per_kg", weightedPrice.toString());
+    formData.append("total_pack_price", totalPackPrice.toString());
+
+    await axios.put(`${API}/emitterpacks/${id}`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+
+    alert("Pack updated successfully!");
+    navigate("/all-packs");
+  } catch (err) {
+    console.error(err);
+    alert("Failed to update pack");
+  }
+};
+
 
   if (!pack) return <div>Loading...</div>;
 
