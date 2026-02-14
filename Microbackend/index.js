@@ -294,7 +294,7 @@ app.put("/emitterpacks/:id", upload.single("image"), async (req, res) => {
         weighted_price_per_kg,
         total_pack_price,
         image_url,
-        show,
+        show: show === "true", // ✅ IMPORTANT
         updatedAt: new Date()
       },
       { new: true }
