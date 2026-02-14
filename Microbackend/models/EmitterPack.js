@@ -25,6 +25,11 @@ const PackEmitterSchema = new mongoose.Schema(
       type: String,
       enum: ["Est.", "Public"],
     },
+    show: {
+  type: Boolean,
+  default: false
+}
+
   },
   { _id: false }
 );

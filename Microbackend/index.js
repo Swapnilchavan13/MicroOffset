@@ -102,6 +102,7 @@ app.post(
         total_emission_kgco2e,
         weighted_price_per_kg,
         total_pack_price,
+        show,
       } = body;
 
       if (!pack_name || !emitters) {
@@ -170,6 +171,7 @@ parsedProjects = parsedProjects.map((p) => {
         total_emission_kgco2e,
         weighted_price_per_kg,
         total_pack_price,
+        show,
 
         frozenAt: new Date(),
       });
@@ -201,7 +203,8 @@ app.put("/emitterpacks/:id", upload.single("image"), async (req, res) => {
       emitters, // [{ emitter_id, quantity }]
       projects,
       weighted_price_per_kg,
-      total_pack_price
+      total_pack_price, 
+      show,
     } = body;
 
     const existingPack = await EmitterPack.findById(id);
@@ -235,7 +238,8 @@ app.put("/emitterpacks/:id", upload.single("image"), async (req, res) => {
             quantity,
             factor_kgco2e_per_unit: factor,
             calculated_emission_kgco2e: calculated,
-            source_type: emitterDoc.source_name ? "Public" : "Est."
+            source_type: emitterDoc.source_name ? "Public" : "Est.",
+            show: emitterDoc.show,
           };
         })
       );
@@ -290,6 +294,7 @@ app.put("/emitterpacks/:id", upload.single("image"), async (req, res) => {
         weighted_price_per_kg,
         total_pack_price,
         image_url,
+        show,
         updatedAt: new Date()
       },
       { new: true }
@@ -363,6 +368,7 @@ app.put(
         duration,
         emitters,
         projects,
+        show
       } = req.body;
 
       // Build update object
@@ -388,6 +394,10 @@ app.put(
         updateData,
         { new: true }
       );
+
+      if (show !== undefined) {
+  updateData.show = show === "true"; // convert string to boolean
+}
 
       if (!updatedPack) {
         return res.status(404).json({
