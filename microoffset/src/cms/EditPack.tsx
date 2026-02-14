@@ -15,6 +15,7 @@ interface EmitterPack {
   projects?: any[];
   weighted_price_per_kg?: number;
   total_pack_price?: number;
+  show: string;
 }
 
 export const EditPack = () => {
@@ -41,6 +42,10 @@ export const EditPack = () => {
   const [subCategoryFilter, setSubCategoryFilter] = useState("");
   const [sortBy, setSortBy] = useState("");
 
+
+  const [show, setShow] = useState<boolean>(false);
+
+
   // =========================
   // FETCH PACK
   // =========================
@@ -60,6 +65,8 @@ export const EditPack = () => {
       setIntendedBuyer(data.intendedBuyer || "Company");
       setDuration(data.duration || "Per Month");
       setImagePreview(data.image_url ? `${API}${data.image_url}` : null);
+      setShow(data.show ?? false);
+
     } catch (err) {
       console.error(err);
     }
@@ -118,7 +125,8 @@ export const EditPack = () => {
       factor_kgco2e_per_unit: emitter.factor_kgco2e_per_unit,
       quantity: 1,
       calculated_emission_kgco2e: emitter.factor_kgco2e_per_unit,
-      source_type: emitter.source_name ? "Public" : "Est."
+      source_type: emitter.source_name ? "Public" : "Est.",
+      show: emitter.show
     };
 
     setPack({
@@ -211,6 +219,9 @@ export const EditPack = () => {
     formData.append("weighted_price_per_kg", weightedPrice.toString());
     formData.append("total_pack_price", totalPackPrice.toString());
 
+    formData.append("show", show.toString());
+
+
     await axios.put(`${API}/emitterpacks/${id}`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
@@ -295,6 +306,7 @@ export const EditPack = () => {
       {/* EMITTER LIST */}
       {pack.emitters?.map((emitter, index) => (
         <div key={index} className="flex gap-4 border p-2 mb-2 items-center">
+        
           <div className="flex-1">{emitter.emitter_name_standard}</div>
           <input
             type="number"
@@ -315,6 +327,16 @@ export const EditPack = () => {
         <div>Weighted Price per kg: ₹{weightedPrice.toFixed(2)}</div>
         <div>Total Pack Price: ₹{totalPackPrice.toFixed(2)}</div>
       </div>
+
+      <div className="flex items-center gap-2 mt-4">
+  <input
+    type="checkbox"
+    checked={show}
+    onChange={(e) => setShow(e.target.checked)}
+  />
+  <label>Show this pack on website</label>
+</div>
+
 
       {/* SAVE */}
       <button onClick={handleUpdatePack} className="mt-6 bg-emerald-700 text-white px-6 py-2 flex gap-2 items-center">
