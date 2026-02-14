@@ -356,7 +356,7 @@ app.get("/getemitterpacks/:id", async (req, res) => {
 // Edit Emitter Pack with optional image
 app.put(
   "/editemitterpack/:id",
-  upload.single("image"), // <--- multer handles the file
+  upload.single("image"),
   async (req, res) => {
     try {
       const { id } = req.params;
@@ -371,7 +371,6 @@ app.put(
         show
       } = req.body;
 
-      // Build update object
       const updateData = {
         pack_name,
         description,
@@ -383,21 +382,20 @@ app.put(
       if (emitters) updateData.emitters = JSON.parse(emitters);
       if (projects) updateData.projects = JSON.parse(projects);
 
-      // If new image uploaded, save the path
-      if (req.file) {
-  updateData.image_url = `/uploads/${req.file.filename}`;
-}
+      // ✅ FIX: convert and add show BEFORE update
+      if (show !== undefined) {
+        updateData.show = show === "true";
+      }
 
+      if (req.file) {
+        updateData.image_url = `/uploads/${req.file.filename}`;
+      }
 
       const updatedPack = await EmitterPack.findByIdAndUpdate(
         id,
         updateData,
         { new: true }
       );
-
-      if (show !== undefined) {
-  updateData.show = show === "true"; // convert string to boolean
-}
 
       if (!updatedPack) {
         return res.status(404).json({
@@ -410,6 +408,7 @@ app.put(
         success: true,
         data: updatedPack,
       });
+
     } catch (error) {
       console.error(error);
       res.status(500).json({
@@ -419,6 +418,7 @@ app.put(
     }
   }
 );
+
 
 
 
