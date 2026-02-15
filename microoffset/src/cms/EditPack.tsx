@@ -15,7 +15,7 @@ interface EmitterPack {
   projects?: any[];
   weighted_price_per_kg?: number;
   total_pack_price?: number;
-  show: string;
+  show: boolean;
 }
 
 export const EditPack = () => {
@@ -126,7 +126,6 @@ export const EditPack = () => {
       quantity: 1,
       calculated_emission_kgco2e: emitter.factor_kgco2e_per_unit,
       source_type: emitter.source_name ? "Public" : "Est.",
-      show: emitter.show
     };
 
     setPack({
@@ -330,17 +329,18 @@ export const EditPack = () => {
 
       <div className="flex items-center gap-2 mt-4">
   <input
-    type="checkbox"
-    checked={show}
-    onChange={(e) => setShow(e.target.checked)}
-  />
+  type="checkbox"
+  checked={show}
+  onChange={(e) => setShow(e.target.checked)}
+/>
+
   <label>Show this pack on website</label>
 </div>
 
 
       {/* SAVE */}
       <button onClick={handleUpdatePack} className="mt-6 bg-emerald-700 text-white px-6 py-2 flex gap-2 items-center">
-        <Save size={16} /> Update Pack
+        <Save size={16} />Update Pack
       </button>
     </div>
   );

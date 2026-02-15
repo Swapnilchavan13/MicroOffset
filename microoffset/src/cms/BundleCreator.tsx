@@ -146,18 +146,23 @@ const navigate = useNavigate();
   /* ================= COMPUTED LOGIC ================= */
 
   // Filter Emitters
-  const filteredEmitters = useMemo(() => {
-    return emitters.filter((e) => {
-      const matchesSearch = e.emitter_name_standard
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase());
-      const matchesFilter =
-        activeFilter === "All" ||
-        e.sector === activeFilter ||
-        e.category === activeFilter;
-      return matchesSearch && matchesFilter;
-    });
-  }, [emitters, searchQuery, activeFilter]);
+ const filteredEmitters = useMemo(() => {
+  return emitters.filter((e) => {
+    const name = e.emitter_name_standard ?? "";
+
+    const matchesSearch = name
+      .toLowerCase()
+      .includes((searchQuery ?? "").toLowerCase());
+
+    const matchesFilter =
+      activeFilter === "All" ||
+      e.sector === activeFilter ||
+      e.category === activeFilter;
+
+    return matchesSearch && matchesFilter;
+  });
+}, [emitters, searchQuery, activeFilter]);
+
 
   // Unique filters for the pill list
   const filterPills = useMemo(() => {
