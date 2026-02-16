@@ -25,10 +25,7 @@ const PackEmitterSchema = new mongoose.Schema(
       type: String,
       enum: ["Est.", "Public"],
     },
-    show: {
-  type: Boolean,
-  default: false
-}
+  
 
   },
   { _id: false }
@@ -94,6 +91,10 @@ const EmitterPackSchema = new mongoose.Schema(
 
     /* ===== Audit / Versioning ===== */
     version: { type: Number, default: 1 },
+      show: {
+  type: Boolean,
+  default: false
+},
     frozenAt: { type: Date },
 
     createdBy: {

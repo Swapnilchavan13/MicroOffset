@@ -239,7 +239,6 @@ app.put("/emitterpacks/:id", upload.single("image"), async (req, res) => {
             factor_kgco2e_per_unit: factor,
             calculated_emission_kgco2e: calculated,
             source_type: emitterDoc.source_name ? "Public" : "Est.",
-            show: emitterDoc.show,
           };
         })
       );
