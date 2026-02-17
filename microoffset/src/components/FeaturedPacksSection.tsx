@@ -20,21 +20,28 @@ const FeaturedPacksSection = () => {
   const [packs, setPacks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchPacks = async () => {
-      try {
-        const res = await fetch(API_URL);
-        const json = await res.json();
-        setPacks(json.data || []);
-      } catch (err) {
-        console.error("Failed to fetch packs", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+useEffect(() => {
+  const fetchPacks = async () => {
+    try {
+      const res = await fetch(API_URL);
+      const json = await res.json();
 
-    fetchPacks();
-  }, []);
+      // ✅ Only show packs where show = true
+      const visiblePacks = (json.data || []).filter(
+        (pack: any) => pack.show === true
+      );
+
+      setPacks(visiblePacks);
+    } catch (err) {
+      console.error("Failed to fetch packs", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchPacks();
+}, []);
+
 
   if (loading) {
     return (
