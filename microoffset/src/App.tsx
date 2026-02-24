@@ -12,6 +12,7 @@ import AddProject from "./cms/AddProject";
 import { FeaturePacks } from "./pages/FeaturePacks";
 import { EditPack } from "./cms/EditPack";
 import { AllPacks } from "./cms/AllPacks";
+import { ApiPack } from "./pages/ApiPack";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +30,8 @@ const App = () => (
           <Route path="/emitter-pack/:id" element={<EmitterPackDetails />} />
           <Route path="/all-packs" element={<AllPacks />} />
           <Route path="/edit-pack/:id" element={<EditPack />} />
+          <Route path="/api-demo" element={<ApiPack />} />
+
 
 
 
