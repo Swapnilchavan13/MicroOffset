@@ -53,6 +53,11 @@ useEffect(() => {
 
   return (
     <section id="featured-packs" className="relative bg-muted py-20 md:py-28">
+       <img
+    src="https://iili.io/qfdlNKg.png"
+    alt="Logo"
+    className="absolute top-6 left-6 w-24 md:w-32 opacity-90"
+  />
       <div className="container relative mx-auto px-4 md:px-6">
         <div className="mx-auto max-w-3xl text-center mb-12">
           <h2 className="text-3xl font-bold md:text-4xl lg:text-5xl">
@@ -87,30 +92,16 @@ useEffect(() => {
                     src={`${IMAGE_BASE_URL}${pack.image_url}`}
                     alt={pack.pack_name}
                     className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-
-                  {pack.status === "draft" && (
-                    <div
-                      className={`absolute left-4 top-4 rounded-full px-3 py-1 text-xs font-bold ${colors.badge}`}
-                    >
-                      Draft
-                    </div>
-                  )}
-
-                  <div
-                    className={`absolute -bottom-5 right-4 flex h-12 w-12 items-center justify-center rounded-xl shadow-card ${colors.icon}`}
-                  >
-                    <Laptop className="h-6 w-6" />
-                  </div>
+                  />              
                 </div>
 
                 {/* Content */}
                 <div className="p-5 pt-8">
-                  <h3 className="mb-2 text-lg font-bold">
+                  <h3 className="mb-2 text-lg font-bold text-gray-600">
                     {pack.pack_name}
                   </h3>
 
-                  <p className="mb-4 text-sm text-muted-foreground line-clamp-3">
+                  <p className="mb-4 text-sm text-muted-foreground line-clamp-3 text-gray-600">
                     {pack.description}
                   </p>
 
@@ -134,7 +125,7 @@ useEffect(() => {
                  {/* Carbon info */}
 <div className="flex items-center justify-between border-t border-border pt-4">
   <div>
-    <span className="text-2xl font-bold">
+    <span className="text-2xl font-bold text-gray-600">
       {pack.total_emission_kgco2e.toFixed(2)}
     </span>
     <span className="ml-1 text-sm text-muted-foreground">
@@ -144,7 +135,7 @@ useEffect(() => {
     {/* Offset Price */}
     <div className="mt-1 text-sm text-muted-foreground">
       Offset price:
-      <span className="ml-1 font-semibold text-foreground">
+      <span className="ml-1 font-semibold text-foreground text-gray-600">
         ₹ {pack.total_pack_price.toFixed(2)}
       </span>
     </div>

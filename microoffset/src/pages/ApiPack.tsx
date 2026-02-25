@@ -14,7 +14,7 @@ interface EmitterPack {
   total_pack_price: number;
   currency: string;
   status: string;
-demo?: boolean;
+  demo?: boolean;
 }
 
 export const ApiPack: React.FC = () => {

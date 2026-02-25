@@ -38,10 +38,10 @@ const HeroSection = () => {
           </div>
 
           {/* Main headline */}
-          <h1 className="animate-fade-up animation-delay-100 mb-6 text-4xl font-extrabold leading-tight tracking-tight text-white md:text-6xl lg:text-7xl">
+          <h1 className="text-[#10B77F] animate-fade-up animation-delay-100 mb-6 text-4xl leading-tight tracking-tight text-white md:text-6xl lg:text-7xl">
             Offset the Emissions{" "}
             <span className="relative">
-              <span className="gradient-text">You Create Every Day</span>
+              <span className="text-[#10B77F]">You Create Every Day</span>
               <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 300 12" fill="none">
                 <path d="M2 8C50 3 150 3 298 8" stroke="url(#underline-gradient)" strokeWidth="4" strokeLinecap="round" />
                 <defs>
@@ -56,18 +56,13 @@ const HeroSection = () => {
 
           {/* Subheadline */}
           <p className="animate-fade-up animation-delay-200 mx-auto mb-4 max-w-2xl text-lg text-white/80 md:text-xl">
-            Turn small, everyday actions into verified climate impact — one micro-offset at a time.
-          </p>
-
-          {/* Supporting text */}
-          <p className="animate-fade-up animation-delay-300 mx-auto mb-10 max-w-xl text-base text-white/60">
-            Emails, food, travel, energy, purchases — MicroOffsets lets you bundle them into simple offset packs that fund real climate projects.
+            Turn small, everyday actions into verified climate impact — one micro-offset at a time. Emails, food, travel, energy, purchases — MicroOffsets lets you bundle them into simple offset packs that fund real climate projects.
           </p>
 
           {/* CTA Buttons */}
           <div className="animate-fade-up animation-delay-400 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Button
-  variant="cta"
+           <Button
+  className="bg-[#10B77F] hover:bg-[#0e9f6e] text-white"
   size="xl"
   onClick={() => navigate("/cms")}
 >
