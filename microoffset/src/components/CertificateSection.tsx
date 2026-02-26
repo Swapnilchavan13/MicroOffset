@@ -85,7 +85,7 @@ const CertificateSection = () => {
               </div>
 
               {/* Details Grid */}
-              <div className="grid md:grid-cols-2 gap-6 mb-8 p-6 bg-slate-50/50 rounded-lg border border-slate-100 relative">
+              <div className="grid md:grid-cols-3 gap-6 mb-8 p-6 bg-slate-50/50 rounded-lg border border-slate-100 relative">
                 <div className="space-y-4">
                   <div>
                     <span className="text-xs uppercase tracking-wider text-muted-foreground">CDR Project</span>
@@ -100,6 +100,13 @@ const CertificateSection = () => {
                     <p className="font-semibold text-foreground">Office Digital Usage Pack</p>
                   </div>
                 </div>
+                 <div className="flex justify-center items-center mb-6">
+    <img
+      src="https://iili.io/qfdlNKg.png"
+      alt="Logo"
+      className="w-24 md:w-32 opacity-90"
+    />
+  </div>
                 <div className="space-y-4">
                   <div>
                     <span className="text-xs uppercase tracking-wider text-muted-foreground">Project Beneficiary</span>

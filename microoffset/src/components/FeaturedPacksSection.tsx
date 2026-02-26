@@ -87,19 +87,26 @@ useEffect(() => {
                 className={`group relative overflow-hidden rounded-2xl border border-border bg-card shadow-card ${colors.border}`}
               >
                 {/* Image */}
-                <div className="relative h-44 overflow-hidden">
-                  <img
-                    src={`${IMAGE_BASE_URL}${pack.image_url}`}
-                    alt={pack.pack_name}
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  />              
-                </div>
+              {/* Image */}
+<div className="relative h-44 overflow-hidden">
+  <img
+    src={`${IMAGE_BASE_URL}${pack.image_url}`}
+    alt={pack.pack_name}
+    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+  />
 
+  {/* Project Name Bottom Center */}
+  <div className="absolute bottom-2 left-0 w-full text-center">
+    <span className="inline-block rounded-md bg-black/50 px-3 py-1 text-sm font-semibold text-white">
+      {pack.pack_name}
+    </span>
+  </div>
+</div>
                 {/* Content */}
                 <div className="p-5 pt-8">
-                  <h3 className="mb-2 text-lg font-bold text-gray-600">
+                  {/* <h3 className="mb-2 text-lg font-bold text-gray-600">
                     {pack.pack_name}
-                  </h3>
+                  </h3> */}
 
                   <p className="mb-4 text-sm text-muted-foreground line-clamp-3 text-gray-600">
                     {pack.description}

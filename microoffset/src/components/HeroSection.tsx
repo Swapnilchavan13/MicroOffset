@@ -38,7 +38,7 @@ const HeroSection = () => {
           </div>
 
           {/* Main headline */}
-          <h1 className="text-[#10B77F] animate-fade-up animation-delay-100 mb-6 text-4xl leading-tight tracking-tight text-white md:text-6xl lg:text-7xl">
+          <h1 className="text-[#10B77F] animate-fade-up animation-delay-100 mb-6 text-4xl leading-tight tracking-tight md:text-6xl lg:text-7xl">
             Offset the Emissions{" "}
             <span className="relative">
               <span className="text-[#10B77F]">You Create Every Day</span>
