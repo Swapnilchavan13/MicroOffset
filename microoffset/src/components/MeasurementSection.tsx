@@ -25,7 +25,7 @@ const sources = [
 
 const MeasurementSection = () => {
   return (
-    <section className="relative overflow-hidden bg-dark py-20 md:py-28">
+    <section className="relative overflow-hidden bg-dark py-20 md:py-28 text-gray-600">
       {/* Background decorations */}
       <div className="absolute inset-0">
         <div className="absolute left-0 top-0 h-full w-1/2 bg-gradient-to-r from-emerald/5 to-transparent" />

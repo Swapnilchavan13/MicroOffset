@@ -45,7 +45,7 @@ const colorClasses = {
 
 const ProblemSection = () => {
   return (
-    <section className="relative bg-background py-20 md:py-28">
+    <section className="relative bg-background py-20 md:py-28 text-gray-600">
       <div className="container mx-auto px-4 md:px-6">
         <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-2 lg:gap-16">
           {/* Left side - Image */}
@@ -76,7 +76,7 @@ const ProblemSection = () => {
               <div className="animate-fade-up mb-4 inline-flex items-center gap-2 rounded-full bg-coral-light px-4 py-1.5 text-sm font-semibold text-coral">
                 The Challenge
               </div>
-              <h2 className="animate-fade-up animation-delay-100 mb-4 text-3xl font-bold text-foreground md:text-4xl lg:text-5xl">
+              <h2 className="animate-fade-up animation-delay-100 mb-4 text-3xl font-bold text-foreground md:text-4xl lg:text-5xl text-gray-500">
                 The Gap in Climate Action
               </h2>
               <p className="animate-fade-up animation-delay-200 text-lg text-muted-foreground">
@@ -94,7 +94,7 @@ const ProblemSection = () => {
                   <div className={`mb-4 flex h-12 w-12 items-center justify-center rounded-2xl transition-all duration-300 ${colorClasses[problem.color as keyof typeof colorClasses]}`}>
                     <problem.icon className="h-6 w-6" />
                   </div>
-                  <h3 className="mb-2 text-lg font-bold text-foreground">
+                  <h3 className="mb-2 text-lg font-bold text-foreground text-gray-500">
                     {problem.title}
                   </h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">{problem.description}</p>

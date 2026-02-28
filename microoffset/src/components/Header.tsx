@@ -58,7 +58,7 @@ const Header = () => {
           >
             Sign In
           </Button>
-          <Button variant="cta" size="sm">
+          <Button size="sm" className="bg-[#10B77F] hover:bg-[#0e9f6e] text-white">
             Get Started
           </Button>
         </div>

@@ -58,7 +58,7 @@ useEffect(() => {
     alt="Logo"
     className="absolute top-6 left-6 w-24 md:w-32 opacity-90"
   />
-      <div className="container relative mx-auto px-4 md:px-6">
+      <div className="container relative mx-auto px-4 md:px-6 text-gray-600">
         <div className="mx-auto max-w-3xl text-center mb-12">
           <h2 className="text-3xl font-bold md:text-4xl lg:text-5xl">
             Featured MicroOffset Packs
@@ -76,9 +76,9 @@ useEffect(() => {
           {packs.map((pack, index) => {
             const colors = colorClasses.emerald;
 
-            // Extract unique categories as "brands"
+            // Extract unique categories as "brands"F
             const brands = [
-              ...new Set(pack.emitters?.map((e: any) => e.category)),
+              ...new Set(pack.emitters?.map((e: any) => e.category))
             ];
 
             return (
@@ -87,17 +87,21 @@ useEffect(() => {
                 className={`group relative overflow-hidden rounded-2xl border border-border bg-card shadow-card ${colors.border}`}
               >
                 {/* Image */}
-              {/* Image */}
-<div className="relative h-44 overflow-hidden">
+             <div className="group relative overflow-hidden rounded-2xl bg-card shadow-card card-hover">
   <img
     src={`${IMAGE_BASE_URL}${pack.image_url}`}
     alt={pack.pack_name}
     className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
   />
 
-  {/* Project Name Bottom Center */}
-  <div className="absolute bottom-2 left-0 w-full text-center">
-    <span className="inline-block rounded-md bg-black/50 px-3 py-1 text-sm font-semibold text-white">
+  {/* White Fade Bottom */}
+  <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 
+                  bg-gradient-to-t from-white via-white/80 to-transparent">
+  </div>
+
+  {/* Project Name */}
+  <div className="absolute bottom-4 left-0 w-full text-center">
+    <span className="text-gray-600 inline-block rounded-md bg-black/60 px-3 py-1 text-sm font-semibold text-white">
       {pack.pack_name}
     </span>
   </div>

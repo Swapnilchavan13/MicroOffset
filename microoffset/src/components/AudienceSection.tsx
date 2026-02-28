@@ -36,10 +36,10 @@ const AudienceSection = () => {
           {/* Left side - Content */}
           <div>
             <div className="mb-12">
-              <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-teal-light px-4 py-1.5 text-sm font-medium text-teal">
+              <div className="text-gray-500 mb-4 inline-flex items-center gap-2 rounded-full bg-teal-light px-4 py-1.5 text-sm font-medium text-teal">
                 For Everyone
               </div>
-              <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">
+              <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl text-gray-500">
                 Who It's For
               </h2>
               <p className="text-lg text-muted-foreground">
@@ -60,7 +60,7 @@ const AudienceSection = () => {
                   <span className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                     {audience.context}
                   </span>
-                  <h3 className="mb-2 text-lg font-semibold text-foreground">
+                  <h3 className="mb-2 text-lg font-semibold text-foreground text-gray-500">
                     {audience.title}
                   </h3>
                   <p className="text-sm text-muted-foreground">{audience.description}</p>

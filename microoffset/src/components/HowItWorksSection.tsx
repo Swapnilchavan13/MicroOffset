@@ -33,11 +33,11 @@ const HowItWorksSection = () => {
   return (
     <section id="how-it-works" className="relative bg-background py-20 md:py-28">
       <div className="container mx-auto px-4 md:px-6">
-        <div className="mx-auto max-w-3xl text-center">
+        <div className="mx-auto max-w-3xl text-center  text-gray-600">
           <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-teal-light px-4 py-1.5 text-sm font-medium text-teal">
             Simple Process
           </div>
-          <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">
+          <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl  text-gray-500">
             How MicroOffsets Work
           </h2>
           <p className="mb-12 text-lg text-muted-foreground">
@@ -75,7 +75,7 @@ const HowItWorksSection = () => {
                       </div>
                       <span className="text-sm font-bold text-sage">{step.number}</span>
                     </div>
-                    <h3 className="mb-2 text-lg font-semibold text-foreground">
+                    <h3 className="mb-2 text-lg font-semibold text-foreground text-gray-500">
                       {step.title}
                     </h3>
                     <p className="text-muted-foreground">{step.description}</p>
@@ -103,7 +103,7 @@ const HowItWorksSection = () => {
               <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-violet/20 backdrop-blur-sm">
                 <Sparkles className="h-7 w-7 text-violet" />
               </div>
-              <h3 className="mb-2 text-xl font-bold text-foreground md:text-2xl">
+              <h3 className="mb-2 text-xl font-bold text-foreground md:text-2xl text-gray-500">
                 Or Just Choose From Pre-Created Packs
               </h3>
               <p className="mx-auto mb-6 max-w-lg text-muted-foreground">

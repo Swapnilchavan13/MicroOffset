@@ -18,8 +18,12 @@ const CTASection = () => {
       <div className="container relative mx-auto px-4 text-center md:px-6">
         <div className="mx-auto max-w-3xl">
           <div className="animate-fade-up mb-6 inline-flex items-center justify-center">
-            <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-white/10 backdrop-blur-sm">
-              <Leaf className="h-10 w-10 text-white" />
+            <div className="flex h-20 w-60 items-center justify-center rounded-3xl bg-white">
+              {/* <Leaf className="h-10 w-10 text-white" /> */}
+               <img
+        src="https://iili.io/qfpINv2.png"
+        alt="Logo"
+      />
             </div>
           </div>
 

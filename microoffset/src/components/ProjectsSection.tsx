@@ -31,13 +31,13 @@ const trustCues = [
 
 const ProjectsSection = () => {
   return (
-    <section id="projects" className="relative bg-background py-20 md:py-28">
+    <section id="projects" className="relative bg-background py-20 md:py-28 text-gray-600">
       <div className="container mx-auto px-4 md:px-6">
         <div className="mx-auto max-w-3xl text-center">
           <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-terracotta-light px-4 py-1.5 text-sm font-medium text-terracotta">
             Real Impact
           </div>
-          <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">
+          <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl text-gray-500">
             Where Your Offset Goes
           </h2>
           <p className="mb-12 text-lg text-muted-foreground">
@@ -56,7 +56,7 @@ const ProjectsSection = () => {
               <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-sage-light transition-colors group-hover:bg-sage/10">
                 <project.icon className="h-7 w-7 text-sage" />
               </div>
-              <h3 className="mb-2 text-base font-semibold text-foreground">
+              <h3 className="mb-2 text-base font-semibold text-foreground text-gray-500">
                 {project.title}
               </h3>
               <p className="text-sm text-muted-foreground">{project.description}</p>
@@ -71,7 +71,7 @@ const ProjectsSection = () => {
               <ShieldCheck className="h-6 w-6 text-primary-foreground" />
             </div>
           </div>
-          <h3 className="mb-6 text-center text-xl font-semibold text-foreground">
+          <h3 className="mb-6 text-center text-xl font-semibold text-foreground text-gray-500">
             Built on Trust & Transparency
           </h3>
           <div className="grid gap-4 md:grid-cols-3">
@@ -83,7 +83,7 @@ const ProjectsSection = () => {
                 <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-sage">
                   <span className="text-xs font-bold text-primary-foreground">✓</span>
                 </div>
-                <p className="text-sm font-medium text-foreground">{cue}</p>
+                <p className="text-sm font-medium text-foreground text-gray-500">{cue}</p>
               </div>
             ))}
           </div>

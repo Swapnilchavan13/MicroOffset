@@ -17,27 +17,27 @@ const EmittersSection = () => {
         <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-2 lg:gap-16">
           {/* Left content */}
           <div className="flex flex-col justify-center">
-            <div className="mb-4 inline-flex w-fit items-center gap-2 rounded-full bg-sage-light px-4 py-1.5 text-sm font-medium text-sage">
+            <div className="mb-4 inline-flex w-fit items-center gap-2 rounded-full bg-sage-light px-4 py-1.5 text-sm font-medium text-sage text-gray-500">
               Emitters & Tags
             </div>
-            <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">
+            <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl text-gray-500">
               What Are "Emitters" & "Tags"?
             </h2>
             <p className="mb-6 text-lg text-muted-foreground">
-              <strong className="text-foreground">Emitters</strong> are everyday actions that create emissions.
+              <strong>Emitters</strong> are everyday actions that create emissions.
             </p>
             <p className="mb-8 text-lg text-muted-foreground">
-              <strong className="text-foreground">Tags</strong> help organise them by context and purpose, keeping MicroOffsets powerful without being complicated.
+              <strong>Tags</strong> help organise them by context and purpose, keeping MicroOffsets powerful without being complicated.
             </p>
 
             <div className="rounded-2xl border border-sage/20 bg-sage-light/50 p-6">
-              <p className="text-sm font-medium text-sage">
+              <p className="text-sm font-medium text-gray-500">
                 ✓ Pre-measured emission values
               </p>
-              <p className="mt-2 text-sm font-medium text-sage">
+              <p className="mt-2 text-sm font-medium text-gray-500">
                 ✓ Context-aware organization
               </p>
-              <p className="mt-2 text-sm font-medium text-sage">
+              <p className="mt-2 text-sm font-medium text-gray-500">
                 ✓ Easy to understand & select
               </p>
             </div>

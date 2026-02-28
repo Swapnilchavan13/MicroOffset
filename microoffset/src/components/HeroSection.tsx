@@ -55,22 +55,22 @@ const HeroSection = () => {
           </h1>
 
           {/* Subheadline */}
-          <p className="animate-fade-up animation-delay-200 mx-auto mb-4 max-w-2xl text-lg text-white/80 md:text-xl">
+          <p className="animate-fade-up animation-delay-200 mx-auto mb-4 max-w-2xl text-lg text-white/80 md:text-lg">
             Turn small, everyday actions into verified climate impact — one micro-offset at a time. Emails, food, travel, energy, purchases — MicroOffsets lets you bundle them into simple offset packs that fund real climate projects.
           </p>
 
           {/* CTA Buttons */}
           <div className="animate-fade-up animation-delay-400 flex flex-col items-center justify-center gap-4 sm:flex-row">
-           <Button
+           {/* <Button
   className="bg-[#10B77F] hover:bg-[#0e9f6e] text-white"
   size="xl"
   onClick={() => navigate("/cms")}
 >
   Build Your MicroOffset Pack
   <ArrowRight className="h-5 w-5" />
-</Button>
+</Button> */}
 
-            <Button
+            {/* <Button
   variant="glass"
   size="lg"
   className="text-white border-white/20 hover:bg-white/10"
@@ -81,21 +81,21 @@ const HeroSection = () => {
 >
   <Play className="h-4 w-4" />
   How it works
-</Button>
+</Button> */}
           </div>
 
           {/* Stats */}
           <div className="animate-fade-up animation-delay-500 mt-16 grid grid-cols-3 gap-8 border-t border-white/10 pt-8">
             <div className="text-center">
-              <div className="mb-1 text-3xl font-bold text-white md:text-4xl">50+</div>
+              <div className="mb-1 text-3xl font-bold text-white md:text-lg">50+</div>
               <div className="text-sm text-white/60">Emitter Types</div>
             </div>
             <div className="text-center">
-              <div className="mb-1 text-3xl font-bold text-emerald md:text-4xl">1M+</div>
+              <div className="mb-1 text-3xl font-bold text-emerald md:text-lg">1M+</div>
               <div className="text-sm text-white/60">kg CO₂ Offset</div>
             </div>
             <div className="text-center">
-              <div className="mb-1 text-3xl font-bold text-white md:text-4xl">100%</div>
+              <div className="mb-1 text-3xl font-bold text-white md:text-lg">100%</div>
               <div className="text-sm text-white/60">Verified Projects</div>
             </div>
           </div>

@@ -28,10 +28,10 @@ const WhyDifferentSection = () => {
           <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
             {/* Left content */}
             <div>
-              <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-sage-light px-4 py-1.5 text-sm font-medium text-sage">
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-sage-light px-4 py-1.5 text-sm font-medium text-gray-500">
                 Our Approach
               </div>
-              <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">
+              <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl text-gray-500">
                 Why MicroOffsets Is Different
               </h2>
               <p className="mb-8 text-lg text-muted-foreground">
@@ -48,7 +48,7 @@ const WhyDifferentSection = () => {
                     <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-sage-light">
                       <item.icon className="h-5 w-5 text-sage" />
                     </div>
-                    <p className="font-medium text-foreground">{item.text}</p>
+                    <p className="font-medium text-foreground text-gray-500">{item.text}</p>
                   </div>
                 ))}
               </div>

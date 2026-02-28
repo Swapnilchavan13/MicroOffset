@@ -11,7 +11,7 @@ const CertificateSection = () => {
             <Award className="w-4 h-4" />
             <span className="text-sm font-medium">Verified & Certified</span>
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
+          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6 text-gray-500">
             Get an Offset Retirement{" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald to-sky">
               Certificate
@@ -73,7 +73,7 @@ const CertificateSection = () => {
               {/* Main Content */}
               <div className="text-center mb-8 space-y-4 relative">
                 <p className="text-muted-foreground">This certifies that</p>
-                <p className="text-2xl md:text-3xl font-bold text-foreground font-serif">
+                <p className="text-2xl md:text-3xl font-bold text-foreground font-serif text-gray-600">
                   Acme Technologies Pvt. Ltd.
                 </p>
                 <p className="text-muted-foreground">has successfully retired</p>
@@ -85,40 +85,40 @@ const CertificateSection = () => {
               </div>
 
               {/* Details Grid */}
-              <div className="grid md:grid-cols-3 gap-6 mb-8 p-6 bg-slate-50/50 rounded-lg border border-slate-100 relative">
+              <div className="grid md:grid-cols-3 gap-6 mb-8 p-6 bg-slate-50/50 rounded-lg border border-slate-100 relative text-gray-600">
                 <div className="space-y-4">
                   <div>
                     <span className="text-xs uppercase tracking-wider text-muted-foreground">CDR Project</span>
-                    <p className="font-semibold text-foreground">Pacific Biochar Carbon Sink</p>
+                    <p className="font-semibold text-foreground  text-gray-600">RiceStraw Biochar</p>
                   </div>
                   <div>
                     <span className="text-xs uppercase tracking-wider text-muted-foreground">Project Location</span>
-                    <p className="font-semibold text-foreground">Oregon, United States</p>
+                    <p className="font-semibold text-foreground  text-gray-600">Madhya Pradesh</p>
                   </div>
                   <div>
                     <span className="text-xs uppercase tracking-wider text-muted-foreground">MicroOffset Pack</span>
-                    <p className="font-semibold text-foreground">Office Digital Usage Pack</p>
+                    <p className="font-semibold text-foreground text-gray-600">Office Digital Usage Pack</p>
                   </div>
                 </div>
                  <div className="flex justify-center items-center mb-6">
     <img
       src="https://iili.io/qfdlNKg.png"
       alt="Logo"
-      className="w-24 md:w-32 opacity-90"
+      className="w-36 md:w-44 opacity-90"
     />
   </div>
                 <div className="space-y-4">
                   <div>
                     <span className="text-xs uppercase tracking-wider text-muted-foreground">Project Beneficiary</span>
-                    <p className="font-semibold text-foreground">Climate Action Network</p>
+                    <p className="font-semibold text-foreground text-gray-600">Climate Action Network</p>
                   </div>
                   <div>
                     <span className="text-xs uppercase tracking-wider text-muted-foreground">Certificate ID</span>
-                    <p className="font-semibold text-foreground font-mono">NZ-2024-BC-00847</p>
+                    <p className="font-semibold text-foreground font-mono text-gray-600">NZ-2024-BC-00847</p>
                   </div>
                   <div>
                     <span className="text-xs uppercase tracking-wider text-muted-foreground">Retirement Date</span>
-                    <p className="font-semibold text-foreground">December 25, 2024</p>
+                    <p className="font-semibold text-foreground text-gray-600">December 25, 2026</p>
                   </div>
                 </div>
               </div>
@@ -154,17 +154,17 @@ const CertificateSection = () => {
 
               {/* Verification Badge */}
               <div className="absolute -bottom-6 left-1/2 -translate-x-1/2">
-                <div className="flex items-center gap-2 px-4 py-2 bg-emerald text-white rounded-full shadow-lg text-sm font-medium">
+                {/* <div className="flex items-center gap-2 px-4 py-2 bg-emerald text-white rounded-full shadow-lg text-sm font-medium">
                   <CheckCircle2 className="w-4 h-4" />
                   <span>Blockchain Verified</span>
-                </div>
+                </div> */}
               </div>
             </div>
           </div>
 
           {/* Supporting text */}
           <div className="text-center mt-16 space-y-4">
-            <div className="flex justify-center gap-8 flex-wrap text-sm text-muted-foreground">
+            <div className="flex justify-center gap-8 flex-wrap text-sm text-muted-foreground text-gray-600">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald" />
                 <span>Digitally Signed</span>

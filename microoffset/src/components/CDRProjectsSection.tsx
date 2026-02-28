@@ -45,7 +45,7 @@ const CDRProjectsSection = () => {
   }
 
   return (
-    <section id="cdr-projects" className="relative bg-background py-20 md:py-28">
+    <section id="cdr-projects" className="relative bg-background py-20 md:py-28 text-gray-600">
       <div className="container mx-auto px-4 md:px-6">
         {/* Header */}
         <div className="mx-auto max-w-3xl text-center">
@@ -76,7 +76,7 @@ const CDRProjectsSection = () => {
             return (
               <div
                 key={project._id}
-                className="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-card card-hover"
+                className="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-card card-hover text-gray-600"
               >
                 {/* Image */}
                 <div className="relative h-48 overflow-hidden">
@@ -88,7 +88,7 @@ const CDRProjectsSection = () => {
                   <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
 
                   {/* Status Badge */}
-                  <div className="absolute left-4 top-4 rounded-full bg-emerald px-3 py-1 text-xs font-bold text-white">
+                  <div className="absolute left-4 top-4 rounded-full bg-emerald px-3 py-1 text-xs font-bold text-gray-600">
                     {project.status}
                   </div>
                 </div>
@@ -102,7 +102,7 @@ const CDRProjectsSection = () => {
                   </div>
 
                   {/* Title */}
-                  <h3 className="mb-2 text-lg font-bold text-foreground">
+                  <h3 className="mb-2 text-lg font-bold text-foreground text-gray-500">
                     {project.title}
                   </h3>
 
@@ -144,7 +144,7 @@ const CDRProjectsSection = () => {
                   {/* Price + CTA */}
                   <div className="flex items-center justify-between border-t border-border pt-4">
                     <div>
-                      <span className="text-xl font-bold text-foreground">
+                      <span className="text-xl font-bold text-foreground text-gray-600">
                         ₹{project.pricePerKgCO2}
                       </span>
                       <span className="ml-1 text-sm text-muted-foreground">

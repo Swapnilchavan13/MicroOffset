@@ -1,15 +1,14 @@
-import { Leaf } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Logo = () => {
   return (
-    <div className="flex items-center gap-2">
-      <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-sage shadow-soft">
-        <Leaf className="h-5 w-5 text-primary-foreground" />
-      </div>
-      <span className="text-xl font-semibold text-foreground">
-        Micro<span className="text-sage">Offsets</span>
-      </span>
-    </div>
+    <Link to="/" className="flex items-center cursor-pointer">
+      <img
+        src="https://iili.io/qfpINv2.png"
+        alt="Logo"
+        className="h-20 w-auto object-contain"
+      />
+    </Link>
   );
 };
 
