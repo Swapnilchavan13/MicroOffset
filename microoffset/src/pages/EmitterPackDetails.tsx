@@ -574,7 +574,7 @@ const buildProjectSnapshot = (dbProject: any) => {
     {/* Middle Meta Row */}
     <div className="grid grid-cols-3 items-center gap-6 mt-12 text-sm">
       <div>
-        <div className="text-slate-400">MicroOffset Pack</div>
+        <div className="text-slate-400">Coin Pack</div>
         <div className="font-medium text-slate-700">
           {pack.pack_name}
         </div>

@@ -21,7 +21,7 @@ const CTASection = () => {
             <div className="flex h-20 w-60 items-center justify-center rounded-3xl bg-white">
               {/* <Leaf className="h-10 w-10 text-white" /> */}
                <img
-        src="https://iili.io/qfpINv2.png"
+        src="https://iili.io/qqSzgpf.png"
         alt="Logo"
       />
             </div>
@@ -44,7 +44,7 @@ const CTASection = () => {
     el?.scrollIntoView({ behavior: "smooth" });
   }}
             >
-              Start with a MicroOffset Pack
+              Start with a Coin Pack
               <ArrowRight className="h-5 w-5" />
             </Button>
             {/* <Button

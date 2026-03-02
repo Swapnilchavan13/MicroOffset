@@ -18,7 +18,7 @@ const CertificateSection = () => {
             </span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Every MicroOffset retirement comes with an official certificate you can proudly display, 
+            Every Coin retirement comes with an official certificate you can proudly display, 
             share, or present to stakeholders as proof of your climate action.
           </p>
         </div>
@@ -45,7 +45,7 @@ const CertificateSection = () => {
               <div className="flex justify-between items-start mb-8 relative">
                 <div className="flex flex-col items-center">
                   <img 
-                    src={nettZeroLogo} 
+                    src="https://iili.io/qqSzgpf.png" 
                     alt="NettZero" 
                     className="h-12 md:h-16 object-contain"
                   />
@@ -96,13 +96,13 @@ const CertificateSection = () => {
                     <p className="font-semibold text-foreground  text-gray-600">Madhya Pradesh</p>
                   </div>
                   <div>
-                    <span className="text-xs uppercase tracking-wider text-muted-foreground">MicroOffset Pack</span>
+                    <span className="text-xs uppercase tracking-wider text-muted-foreground">Coin Pack</span>
                     <p className="font-semibold text-foreground text-gray-600">Office Digital Usage Pack</p>
                   </div>
                 </div>
                  <div className="flex justify-center items-center mb-6">
     <img
-      src="https://iili.io/qfdlNKg.png"
+      src="https://iili.io/qqSAICQ.png"
       alt="Logo"
       className="w-36 md:w-44 opacity-90"
     />

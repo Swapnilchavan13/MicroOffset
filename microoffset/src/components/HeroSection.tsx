@@ -34,7 +34,11 @@ const HeroSection = () => {
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald opacity-75" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald" />
             </span>
-            Climate action made simple
+            Join Coin
+             <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald" />
+            </span>
           </div>
 
           {/* Main headline */}

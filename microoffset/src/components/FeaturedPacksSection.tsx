@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { ArrowRight, Laptop } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 const API_URL = "https://microoffsets.nettzero.world/api/getemitterpacks";
 const IMAGE_BASE_URL = "https://microoffsets.nettzero.world/api";
@@ -54,14 +54,14 @@ useEffect(() => {
   return (
     <section id="featured-packs" className="relative bg-muted py-20 md:py-28">
        <img
-    src="https://iili.io/qfdlNKg.png"
+    src="https://iili.io/qqSAICQ.png"
     alt="Logo"
-    className="absolute top-6 left-6 w-24 md:w-32 opacity-90"
+    className="absolute top-6 left-6 w-28 md:w-36 opacity-90"
   />
       <div className="container relative mx-auto px-4 md:px-6 text-gray-600">
         <div className="mx-auto max-w-3xl text-center mb-12">
           <h2 className="text-3xl font-bold md:text-4xl lg:text-5xl">
-            Featured MicroOffset Packs
+            Featured Coin Packs
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">
             Pre-built packs for your everyday activities.
@@ -88,29 +88,27 @@ useEffect(() => {
               >
                 {/* Image */}
              <div className="group relative overflow-hidden rounded-2xl bg-card shadow-card card-hover">
-  <img
-    src={`${IMAGE_BASE_URL}${pack.image_url}`}
-    alt={pack.pack_name}
-    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-  />
+<img
+  src={`${IMAGE_BASE_URL}${pack.image_url}`}
+  alt={pack.pack_name}
+  className="h-full w-full object-cover scale-150 transition-transform duration-500 group-hover:scale-155"
+/>
 
   {/* White Fade Bottom */}
-  <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 
-                  bg-gradient-to-t from-white via-white/80 to-transparent">
-  </div>
+  <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-white via-white/80 to-transparent"></div>
 
   {/* Project Name */}
-  <div className="absolute bottom-4 left-0 w-full text-center">
+  {/* <div className="absolute bottom-4 left-0 w-full text-center">
     <span className="text-gray-600 inline-block rounded-md bg-black/60 px-3 py-1 text-sm font-semibold text-white">
       {pack.pack_name}
     </span>
-  </div>
+  </div> */}
 </div>
                 {/* Content */}
                 <div className="p-5 pt-8">
-                  {/* <h3 className="mb-2 text-lg font-bold text-gray-600">
+                  <h3 className="mb-2 text-lg font-bold text-gray-600">
                     {pack.pack_name}
-                  </h3> */}
+                  </h3>
 
                   <p className="mb-4 text-sm text-muted-foreground line-clamp-3 text-gray-600">
                     {pack.description}
@@ -167,9 +165,23 @@ useEffect(() => {
             );
           })}
         </div>
+        
       </div>
-    </section>
+      <div className="flex justify-center mt-8">
+  <Link to="/emitter-pack">
+    <Button
+      variant="outline"
+      className="border-violet/30 hover:bg-violet/10"
+    >
+      View Featured Packs
+      <ArrowRight className="h-4 w-4 ml-1" />
+    </Button>
+  </Link>
+</div>
+</section>
+    
   );
+  
 };
 
 export default FeaturedPacksSection;

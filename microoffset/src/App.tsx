@@ -31,11 +31,6 @@ const App = () => (
           <Route path="/all-packs" element={<AllPacks />} />
           <Route path="/edit-pack/:id" element={<EditPack />} />
           <Route path="/api-demo" element={<ApiPack />} />
-
-
-
-
-
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

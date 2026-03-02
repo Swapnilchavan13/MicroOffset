@@ -121,7 +121,7 @@ const CDRProjectsSection = () => {
                   <div className="mb-3">
                     <div className="mb-1 flex justify-between text-xs">
                       <span className="text-muted-foreground">
-                        MicroOffsets Retired
+                        Coin Retired
                       </span>
                       <span className="font-semibold text-foreground">
                         {retiredPercent}%
@@ -157,7 +157,7 @@ const CDRProjectsSection = () => {
                       size="sm"
                       className="text-emerald hover:text-emerald"
                     >
-                      Support
+                      Project Details
                       <ArrowRight className="h-4 w-4" />
                     </Button>
                   </div>
