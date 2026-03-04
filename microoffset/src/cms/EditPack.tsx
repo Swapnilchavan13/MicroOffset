@@ -42,9 +42,7 @@ export const EditPack = () => {
   const [subCategoryFilter, setSubCategoryFilter] = useState("");
   const [sortBy, setSortBy] = useState("");
 
-
   const [show, setShow] = useState<boolean>(false);
-
 
   // =========================
   // FETCH PACK

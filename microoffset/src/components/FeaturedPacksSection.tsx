@@ -138,7 +138,7 @@ useEffect(() => {
       {pack.total_emission_kgco2e.toFixed(2)}
     </span>
     <span className="ml-1 text-sm text-muted-foreground">
-      kg CO₂e
+      Coins
     </span>
 
     {/* Offset Price */}
