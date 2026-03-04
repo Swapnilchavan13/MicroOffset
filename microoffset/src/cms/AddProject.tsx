@@ -53,7 +53,7 @@ const initialProjectState: ProjectPayload = {
 };
 
 /* ================= API ================= */
-const API_URL = "http://localhost:5000/addprojects";
+const API_URL = "https://microoffsets.nettzero.world/api/addprojects";
 
 /* ================= COMPONENT ================= */
 const AddProject = () => {
@@ -84,7 +84,7 @@ const AddProject = () => {
     }));
   };
 
-  
+
 const handleSubmit = async () => {
   setLoading(true);
   setMessage(null);

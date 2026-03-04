@@ -57,11 +57,11 @@ const HeroSection = () => {
               </svg>
             </span>
           </h1>
+              <h2 className="text-[#10B77F]">CO2IN by CO2IN</h2>
 
           {/* Subheadline */}
           <p className="animate-fade-up animation-delay-200 mx-auto mb-4 max-w-2xl text-lg text-white/80 md:text-lg">
-            Turn small, everyday actions into verified climate impact — one micro-offset at a time. Emails, food, travel, energy, purchases — MicroOffsets lets you bundle them into simple offset packs that fund real climate projects.
-          </p>
+Eliminate the CO2 footprint of your everyday actions like travel, digital usage, dining out, hotel stays and events through reliable “offset-packs". Because the journey to neutralise billions of carbon footprints, begins with a single CO2IN.          </p>
 
           {/* CTA Buttons */}
           <div className="animate-fade-up animation-delay-400 flex flex-col items-center justify-center gap-4 sm:flex-row">
