@@ -11,8 +11,6 @@ const Project = require("./models/Project");
 
 
 
-
-
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -448,6 +446,72 @@ app.get("/projects", async (req, res) => {
       success: false,
       message: "Failed to fetch projects",
       error: error.message,
+    });
+  }
+});
+
+///Add Projects
+
+app.post("/addprojects", upload.single("image"), async (req, res) => {
+  try {
+    const {
+      projectId,
+      title,
+      subHeading,
+      description,
+      location,
+      status,
+      retired,
+      available,
+      pricePerKgCO2,
+      currency,
+      projectDeveloper,
+      verifiedBy,
+      typeOfProject,
+      projectType,
+      co2Avoided,
+    } = req.body;
+
+    // Parse arrays safely
+    const projectHighlighters = req.body.projectHighlighters
+      ? JSON.parse(req.body.projectHighlighters)
+      : [];
+
+    const sdgs = req.body.sdgs ? JSON.parse(req.body.sdgs) : [];
+
+    const newProject = new Project({
+      projectId,
+      title,
+      subHeading,
+      description,
+      location,
+      status,
+      retired: Number(retired),
+      available: Number(available),
+      pricePerKgCO2: Number(pricePerKgCO2),
+      currency,
+      projectDeveloper,
+      verifiedBy,
+      typeOfProject,
+      projectType,
+      co2Avoided: Number(co2Avoided),
+      projectHighlighters,
+      sdgs,
+      image: req.file ? req.file.filename : null,
+    });
+
+    await newProject.save();
+
+    res.status(201).json({
+      success: true,
+      message: "Project added successfully",
+      data: newProject,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(400).json({
+      success: false,
+      message: error.message,
     });
   }
 });
