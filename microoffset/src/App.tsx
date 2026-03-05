@@ -13,6 +13,8 @@ import { FeaturePacks } from "./pages/FeaturePacks";
 import { EditPack } from "./cms/EditPack";
 import { AllPacks } from "./cms/AllPacks";
 import { ApiPack } from "./pages/ApiPack";
+import CoinOptions from "./pages/CoinOptions";
+import CoinRegisterForm from "./pages/CoinRegisterForm";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +33,9 @@ const App = () => (
           <Route path="/all-packs" element={<AllPacks />} />
           <Route path="/edit-pack/:id" element={<EditPack />} />
           <Route path="/api-demo" element={<ApiPack />} />
+          <Route path="/coinoption" element={<CoinOptions />} />
+          <Route path="/coinregister" element={<CoinRegisterForm />} />
+
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

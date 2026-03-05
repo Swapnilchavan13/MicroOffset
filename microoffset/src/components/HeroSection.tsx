@@ -2,6 +2,7 @@ import { ArrowRight, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import heroEarth from "@/assets/hero-earth.jpg";
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 
 const HeroSection = () => {
@@ -29,23 +30,29 @@ const HeroSection = () => {
       <div className="container relative mx-auto flex min-h-[calc(100vh-5rem)] flex-col items-center justify-center px-4 py-16 md:px-6 lg:py-20">
         <div className="mx-auto max-w-4xl text-center">
           {/* Badge */}
-          <div className="animate-fade-up mb-6 inline-flex items-center gap-2 rounded-full border border-emerald/30 bg-emerald/10 px-5 py-2 text-sm font-medium text-emerald-light backdrop-blur-sm">
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald" />
-            </span>
-            Join Coin
-             <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald" />
-            </span>
-          </div>
+          <Link to="/coinoption">
+  <div className="cursor-pointer animate-fade-up mb-6 inline-flex items-center gap-2 rounded-full border border-emerald/30 bg-emerald/10 px-5 py-2 text-sm font-medium text-emerald-500 backdrop-blur-sm hover:bg-emerald/20 transition">
+    
+    <span className="relative flex h-2 w-2">
+      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald opacity-75" />
+      <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald" />
+    </span>
+
+    Join Coin
+
+    <span className="relative flex h-2 w-2">
+      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald opacity-75" />
+      <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald" />
+    </span>
+
+  </div>
+</Link>
 
           {/* Main headline */}
           <h1 className="text-[#10B77F] animate-fade-up animation-delay-100 mb-6 text-4xl leading-tight tracking-tight md:text-6xl lg:text-7xl">
             Offset the Emissions{" "}
             <span className="relative">
-              <span className="text-[#10B77F]">You Create Every Day</span>
+              <span className="text-[#10B77F]">You Create Every Day.</span>
               <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 300 12" fill="none">
                 <path d="M2 8C50 3 150 3 298 8" stroke="url(#underline-gradient)" strokeWidth="4" strokeLinecap="round" />
                 <defs>
@@ -57,11 +64,16 @@ const HeroSection = () => {
               </svg>
             </span>
           </h1>
-              <h2 className="text-[#10B77F]">CO2IN by CO2IN</h2>
+           <span className="text-[#10B77F] text-6xl">
+  CO₂IN by CO₂IN
+</span>
+          <br />
+          <br />
+
 
           {/* Subheadline */}
           <p className="animate-fade-up animation-delay-200 mx-auto mb-4 max-w-2xl text-lg text-white/80 md:text-lg">
-Eliminate the CO2 footprint of your everyday actions like travel, digital usage, dining out, hotel stays and events through reliable “offset-packs". Because the journey to neutralise billions of carbon footprints, begins with a single CO2IN.          </p>
+Eliminate the CO₂ footprint of your everyday actions like travel, digital usage, dining out, hotel stays and events through reliable “offset-packs". Because the journey to neutralise billions of carbon footprints, begins with a single <span className="text-[#10B77F]">CO₂IN.</span></p>
 
           {/* CTA Buttons */}
           <div className="animate-fade-up animation-delay-400 flex flex-col items-center justify-center gap-4 sm:flex-row">

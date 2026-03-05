@@ -343,16 +343,16 @@ const buildProjectSnapshot = (dbProject: any) => {
             Most Popular
           </div>
           
-          <h1 className="text-5xl font-extrabold text-slate-900 tracking-tight mb-4">
+          <h1 className="text-5xl font-extrabold tracking-tight mb-4 text-gray-400">
             {pack.pack_name}
           </h1>
           
-          <p className="text-lg text-slate-500 max-w-2xl leading-relaxed mb-8">
+          <p className="text-lg text-slate-500 max-w-2xl leading-relaxed mb-8 text-gray-500">
             {pack.description} <br/>
             Perfect for professionals looking to offset their workplace footprint.
           </p>
 
-          <div className="flex items-center gap-4 text-sm text-slate-400">
+          <div className="flex items-center gap-4 text-sm text-slate-400 text-gray-400">
             <span>Participating Brands:</span>
             <div className="flex gap-2">
               {["Microsoft", "Google", "Slack", "Zoom", "Dropbox"].map(brand => (
@@ -373,14 +373,14 @@ const buildProjectSnapshot = (dbProject: any) => {
             <div className="bg-emerald-100 p-2 rounded-full">
               <Info className="w-5 h-5 text-emerald-600" />
             </div>
-            <h2 className="text-2xl font-bold text-slate-800">Why This Pack Matters</h2>
+            <h2 className="text-2xl font-bold text-slate-800 text-gray-400">Why This Pack Matters</h2>
           </div>
           
-          <p className="text-slate-600 mb-8 leading-relaxed">
+          <p className="text-slate-600 mb-8 leading-relaxed text-gray-500">
             The average office worker generates significant emissions through daily activities. Whether it's disposable cups, cloud storage, or digital services, these micro-emissions accumulate. Offsetting them is a crucial step toward Net Zero.
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-gray-500">
             {[
               { label: "Data centers global emission share", val: "2-3%", icon: <Globe className="w-5 h-5 text-emerald-500"/> },
               { label: "Yearly growth in digital emissions", val: "+9%", icon: <HardDrive className="w-5 h-5 text-emerald-500"/> },
@@ -398,15 +398,15 @@ const buildProjectSnapshot = (dbProject: any) => {
         {/* ================= EMITTERS IN THIS PACK ================= */}
         <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
           <div className="flex justify-between items-end mb-6">
-            <h2 className="text-2xl font-bold text-slate-800">Emitters in This Pack</h2>
-            <span className="text-sm text-slate-400">{pack.emitters.length} activities included</span>
+            <h2 className="text-2xl font-bold text-gray-500">Emitters in This Pack</h2>
+            <span className="text-sm text-gray-500">{pack.emitters.length} activities included</span>
           </div>
 
-          <div className="grid gap-4">
+          <div className="grid gap-4 text-gray-500">
             {pack.emitters.map((emitter, idx) => (
               <div key={idx} className="flex items-center justify-between p-4 border border-slate-100 rounded-xl hover:border-emerald-200 transition-colors bg-white">
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-gray-600">
                     {getIconForEmitter(emitter.emitter_name_standard)}
                   </div>
                   <div>
@@ -419,7 +419,7 @@ const buildProjectSnapshot = (dbProject: any) => {
                     </div>
                   </div>
                 </div>
-                <div className="font-bold text-slate-700 text-right">
+                <div className="font-bold text-slate-700 text-right text-gray-500">
                   {emitter.calculated_emission_kgco2e.toFixed(2)} <span className="text-xs font-normal text-slate-400 block sm:inline">kg CO₂e</span>
                 </div>
               </div>
@@ -428,8 +428,8 @@ const buildProjectSnapshot = (dbProject: any) => {
 
           <div className="mt-6 flex justify-between items-center pt-6 border-t border-slate-100">
             <div>
-              <div className="font-bold text-lg">Total Monthly Emissions</div>
-              <div className="text-sm text-slate-400">Calculated sum of all emitters</div>
+              <div className="font-bold text-lg text-gray-500">Total Monthly Emissions</div>
+              <div className="text-sm text-gray-500">Calculated sum of all emitters</div>
             </div>
             <div className="text-3xl font-bold text-emerald-600">
               {pack.total_emission_kgco2e.toFixed(2)} <span className="text-lg text-slate-500">kg CO₂e</span>
@@ -439,12 +439,12 @@ const buildProjectSnapshot = (dbProject: any) => {
 
         {/* ================= EQUIVALENCIES (Dynamic) ================= */}
         <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
-           <h2 className="text-2xl font-bold text-slate-800 mb-2">
+           <h2 className="text-2xl font-bold text-gray-500 mb-2">
             What Does {pack.total_emission_kgco2e.toFixed(2)} kg CO₂e Mean?
            </h2>
-           <p className="text-slate-500 mb-8">To help visualize the impact, here's what your emissions are equivalent to:</p>
+           <p className="text-slate-500 mb-8 text-gray-500">To help visualize the impact, here's what your emissions are equivalent to:</p>
 
-           <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+           <div className="grid grid-cols-2 md:grid-cols-6 gap-4 text-gray-500">
               <EquivalentCard icon={<Trees />} value={(pack.total_emission_kgco2e * 0.05).toFixed(1)} label="Tree Months" desc="CO₂ absorbed by one mature tree" />
               <EquivalentCard icon={<Car />} value={Math.max(1, Math.round(pack.total_emission_kgco2e * 3.7))} label="Driving km" desc="Distance in a petrol car" />
               <EquivalentCard icon={<Lightbulb />} value={Math.max(1, Math.round(pack.total_emission_kgco2e * 16.8))} label="LED Hours" desc="10W bulb running continuously" />
@@ -459,8 +459,8 @@ const buildProjectSnapshot = (dbProject: any) => {
           
           {/* Left Text */}
           <div className="md:col-span-4">
-            <h2 className="text-3xl font-bold text-slate-800 mb-4">Ready to Offset This Pack?</h2>
-            <p className="text-slate-600 mb-6">
+            <h2 className="text-3xl font-bold text-slate-800 mb-4 text-gray-500">Ready to Offset This Pack?</h2>
+            <p className="text-slate-600 mb-6 text-gray-500">
               Your contribution directly funds verified carbon removal projects. Every kilogram matters in the fight against climate change.
             </p>
             <div className="flex flex-col gap-2 text-sm text-slate-500">
@@ -597,7 +597,7 @@ const buildProjectSnapshot = (dbProject: any) => {
       <div className="text-right">
         <div className="text-slate-400">Certificate ID</div>
         <div className="font-mono font-semibold text-slate-700">
-          NZ-2025-BC-XXXXX
+          NZ-2026-BC-XXXXX
         </div>
       </div>
     </div>
@@ -643,10 +643,10 @@ const buildProjectSnapshot = (dbProject: any) => {
         <div>
           <div className="flex justify-between items-center mb-6">
             <div>
-               <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+               <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2 text-gray-500">
                  <Leaf className="text-emerald-500"/> What Your Offset Supports
                </h2>
-               <p className="text-slate-500 text-sm">Your contribution is distributed across these verified CDR projects</p>
+               <p className="text-slate-500 text-sm text-gray-500">Your contribution is distributed across these verified CDR projects</p>
             </div>
 
               <div className="flex gap-2">
@@ -733,53 +733,59 @@ const EquivalentCard = ({ icon, value, label, desc }: any) => (
 
 const ProjectCard = ({ project }: { project: Project }) => {
   return (
-    <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
-      {/* Image / Header */}
-      <div className="relative h-44 bg-slate-100">
+    <div className="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-card card-hover text-gray-600">
+      
+      {/* Image */}
+      <div className="relative h-48 overflow-hidden">
         <img
-          src={
-  project.project_image_url
-}
-
+          src={project.project_image_url}
           alt={project.projectId}
-          className="w-full h-full object-cover"
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
         />
 
-        <div className="absolute top-4 right-4 bg-orange-500 text-white text-xs font-semibold px-3 py-1 rounded-full shadow">
+        {/* Gradient overlay (same as original section) */}
+        <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
+
+        {/* Contribution badge */}
+        <div className="absolute top-4 right-4 rounded-full bg-orange-500 text-white text-xs font-semibold px-3 py-1 shadow">
           {project.allocation_percent.toFixed(0)}% contribution
         </div>
 
-        <div className="absolute top-4 left-4 bg-emerald-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
+        {/* CDR badge */}
+        <div className="absolute top-4 left-4 rounded-full bg-emerald px-3 py-1 text-xs font-bold text-white">
           CDR
         </div>
       </div>
 
       {/* Content */}
       <div className="p-5 space-y-3">
-        <h3 className="font-semibold text-slate-800 text-lg">
+        <h3 className="font-semibold text-foreground text-lg text-gray-600">
           {project.projectId}
         </h3>
 
-        <p className="text-sm text-slate-500 leading-snug">
+        <p className="text-sm text-muted-foreground leading-snug">
           Capturing CO₂ through verified carbon removal solutions.
         </p>
 
+        {/* Progress */}
         <div className="space-y-1">
-          <div className="flex justify-between text-xs text-slate-500">
+          <div className="flex justify-between text-xs text-muted-foreground">
             <span>Emission allocated</span>
-            <span>{project.allocated_emission_kgco2e.toFixed(2)} kg CO₂e</span>
+            <span className="text-gray-600">{project.allocated_emission_kgco2e.toFixed(2)} kg CO₂e</span>
           </div>
-          <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+
+          <div className="h-2 overflow-hidden rounded-full bg-muted">
             <div
-              className="h-full bg-emerald-500"
+              className="h-full rounded-full bg-gradient-to-r from-emerald to-sky transition-all duration-500"
               style={{ width: `${project.allocation_percent}%` }}
             />
           </div>
         </div>
 
-        <div className="flex items-center justify-between pt-2">
+        {/* Footer */}
+        <div className="flex items-center justify-between border-t border-border pt-4">
           <div className="flex gap-1">
-            {[13, 15, 12].map(n => (
+            {[13, 15, 12].map((n) => (
               <span
                 key={n}
                 className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-[10px] font-bold"
@@ -790,20 +796,19 @@ const ProjectCard = ({ project }: { project: Project }) => {
           </div>
 
           <div className="text-right">
-            <div className="font-semibold text-emerald-600">
+            <div className="text-xl font-bold text-foreground text-gray-600">
               ₹{project.price_per_kg}
-              <span className="text-xs text-slate-400 font-normal ml-1">
+              <span className="text-xs text-muted-foreground font-normal ml-1">
                 / kg CO₂
               </span>
             </div>
-            <div className="text-xs text-slate-400">
+            <div className="text-xs text-muted-foreground">
               ₹{project.allocated_cost.toFixed(2)} allocated
             </div>
           </div>
         </div>
       </div>
     </div>
-
   );
 };
 

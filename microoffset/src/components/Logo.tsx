@@ -4,7 +4,7 @@ const Logo = () => {
   return (
     <Link to="/" className="flex items-center cursor-pointer">
       <img
-        src="https://iili.io/qqSzgpf.png"
+        src="https://iili.io/qCpAzep.png"
         alt="Logo"
         className="h-20 w-auto object-contain"
       />

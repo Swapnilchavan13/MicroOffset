@@ -97,12 +97,7 @@ useEffect(() => {
   {/* White Fade Bottom */}
   <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-white via-white/80 to-transparent"></div>
 
-  {/* Project Name */}
-  {/* <div className="absolute bottom-4 left-0 w-full text-center">
-    <span className="text-gray-600 inline-block rounded-md bg-black/60 px-3 py-1 text-sm font-semibold text-white">
-      {pack.pack_name}
-    </span>
-  </div> */}
+
 </div>
                 {/* Content */}
                 <div className="p-5 pt-8">
