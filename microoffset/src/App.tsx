@@ -15,6 +15,9 @@ import { AllPacks } from "./cms/AllPacks";
 import { ApiPack } from "./pages/ApiPack";
 import CoinOptions from "./pages/CoinOptions";
 import CoinRegisterForm from "./pages/CoinRegisterForm";
+import Login from "./pages/Login";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Dashboard from "./pages/Dashboard";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +38,17 @@ const App = () => (
           <Route path="/api-demo" element={<ApiPack />} />
           <Route path="/coinoption" element={<CoinOptions />} />
           <Route path="/coinregister" element={<CoinRegisterForm />} />
+
+            <Route path="/login" element={<Login />} />
+
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
 
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

@@ -1,6 +1,11 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 
 const CoinRegisterForm = () => {
+
+    const navigate = useNavigate();
+
   const [form, setForm] = useState({
     name: "",
     industry: "",
@@ -19,16 +24,35 @@ const CoinRegisterForm = () => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    if (form.password !== form.confirmPassword) {
-      alert("Passwords do not match");
-      return;
-    }
+  if (form.password !== form.confirmPassword) {
+    alert("Passwords do not match");
+    return;
+  }
 
-    console.log("Form Data:", form);
-  };
+  try {
+    const res = await fetch("https://microoffsets.nettzero.world/api/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(form),
+    });
+
+    const data = await res.json();
+
+    console.log(data);
+    alert("Registered successfully");
+
+    // Redirect to login page
+      navigate("/login");
+
+  } catch (error) {
+    console.error(error);
+  }
+};
 
   return (
     <section className="py-20 bg-gray-50">
