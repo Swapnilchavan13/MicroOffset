@@ -8,13 +8,41 @@ require("dotenv").config();
 const Emitter = require("./models/Emitter");
 const EmitterPack = require("./models/EmitterPack");
 const Project = require("./models/Project");
+const CoinUser = require("./models/CoinUser");
 
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
+
+const authMiddleware = (req, res, next) => {
+
+  const token = req.headers.authorization;
+
+  if (!token) {
+    return res.status(401).json({ message: "No token" });
+  }
+
+  try {
+
+    const decoded = jwt.verify(token, "SECRET_KEY");
+
+    req.user = decoded;
+
+    next();
+
+  } catch (error) {
+
+    return res.status(401).json({ message: "Invalid token" });
+
+  }
+};
 
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 app.use("/uploads", express.static("uploads"));
+
+
 
 
 // MongoDB Connection
@@ -516,6 +544,94 @@ app.post("/addprojects", upload.single("image"), async (req, res) => {
   }
 });
 
+
+// REGISTER USER
+app.post("/register", async (req, res) => {
+  try {
+
+    const { name, industry, location, gst, mobile, email, password } = req.body;
+
+    const newUser = new CoinUser({
+      name,
+      industry,
+      location,
+      gst,
+      mobile,
+      email,
+      password,
+    });
+
+    const savedUser = await newUser.save();
+
+    res.status(201).json({
+      success: true,
+      message: "User Registered Successfully",
+      data: savedUser
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      success: false,
+      message: "Registration Failed",
+      error: error.message
+    });
+
+  }
+});
+
+
+app.post("/login", async (req, res) => {
+  try {
+
+    const { mobile, password } = req.body;
+
+    const user = await CoinUser.findOne({ mobile });
+
+    if (!user) {
+      return res.status(400).json({
+        message: "User not found"
+      });
+    }
+
+    // Plain comparison (no bcrypt)
+    if (user.password !== password) {
+      return res.status(400).json({
+        message: "Invalid password"
+      });
+    }
+
+    // Generate JWT
+    const token = jwt.sign(
+      { id: user._id, mobile: user.mobile },
+      "SECRET_KEY",
+      { expiresIn: "1d" }
+    );
+
+    res.json({
+      message: "Login successful",
+      token,
+      user
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: "Login error",
+      error: error.message
+    });
+
+  }
+});
+
+
+app.get("/profile", authMiddleware, async (req, res) => {
+
+  const user = await CoinUser.findById(req.user.id).select("-password");
+
+  res.json(user);
+
+});
 
 // Server
 const PORT = process.env.PORT || 5000;
