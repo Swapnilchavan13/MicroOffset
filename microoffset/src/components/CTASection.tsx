@@ -44,7 +44,7 @@ const CTASection = () => {
     el?.scrollIntoView({ behavior: "smooth" });
   }}
             >
-              Start with a Coin Pack
+              Start with a CO₂IN Pack
               <ArrowRight className="h-5 w-5" />
             </Button>
             {/* <Button

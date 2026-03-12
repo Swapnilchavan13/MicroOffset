@@ -1,3 +1,4 @@
+import Header from "@/components/Header";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -53,7 +54,7 @@ const Login = () => {
 
   return (
     <section className="min-h-screen flex items-center justify-center bg-gray-50">
-
+<Header />
       <div className="max-w-md w-full px-6">
 
         <div className="text-center mb-10">

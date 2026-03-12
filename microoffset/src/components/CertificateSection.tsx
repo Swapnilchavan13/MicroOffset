@@ -18,7 +18,7 @@ const CertificateSection = () => {
             </span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Every Coin retirement comes with an official certificate you can proudly display, 
+            Every CO₂IN retirement comes with an official certificate you can proudly display, 
             share, or present to stakeholders as proof of your climate action.
           </p>
         </div>
@@ -96,7 +96,7 @@ const CertificateSection = () => {
                     <p className="font-semibold text-foreground  text-gray-600">Madhya Pradesh</p>
                   </div>
                   <div>
-                    <span className="text-xs uppercase tracking-wider text-muted-foreground">Coin Pack</span>
+                    <span className="text-xs uppercase tracking-wider text-muted-foreground">CO₂IN Pack</span>
                     <p className="font-semibold text-foreground text-gray-600">Office Digital Usage Pack</p>
                   </div>
                 </div>

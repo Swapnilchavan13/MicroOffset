@@ -1,3 +1,4 @@
+import Header from "@/components/Header";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -56,6 +57,7 @@ const CoinRegisterForm = () => {
 
   return (
     <section className="py-20 bg-gray-50">
+      <Header />
       <div className="max-w-2xl mx-auto px-6">
 
         {/* Header */}

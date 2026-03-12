@@ -220,9 +220,10 @@ export const FeaturePacks: React.FC = () => {
                   </div>
                 </div>
 
-                <button
+                <button 
+                className="border border-[#10B77F] text-[#10B77F] hover:bg-[#10B77F] hover:text-white px-4 py-2 rounded-lg"
                   onClick={() => navigate(`/emitter-pack/${pack._id}`)}
-                  className="text-sm text-gray-600 hover:underline"
+
                 >
                   View Details
                 </button>

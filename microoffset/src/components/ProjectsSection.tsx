@@ -41,7 +41,7 @@ const ProjectsSection = () => {
             Where Your Offset Goes
           </h2>
           <p className="mb-12 text-lg text-muted-foreground">
-            Every MicroOffset Pack supports real, on-ground climate projects.
+            Every CO₂IN Pack supports real, on-ground climate projects.
           </p>
         </div>
 

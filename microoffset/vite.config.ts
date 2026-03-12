@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => ({
   },
    plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
    build: {
-    outDir: "build",
+   outDir: "build",
   },
   resolve: {
     alias: {

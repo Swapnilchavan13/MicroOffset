@@ -65,7 +65,122 @@ interface CarbonPack {
 
 const API_URL = "https://microoffsets.nettzero.world/api/getemitterpacks";
 
+const PACK_IMPACT_CONTENT: Record<string, any> = {
+  "Event Day Pack": {
+    why: "Large events concentrate energy use into a short period — lighting rigs, sound systems, AV equipment, and temporary infrastructure all increase the carbon footprint of a single day. Micro-offsetting helps balance the environmental impact of gatherings and celebrations.",
+    stats: [
+      {
+        number: "50–100 kg CO₂",
+        fact: "A medium-scale event can generate 50–100 kg CO₂ per attendee depending on power use and logistics.",
+      },
+    ],
+  },
+
+  "Fine Dining Meal Pack": {
+    why: "Premium dining experiences often involve energy-intensive kitchens, refrigeration, imported ingredients, and food waste. Offsetting these emissions helps make high-quality dining compatible with climate responsibility.",
+    stats: [
+      {
+        number: "30%",
+        fact: "Studies show up to 30% of prepared restaurant food is wasted, contributing significantly to food-related emissions.",
+      },
+    ],
+  },
+
+  "Luxury Resort Stay Pack": {
+    why: "Luxury resorts operate energy-intensive facilities including pools, air conditioning, laundry, and lighting across large properties. Offsetting a stay helps address the environmental footprint of comfort-focused hospitality.",
+    stats: [
+      {
+        number: "40 kg CO₂",
+        fact: "A single luxury hotel night can generate 30–40 kg of CO₂ depending on location and energy source.",
+      },
+    ],
+  },
+
+  "Buffet Pack": {
+    why: "Buffets often produce more emissions than plated meals due to over-preparation, refrigeration, and food waste. Offsetting helps address the hidden carbon footprint of abundance.",
+    stats: [
+      {
+        number: "1.3 kg CO₂",
+        fact: "The average buffet meal generates about 1.3 kg CO₂ per person, including food waste and kitchen energy.",
+      },
+    ],
+  },
+
+  "ClimeGrove Employee Emission Pack": {
+    why: "Offices concentrate daily energy consumption through HVAC systems, lighting, computers, and shared facilities. Even routine workdays collectively create a measurable footprint.",
+    stats: [
+      {
+        number: "15–25 kg CO₂",
+        fact: "The average office worker generates 15–25 kg CO₂ per day through energy use and digital activity.",
+      },
+    ],
+  },
+
+  "Event Attendance – Day Pass": {
+    why: "Travel to events often produces more emissions than the event itself. Offsetting attendance acknowledges the hidden footprint of gatherings and conferences.",
+    stats: [
+      {
+        number: "70%",
+        fact: "Research shows up to 70% of an event’s carbon footprint comes from attendee travel.",
+      },
+    ],
+  },
+
+  "Dinner Buffet – Premium": {
+    why: "Dinner buffets combine energy-intensive cooking, refrigeration, and food waste. Micro-offsets allow diners to balance indulgence with climate responsibility.",
+    stats: [
+      {
+        number: "1.5 kg CO₂",
+        fact: "A typical buffet dinner generates 1.5 kg CO₂ per guest depending on menu and waste levels.",
+      },
+    ],
+  },
+
+  "Lunch Buffet – 4 Star (Non-Veg)": {
+    why: "Meat-heavy meals carry significantly higher emissions due to livestock production and refrigeration. Offsetting helps address the higher carbon footprint of non-vegetarian dining.",
+    stats: [
+      {
+        number: "5×",
+        fact: "Meat dishes can produce up to 5× more emissions than plant-based meals.",
+      },
+    ],
+  },
+
+  "Lunch Buffet – 4 Star (Veg)": {
+    why: "Plant-based meals generally have lower emissions than meat-based alternatives. Offsetting ensures even low-impact dining contributes to climate solutions.",
+    stats: [
+      {
+        number: "50% lower",
+        fact: "Vegetarian meals can have up to 50% lower emissions than meat-based meals.",
+      },
+    ],
+  },
+
+  "Breakfast Buffet – Veg": {
+    why: "Breakfast buffets combine food preparation, heating equipment, refrigeration, and waste. Even simple morning meals accumulate energy use across large hotels.",
+    stats: [
+      {
+        number: "0.8 kg CO₂",
+        fact: "A hotel breakfast buffet can generate around 0.8 kg CO₂ per guest.",
+      },
+    ],
+  },
+
+  "Hotel Room Night – 4 Star": {
+    why: "Hotel rooms require continuous energy for lighting, air conditioning, hot water, and laundry services. Offsetting helps balance the environmental cost of travel and comfort.",
+    stats: [
+      {
+        number: "15–30 kg CO₂",
+        fact: "A typical 4-star hotel stay emits 15–30 kg CO₂ per night.",
+      },
+    ],
+  },
+};
+
 const EmitterPackDetails = () => {
+
+
+
 const printRef = useRef<HTMLDivElement>(null);
 
     const navigate = useNavigate();
@@ -306,6 +421,8 @@ const buildProjectSnapshot = (dbProject: any) => {
     p => getProjectKey(p) === dbProject.projectId
   );
 
+
+
   return (
     existing || {
       projectId: dbProject.projectId,
@@ -319,6 +436,7 @@ const buildProjectSnapshot = (dbProject: any) => {
 };
 
 
+  const impact = PACK_IMPACT_CONTENT[pack.pack_name];
 
   return (
 
@@ -343,7 +461,7 @@ const buildProjectSnapshot = (dbProject: any) => {
             Most Popular
           </div>
           
-          <h1 className="text-5xl font-extrabold tracking-tight mb-4 text-gray-400">
+          <h1 className="text-5xl font-extrabold tracking-tight mb-4 text-gray-500">
             {pack.pack_name}
           </h1>
           
@@ -352,7 +470,7 @@ const buildProjectSnapshot = (dbProject: any) => {
             Perfect for professionals looking to offset their workplace footprint.
           </p>
 
-          <div className="flex items-center gap-4 text-sm text-slate-400 text-gray-400">
+          <div className="flex items-center gap-4 text-sm text-slate-400 text-gray-500">
             <span>Participating Brands:</span>
             <div className="flex gap-2">
               {["Microsoft", "Google", "Slack", "Zoom", "Dropbox"].map(brand => (
@@ -373,26 +491,28 @@ const buildProjectSnapshot = (dbProject: any) => {
             <div className="bg-emerald-100 p-2 rounded-full">
               <Info className="w-5 h-5 text-emerald-600" />
             </div>
-            <h2 className="text-2xl font-bold text-slate-800 text-gray-400">Why This Pack Matters</h2>
+            <h2 className="text-2xl font-bold text-slate-800 text-gray-500">Why This Pack Matters?</h2>
           </div>
           
           <p className="text-slate-600 mb-8 leading-relaxed text-gray-500">
-            The average office worker generates significant emissions through daily activities. Whether it's disposable cups, cloud storage, or digital services, these micro-emissions accumulate. Offsetting them is a crucial step toward Net Zero.
-          </p>
+  {impact?.why ||
+    "Everyday activities generate hidden emissions. Offsetting helps balance their environmental impact."}
+</p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-gray-500">
-            {[
-              { label: "Data centers global emission share", val: "2-3%", icon: <Globe className="w-5 h-5 text-emerald-500"/> },
-              { label: "Yearly growth in digital emissions", val: "+9%", icon: <HardDrive className="w-5 h-5 text-emerald-500"/> },
-              { label: "Workers unaware of carbon footprint", val: "78%", icon: <Info className="w-5 h-5 text-emerald-500"/> }
-            ].map((stat, i) => (
-              <div key={i} className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
-                <div className="mb-4">{stat.icon}</div>
-                <div className="text-3xl font-bold text-slate-800 mb-2">{stat.val}</div>
-                <div className="text-sm text-slate-500">{stat.label}</div>
-              </div>
-            ))}
-          </div>
+  {(impact?.stats || []).map((stat: any, i: number) => (
+    <div
+      key={i}
+      className="bg-slate-50 p-6 rounded-2xl border border-slate-100"
+    >
+      <div className="text-3xl font-bold text-slate-800 mb-2">
+        {stat.number}
+      </div>
+
+      <div className="text-sm text-slate-500">{stat.fact}</div>
+    </div>
+  ))}
+</div>
         </div>
 
         {/* ================= EMITTERS IN THIS PACK ================= */}
@@ -406,7 +526,7 @@ const buildProjectSnapshot = (dbProject: any) => {
             {pack.emitters.map((emitter, idx) => (
               <div key={idx} className="flex items-center justify-between p-4 border border-slate-100 rounded-xl hover:border-emerald-200 transition-colors bg-white">
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-gray-600">
+                  <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-gray-500">
                     {getIconForEmitter(emitter.emitter_name_standard)}
                   </div>
                   <div>
@@ -649,7 +769,7 @@ const buildProjectSnapshot = (dbProject: any) => {
                <p className="text-slate-500 text-sm text-gray-500">Your contribution is distributed across these verified CDR projects</p>
             </div>
 
-              <div className="flex gap-2">
+              {/* <div className="flex gap-2">
     {!isEditingProjects ? (
       <button
   onClick={startEditProjects}
@@ -674,7 +794,7 @@ const buildProjectSnapshot = (dbProject: any) => {
         </button>
       </>
     )}
-  </div>
+  </div> */}
             {/* Dynamic Weighted Price Display */}
             <div className="bg-slate-100 px-4 py-2 rounded-lg text-right hidden md:block">
                <div className="text-xs text-slate-500">Weighted Average Cost</div>
@@ -733,7 +853,7 @@ const EquivalentCard = ({ icon, value, label, desc }: any) => (
 
 const ProjectCard = ({ project }: { project: Project }) => {
   return (
-    <div className="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-card card-hover text-gray-600">
+    <div className="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-card card-hover text-gray-500">
       
       {/* Image */}
       <div className="relative h-48 overflow-hidden">
@@ -759,7 +879,7 @@ const ProjectCard = ({ project }: { project: Project }) => {
 
       {/* Content */}
       <div className="p-5 space-y-3">
-        <h3 className="font-semibold text-foreground text-lg text-gray-600">
+        <h3 className="font-semibold text-foreground text-lg text-gray-500">
           {project.projectId}
         </h3>
 
@@ -771,7 +891,7 @@ const ProjectCard = ({ project }: { project: Project }) => {
         <div className="space-y-1">
           <div className="flex justify-between text-xs text-muted-foreground">
             <span>Emission allocated</span>
-            <span className="text-gray-600">{project.allocated_emission_kgco2e.toFixed(2)} kg CO₂e</span>
+            <span className="text-gray-500">{project.allocated_emission_kgco2e.toFixed(2)} kg CO₂e</span>
           </div>
 
           <div className="h-2 overflow-hidden rounded-full bg-muted">
@@ -796,7 +916,7 @@ const ProjectCard = ({ project }: { project: Project }) => {
           </div>
 
           <div className="text-right">
-            <div className="text-xl font-bold text-foreground text-gray-600">
+            <div className="text-xl font-bold text-foreground text-gray-500">
               ₹{project.price_per_kg}
               <span className="text-xs text-muted-foreground font-normal ml-1">
                 / kg CO₂

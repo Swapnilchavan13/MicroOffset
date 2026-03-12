@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Logo from "./Logo";
+import { useNavigate } from "react-router-dom";
 
 const navLinks = [
   { label: "How It Works", href: "#how-it-works" },
@@ -11,6 +12,7 @@ const navLinks = [
 ];
 
 const Header = () => {
+  const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -27,7 +29,7 @@ const Header = () => {
       className={`fixed left-0 right-0 top-0 z-50 transition-all duration-300 ${
         isScrolled
           ? "bg-background/95 shadow-card backdrop-blur-lg"
-          : "bg-transparent"
+          : "bg-background/95 shadow-card backdrop-blur-lg"
       }`}
     >
       <div className="container mx-auto flex h-16 items-center justify-between px-4 md:h-20 md:px-6">
@@ -42,7 +44,7 @@ const Header = () => {
               className={`text-sm font-medium transition-colors ${
                 isScrolled 
                   ? "text-muted-foreground hover:text-foreground" 
-                  : "text-white/80 hover:text-white"
+                  :"text-muted-foreground hover:text-foreground" 
               }`}
             >
               {link.label}
@@ -58,9 +60,15 @@ const Header = () => {
           >
             Sign In
           </Button>
-          <Button size="sm" className="bg-[#10B77F] hover:bg-[#0e9f6e] text-white">
-            Get Started
-          </Button>
+
+          
+          <Button
+  size="sm"
+  onClick={() => navigate("/emitter-pack")}
+  className="bg-[#10B77F] hover:bg-[#0e9f6e] text-white"
+>
+  Get Started
+</Button>
         </div>
 
         {/* Mobile Menu Button */}

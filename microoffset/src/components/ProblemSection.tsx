@@ -115,7 +115,7 @@ const ProblemSection = () => {
                       <Sparkles className="h-5 w-5 text-white" />
                     </div>
                     <h3 className="mb-1 text-xl font-bold text-white">
-                      MicroOffsets Solves This
+                      CO₂IN Solves This
                     </h3>
                     <p className="text-sm text-white/90">
                       Making small emissions <strong>visible</strong>, <strong>combinable</strong>, and <strong>actionable</strong>.
@@ -163,7 +163,7 @@ const ProblemSection = () => {
               A Smaller Unit of Impact
             </h3>
             <p>
-              MicroOffsets breaks emissions into human-sized pieces that match
+              CO₂IN breaks emissions into human-sized pieces that match
               daily behavior.
             </p>
           </section>

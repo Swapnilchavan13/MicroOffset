@@ -121,7 +121,7 @@ const CDRProjectsSection = () => {
                   <div className="mb-3">
                     <div className="mb-1 flex justify-between text-xs">
                       <span className="text-muted-foreground">
-                        Coin Retired
+                        CO₂IN Retired
                       </span>
                       <span className="font-semibold text-foreground">
                         {retiredPercent}%

@@ -53,15 +53,15 @@ useEffect(() => {
 
   return (
     <section id="featured-packs" className="relative bg-muted py-20 md:py-28">
-       <img
-    src="https://iili.io/qqSAICQ.png"
-    alt="Logo"
-    className="absolute top-6 left-6 w-28 md:w-36 opacity-90"
-  />
+   <img
+  src="https://iili.io/qqSAICQ.png"
+  alt="Logo"
+  className="absolute top-6 left-6 w-40 md:w-52 opacity-90"
+/>
       <div className="container relative mx-auto px-4 md:px-6 text-gray-600">
         <div className="mx-auto max-w-3xl text-center mb-12">
           <h2 className="text-3xl font-bold md:text-4xl lg:text-5xl">
-            Featured Coin Packs
+            Featured CO₂IN Packs
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">
             Pre-built packs for your everyday activities.
@@ -133,7 +133,7 @@ useEffect(() => {
       {pack.total_emission_kgco2e.toFixed(2)}
     </span>
     <span className="ml-1 text-sm text-muted-foreground">
-      Coins
+      CO₂INS
     </span>
 
     {/* Offset Price */}
@@ -146,13 +146,14 @@ useEffect(() => {
   </div>
 
   <Button
-    variant="ghost"
-    size="sm"
-    onClick={() => navigate(`/emitter-pack/${pack._id}`)}
-  >
-    View Pack Details
-    <ArrowRight className="h-4 w-4 ml-1" />
-  </Button>
+  variant="ghost"
+  size="sm"
+  className="border border-[#10B77F] text-[#10B77F] hover:bg-[#10B77F] hover:text-white"
+  onClick={() => navigate(`/emitter-pack/${pack._id}`)}
+>
+  View Pack Details
+  <ArrowRight className="h-4 w-4 ml-1" />
+</Button>
 
                   </div>
                 </div>

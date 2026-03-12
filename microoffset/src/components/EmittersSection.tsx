@@ -27,7 +27,7 @@ const EmittersSection = () => {
               <strong>Emitters</strong> are everyday actions that create emissions.
             </p>
             <p className="mb-8 text-lg text-muted-foreground">
-              <strong>Tags</strong> help organise them by context and purpose, keeping Coin powerful without being complicated.
+              <strong>Tags</strong> help organise them by context and purpose, keeping CO₂IN powerful without being complicated.
             </p>
 
             <div className="rounded-2xl border border-sage/20 bg-sage-light/50 p-6">

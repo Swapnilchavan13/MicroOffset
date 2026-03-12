@@ -38,7 +38,7 @@ const HeroSection = () => {
       <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald" />
     </span>
 
-    Join Coin
+    Join CO₂IN
 
     <span className="relative flex h-2 w-2">
       <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald opacity-75" />
@@ -64,8 +64,8 @@ const HeroSection = () => {
               </svg>
             </span>
           </h1>
-           <span className="text-[#10B77F] text-6xl">
-  CO₂IN by CO₂IN
+        <span className="text-[#10B77F] text-6xl">
+  CO<span className="text-4xl align-sub">₂</span>IN by CO<span className="text-4xl align-sub">₂</span>IN.
 </span>
           <br />
           <br />

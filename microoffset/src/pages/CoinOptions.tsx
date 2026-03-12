@@ -1,9 +1,11 @@
+import Header from "@/components/Header";
 import { Coins, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const CoinOptions = () => {
   return (
     <section className="py-20 bg-gray-50">
+      <Header />
       <div className="max-w-6xl mx-auto px-6">
 
         {/* Title */}
@@ -48,11 +50,14 @@ const CoinOptions = () => {
       Register
     </button>
   </Link>
-</div>
-
-              <button className="border border-gray-300 text-gray-500 px-5 py-2 rounded-lg text-sm hover:bg-gray-100 transition">
+  
+  <Link to="/login">
+              <button className="border border-gray-300 text-gray-500 px-5 py-2 rounded-lg text-sm hover:bg-grey-100 transition">
                 Login
               </button>
+  </Link>
+</div>
+
             </div>
 
             <p className="text-sm text-gray-500 underline cursor-pointer">
