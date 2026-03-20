@@ -10,6 +10,9 @@ const EmitterPack = require("./models/EmitterPack");
 const Project = require("./models/Project");
 const CoinUser = require("./models/CoinUser");
 
+const GeneratedApi = require("./models/GeneratedApi");
+const Transaction = require("./models/Transaction");
+
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
@@ -580,47 +583,41 @@ app.post("/register", async (req, res) => {
   }
 });
 
-
 app.post("/login", async (req, res) => {
   try {
-
     const { mobile, password } = req.body;
 
-    const user = await CoinUser.findOne({ mobile });
+    const user = await CoinUser.findOne({ mobile: String(mobile) });
 
     if (!user) {
       return res.status(400).json({
-        message: "User not found"
+        message: "User not found",
       });
     }
 
-    // Plain comparison (no bcrypt)
     if (user.password !== password) {
       return res.status(400).json({
-        message: "Invalid password"
+        message: "Invalid password",
       });
     }
 
-    // Generate JWT
+    // ✅ REAL JWT TOKEN
     const token = jwt.sign(
-      { id: user._id, mobile: user.mobile },
+      { id: user._id },
       "SECRET_KEY",
-      { expiresIn: "1d" }
+      { expiresIn: "7d" }
     );
 
     res.json({
-      message: "Login successful",
+      success: true,
       token,
-      user
+      user,
     });
 
-  } catch (error) {
-
+  } catch (err) {
     res.status(500).json({
-      message: "Login error",
-      error: error.message
+      message: err.message,
     });
-
   }
 });
 
@@ -631,6 +628,169 @@ app.get("/profile", authMiddleware, async (req, res) => {
 
   res.json(user);
 
+});
+
+
+app.post("/generate-pack-api", async (req, res) => {
+  try {
+    const { userId, packId } = req.body;
+
+    if (!userId || !packId) {
+      return res.status(400).json({
+        success: false,
+        message: "userId and packId required",
+      });
+    }
+
+    // ✅ check user
+    const user = await CoinUser.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+const { v4: uuidv4 } = require("uuid");
+
+const apiKey = uuidv4();
+
+    const newApi = await GeneratedApi.create({
+      userId,
+      packId,
+      apiKey,
+      link: `https://cooin.in/buy/${apiKey}`,
+    });
+
+    // ✅ attach API to user
+    user.generatedApis.push(newApi._id);
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "API generated successfully",
+      data: newApi,
+    });
+
+  } catch (error) {
+    console.error("ERROR:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+
+app.get("/public-pack/:apiKey", async (req, res) => {
+  try {
+    const { apiKey } = req.params;
+
+    const api = await GeneratedApi.findOne({ apiKey });
+
+    if (!api) {
+      return res.status(404).json({
+        success: false,
+        message: "Invalid API link",
+      });
+    }
+
+    const pack = await EmitterPack.findById(api.packId);
+
+    res.json({
+      success: true,
+      pack,
+      api,
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+
+
+app.post("/buy-pack/:apiKey", async (req, res) => {
+  try {
+    const { apiKey } = req.params;
+    const { name, email, mobile } = req.body;
+
+    if (!name || !email || !mobile) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields required",
+      });
+    }
+
+    const api = await GeneratedApi.findOne({ apiKey });
+
+    if (!api) {
+      return res.status(404).json({
+        success: false,
+        message: "Invalid API",
+      });
+    }
+
+    const pack = await EmitterPack.findById(api.packId);
+
+    const transaction = await Transaction.create({
+      apiId: api._id,
+      packId: api.packId,
+
+      buyerName: name,
+      buyerEmail: email,
+      buyerMobile: mobile,
+
+      amount: pack?.total_pack_price || 0,
+    });
+
+    // attach transaction to original user
+    await CoinUser.findByIdAndUpdate(api.userId, {
+      $push: { transactions: transaction._id },
+    });
+
+    res.json({
+      success: true,
+      message: "Purchase successful",
+      data: transaction,
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+
+
+app.get("/user-full-data/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const user = await CoinUser.findById(userId)
+      .populate("generatedApis")
+      .populate("transactions");
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      data: user,
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
 });
 
 // Server

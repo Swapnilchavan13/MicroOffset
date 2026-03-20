@@ -9,6 +9,22 @@ const CoinUserSchema = new mongoose.Schema(
     mobile: { type: String, required: true, unique: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
+
+    // 🔥 NEW: Track generated APIs
+    generatedApis: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "GeneratedApi",
+      },
+    ],
+
+    // 🔥 NEW: Track transactions
+    transactions: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Transaction",
+      },
+    ],
   },
   { timestamps: true }
 );
