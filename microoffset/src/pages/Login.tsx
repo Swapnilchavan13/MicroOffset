@@ -1,9 +1,8 @@
 import Header from "@/components/Header";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const Login = () => {
-
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
@@ -12,6 +11,15 @@ const Login = () => {
   });
 
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  // ✅ Auto redirect if already logged in
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      navigate("/dashboard");
+    }
+  }, [navigate]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({
@@ -21,11 +29,12 @@ const Login = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-
     e.preventDefault();
 
-    try {
+    setLoading(true);
+    setError("");
 
+    try {
       const res = await fetch("https://microoffsets.nettzero.world/api/login", {
         method: "POST",
         headers: {
@@ -37,26 +46,30 @@ const Login = () => {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.message);
+        setError(data.message || "Login failed");
+        setLoading(false);
         return;
       }
 
-      // Save JWT
+      // ✅ Save BOTH token + user (IMPORTANT)
       localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
 
+      // ✅ redirect
       navigate("/dashboard");
 
-    } catch {
+    } catch (err) {
       setError("Server error");
+    } finally {
+      setLoading(false);
     }
-
   };
 
   return (
     <section className="min-h-screen flex items-center justify-center bg-gray-50">
-<Header />
-      <div className="max-w-md w-full px-6">
+      <Header />
 
+      <div className="max-w-md w-full px-6">
         <div className="text-center mb-10">
           <h2 className="text-3xl font-semibold text-gray-700">
             Login to COIN
@@ -93,17 +106,16 @@ const Login = () => {
 
             <button
               type="submit"
-              className="w-full bg-emerald-500 text-white py-3 rounded-lg"
+              disabled={loading}
+              className="w-full bg-emerald-500 text-white py-3 rounded-lg flex justify-center items-center gap-2"
             >
-              Login
+              {loading ? "Logging in..." : "Login"}
             </button>
 
           </form>
 
         </div>
-
       </div>
-
     </section>
   );
 };

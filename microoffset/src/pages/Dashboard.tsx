@@ -5,11 +5,38 @@ const Dashboard = () => {
   const [user, setUser] = useState<any>(null);
   
   // State variables for Pack logic
+  const [loadingAnalytics, setLoadingAnalytics] = useState(true);
   const [packs, setPacks] = useState<any[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedPackId, setSelectedPackId] = useState<string | null>(null);
   const [showPackDetails, setShowPackDetails] = useState<boolean>(false);
+
+  const [analytics, setAnalytics] = useState<any>(null);
+
+useEffect(() => {
+  const fetchAnalytics = async () => {
+    try {
+      const storedUser = localStorage.getItem("user");
+      const parsedUser = storedUser ? JSON.parse(storedUser) : null;
+
+      if (!parsedUser) return;
+
+      const res = await fetch(
+        `https://microoffsets.nettzero.world/api/user-full-data/${parsedUser._id}`
+      );
+
+      const data = await res.json();
+      setAnalytics(data.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingAnalytics(false);
+    }
+  };
+
+  fetchAnalytics();
+}, []);
   
   const navigate = useNavigate();
 
@@ -19,9 +46,10 @@ const Dashboard = () => {
     const getProfile = async () => {
       try {
         const res = await fetch("https://microoffsets.nettzero.world/api/profile", {
-          headers: {
-            Authorization: token || "",
-          },
+         headers: {
+    "Content-Type": "application/json",
+    Authorization: token, // ✅ REQUIRED
+  },
         });
 
         if (res.status === 401) {
@@ -87,15 +115,51 @@ const Dashboard = () => {
       setShowPackDetails(false);
     }
   };
+const handleGenerateApi = async () => {
+  if (!selectedPackId) {
+    alert("No pack selected");
+    return;
+  }
 
-  const handleGenerateApi = () => {
-    const selectedPack = packs.find(p => p._id === selectedPackId);
-    console.log("Generating API Payload:", { user, pack: selectedPack });
-    alert(`API Generated for ${selectedPack.pack_name}! Check the console for the payload.`);
-  };
+  try {
+    const storedUser = localStorage.getItem("user");
+    const parsedUser = storedUser ? JSON.parse(storedUser) : null;
+
+    console.log("USER:", parsedUser);
+    console.log("PACK:", selectedPackId);
+
+    const res = await fetch("https://microoffsets.nettzero.world/api/generate-pack-api", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        userId: parsedUser?._id,
+        packId: selectedPackId,
+      }),
+    });
+
+    const text = await res.text();
+    console.log("RAW RESPONSE:", text);
+
+    const data = JSON.parse(text);
+
+    console.log("PARSED:", data);
+
+    if (data.success) {
+      alert("✅ API Generated!");
+      window.location.reload();
+    } else {
+      alert("❌ " + data.message);
+    }
+  } catch (err) {
+    console.error("ERROR:", err);
+    alert("Something broke. Check console.");
+  }
+};
 
   const filteredPacks = packs.filter((pack) => {
-    if (selectedCategories.length === 0) return false;
+    if (selectedCategories.length === 0) return true;
     return pack.emitters?.some((emitter: any) =>
       selectedCategories.includes(emitter.category)
     );
@@ -127,6 +191,62 @@ const Dashboard = () => {
           </div>
         </div>
       )}
+
+     {loadingAnalytics ? (
+  <p className="text-gray-500">Loading analytics...</p>
+) : (
+  analytics && (
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+
+    <div className="bg-white p-6 rounded-xl shadow">
+      <h3 className="text-gray-500">Total APIs</h3>
+      <p className="text-3xl font-bold">
+        {analytics?.generatedApis?.length || 0}
+      </p>
+    </div>
+
+    <div className="bg-white p-6 rounded-xl shadow">
+      <h3 className="text-gray-500">Total Transactions</h3>
+      <p className="text-3xl font-bold">
+        {analytics.transactions.length}
+      </p>
+    </div>
+
+    <div className="bg-white p-6 rounded-xl shadow">
+      <h3 className="text-gray-500">Total Revenue</h3>
+      <p className="text-3xl font-bold">
+        ₹ {analytics?.transactions?.reduce(
+  (sum: number, t: any) => sum + (t.amount || 0),
+  0
+) || 0}
+      </p>
+    </div>
+
+  </div>
+)
+)}
+
+
+{analytics?.generatedApis?.map((api: any) => (
+  <div key={api._id} className="bg-white p-4 rounded-lg mb-4 shadow flex justify-between items-center">
+    
+    <div>
+      <p className="font-bold">Pack ID: {api.packId}</p>
+      <p className="text-blue-600 text-sm">{api.link}</p>
+    </div>
+
+    <button
+      onClick={() => {
+        navigator.clipboard.writeText(api.link);
+        alert("📋 Link Copied!");
+      }}
+      className="bg-gray-800 text-white px-3 py-1 rounded"
+    >
+      Copy
+    </button>
+
+  </div>
+))}
 
       <div className="bg-white p-6 rounded-xl border shadow-sm">
         <h2 className="text-2xl font-bold mb-6">Register your COIN PACK</h2>

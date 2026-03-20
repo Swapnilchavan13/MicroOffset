@@ -18,6 +18,7 @@ import CoinRegisterForm from "./pages/CoinRegisterForm";
 import Login from "./pages/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
+import BuyPack from "./pages/BuyPack";
 
 const queryClient = new QueryClient();
 
@@ -39,7 +40,8 @@ const App = () => (
           <Route path="/coinoption" element={<CoinOptions />} />
           <Route path="/coinregister" element={<CoinRegisterForm />} />
 
-            <Route path="/login" element={<Login />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/buy/:apiKey" element={<BuyPack />} />
 
         <Route
           path="/dashboard"
