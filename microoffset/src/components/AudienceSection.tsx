@@ -43,7 +43,7 @@ const AudienceSection = () => {
                 Who It's For
               </h2>
               <p className="text-lg text-muted-foreground">
-                CO₂IN scales from personal use to organizational impact
+                COIN scales from personal use to organizational impact
               </p>
             </div>
 
@@ -74,7 +74,7 @@ const AudienceSection = () => {
             <div className="relative overflow-hidden rounded-3xl shadow-hover">
               <img
                 src={audienceCommunity}
-                alt="Community using CO₂IN"
+                alt="Community using COIN"
                 className="h-full w-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-foreground/50 via-transparent to-transparent" />

@@ -32,7 +32,7 @@ const WhyDifferentSection = () => {
                 Our Approach
               </div>
               <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl text-gray-500">
-                Why CO₂IN Is Different
+                Why COIN Is Different
               </h2>
               <p className="mb-8 text-lg text-muted-foreground">
                 We've rethought carbon offsetting from the ground up, making it accessible, actionable, and transparent for everyone.

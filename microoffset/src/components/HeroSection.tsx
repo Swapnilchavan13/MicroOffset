@@ -38,7 +38,7 @@ const HeroSection = () => {
       <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald" />
     </span>
 
-    Join CO₂IN
+    Join COIN
 
     <span className="relative flex h-2 w-2">
       <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald opacity-75" />
@@ -65,7 +65,7 @@ const HeroSection = () => {
             </span>
           </h1>
         <span className="text-[#10B77F] text-6xl">
-  CO<span className="text-4xl align-sub">₂</span>IN by CO<span className="text-4xl align-sub">₂</span>IN.
+  COIN by COIN.
 </span>
           <br />
           <br />
@@ -73,7 +73,7 @@ const HeroSection = () => {
 
           {/* Subheadline */}
           <p className="animate-fade-up animation-delay-200 mx-auto mb-4 max-w-2xl text-lg text-white/80 md:text-lg">
-Eliminate the CO₂ footprint of your everyday actions like travel, digital usage, dining out, hotel stays and events through reliable “offset-packs". Because the journey to neutralise billions of carbon footprints, begins with a single <span className="text-[#10B77F]">CO₂IN.</span></p>
+Eliminate the CO₂ footprint of your everyday actions like travel, digital usage, dining out, hotel stays and events through reliable “offset-packs". Because the journey to neutralise billions of carbon footprints, begins with a single <span className="text-[#10B77F]">COIN.</span></p>
 
           {/* CTA Buttons */}
           <div className="animate-fade-up animation-delay-400 flex flex-col items-center justify-center gap-4 sm:flex-row">

@@ -12,7 +12,7 @@ const steps = [
   {
     icon: Package,
     number: "02",
-    title: "Create a CO₂IN Pack",
+    title: "Create a COIN Pack",
     description: "Combine multiple emitters into one pack. See total emissions update live.",
   },
   {
@@ -38,7 +38,7 @@ const HowItWorksSection = () => {
             Simple Process
           </div>
           <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl  text-gray-500">
-            How CO₂IN Work
+            How COIN Work
           </h2>
           <p className="mb-12 text-lg text-muted-foreground">
             Four simple steps to real climate impact
@@ -107,7 +107,7 @@ const HowItWorksSection = () => {
                 Or Just Choose From Pre-Created Packs
               </h3>
               <p className="mx-auto mb-6 max-w-lg text-muted-foreground">
-                Don't want to build your own? We've curated ready-to-use CO₂IN Packs for common activities. Start offsetting in seconds.
+                Don't want to build your own? We've curated ready-to-use COIN Packs for common activities. Start offsetting in seconds.
               </p>
               <Link to="/emitter-pack">
                 <Button variant="outline" className="border-violet/30 hover:bg-violet/10">

@@ -42,7 +42,7 @@ const MeasurementSection = () => {
             How We Accurately Measure Your Packs
           </h2>
           <p className="animate-fade-up animation-delay-200 mb-16 text-lg text-white/70">
-            Every CO₂IN is calculated using globally validated emission factors from the world's most trusted sources.
+            Every COIN is calculated using globally validated emission factors from the world's most trusted sources.
           </p>
         </div>
 

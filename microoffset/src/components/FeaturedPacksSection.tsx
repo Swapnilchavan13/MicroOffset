@@ -61,7 +61,7 @@ useEffect(() => {
       <div className="container relative mx-auto px-4 md:px-6 text-gray-600">
         <div className="mx-auto max-w-3xl text-center mb-12">
           <h2 className="text-3xl font-bold md:text-4xl lg:text-5xl">
-            Featured CO₂IN Packs
+            Featured COIN Packs
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">
             Pre-built packs for your everyday activities.
