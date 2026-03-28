@@ -6,6 +6,14 @@ import { Link } from "react-router-dom";
 
 
 const HeroSection = () => {
+
+  const scrollToTop = () => {
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth",
+  });
+};
+
   const navigate = useNavigate();
 
   return (
@@ -118,6 +126,14 @@ Eliminate the CO₂ footprint of your everyday actions like travel, digital usag
         </div>
       </div>
 
+    <Button
+  onClick={scrollToTop}
+  className="fixed right-4 bottom-8 z-50 rounded-full p-3 bg-[#10B77F] hover:bg-[#0e9f6e] text-white shadow-lg"
+>↑
+</Button>
+  
+
+
       {/* Scroll indicator */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
         <div className="flex h-10 w-6 items-start justify-center rounded-full border-2 border-white/30 p-1.5">
@@ -125,6 +141,7 @@ Eliminate the CO₂ footprint of your everyday actions like travel, digital usag
         </div>
       </div>
     </section>
+    
   );
 };
 

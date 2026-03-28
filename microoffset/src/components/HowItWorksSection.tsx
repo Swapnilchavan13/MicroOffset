@@ -38,7 +38,7 @@ const HowItWorksSection = () => {
             Simple Process
           </div>
           <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl  text-gray-500">
-            How COIN Work
+            How COIN Works
           </h2>
           <p className="mb-12 text-lg text-muted-foreground">
             Four simple steps to real climate impact

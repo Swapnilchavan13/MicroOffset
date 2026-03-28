@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { MapPin, Tag, Leaf, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import cdrBiochar from "@/assets/cdr-biochar.jpg";
+import { useNavigate } from "react-router-dom";
 
 interface Project {
   _id: string;
@@ -22,6 +23,8 @@ const fallbackImage = cdrBiochar;
 const CDRProjectsSection = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetch("https://microoffsets.nettzero.world/api/projects")
@@ -153,13 +156,21 @@ const CDRProjectsSection = () => {
                     </div>
 
                     <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-emerald hover:text-emerald"
-                    >
-                      Project Details
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
+  variant="ghost"
+  size="sm"
+  className="text-emerald hover:text-emerald"
+  onClick={() => {
+    if (!project._id) {
+      console.error("Missing _id:", project);
+      return;
+    }
+    navigate(`/projects/${project._id}`);
+  }}
+>
+  Project Details
+  <ArrowRight className="h-4 w-4" />
+</Button>
+
                   </div>
                 </div>
               </div>

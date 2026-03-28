@@ -19,6 +19,8 @@ import Login from "./pages/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
 import BuyPack from "./pages/BuyPack";
+import Projects from "./pages/Projects";
+import SingleProject from "./pages/SingleProject";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +44,10 @@ const App = () => (
 
           <Route path="/login" element={<Login />} />
           <Route path="/buy/:apiKey" element={<BuyPack />} />
+
+          <Route path="/projects" element={<Projects />} />
+          <Route path="/projects/:id" element={<SingleProject />} />
+
 
         <Route
           path="/dashboard"

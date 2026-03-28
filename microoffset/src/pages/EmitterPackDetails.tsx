@@ -652,9 +652,9 @@ const buildProjectSnapshot = (dbProject: any) => {
       <div className="text-2xl font-serif text-slate-700 tracking-wide">
         NettZero<span className="text-emerald-500">.</span>
       </div>
-      <div className="text-sm text-slate-500">
+      {/* <div className="text-sm text-slate-500">
         PURO.earth Registry Partner
-      </div>
+      </div> */}
       <div className="text-sm text-slate-400">
         ClimeGroove
       </div>

@@ -56,7 +56,7 @@ const Header = () => {
           <Button 
             variant="ghost" 
             size="sm"
-            className={isScrolled ? "" : "text-white hover:bg-white/10 hover:text-white"}
+            // className={isScrolled ? "" : "text-white hover:bg-white/10 hover:text-white"}
           >
             Sign In
           </Button>
