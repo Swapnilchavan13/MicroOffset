@@ -56,6 +56,7 @@ const Header = () => {
           <Button 
             variant="ghost" 
             size="sm"
+            onClick={() => navigate("/coinoption")}
             // className={isScrolled ? "" : "text-white hover:bg-white/10 hover:text-white"}
           >
             Sign In
