@@ -111,7 +111,7 @@ const SingleProject: React.FC = () => {
           {/* GREEN CARD */}
           <div className="bg-gradient-to-br from-green-500 to-emerald-400 text-white rounded-2xl p-4 sm:p-5 lg:p-6">
             <p className="text-lg sm:text-xl font-bold">
-              {project.available.toLocaleString()} Climes
+              {project.available.toLocaleString()} Coins
             </p>
             <p className="text-xs sm:text-sm">
               available to purchase
@@ -124,7 +124,7 @@ const SingleProject: React.FC = () => {
             </button>
 
             <p className="mt-3 underline text-xs sm:text-sm text-center">
-              Send Climes?
+              Send Coins?
             </p>
           </div>
 

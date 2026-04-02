@@ -146,7 +146,7 @@ const Projects: React.FC = () => {
                 
                 <div>
                   <p className="text-base sm:text-lg font-bold">
-                    {project.available.toLocaleString()} Climes
+                    {project.available.toLocaleString()} Coins
                   </p>
                   <p className="text-[10px] sm:text-xs opacity-90">
                     available to purchase
@@ -158,7 +158,7 @@ const Projects: React.FC = () => {
                     Register Interest
                   </button>
                   <button className="w-full text-white underline text-xs sm:text-sm">
-                    Send Climes?
+                    Send Coins?
                   </button>
                 </div>
               </div>
@@ -167,7 +167,7 @@ const Projects: React.FC = () => {
             {/* ✅ MOBILE FIX: stack card content */}
             <div className="lg:hidden absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent text-white">
               <p className="text-sm font-semibold">
-                {project.available.toLocaleString()} Climes available
+                {project.available.toLocaleString()} Coins available
               </p>
             </div>
           </div>

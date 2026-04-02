@@ -176,8 +176,25 @@ const CDRProjectsSection = () => {
               </div>
             );
           })}
+                    
         </div>
+       <div className="w-full flex justify-center mt-6">
+  <button
+    onClick={() => navigate("/projects")}
+    className="inline-flex items-center justify-center
+               px-4 py-2 text-sm font-medium
+               rounded-lg
+               bg-green-600/90 text-white
+               shadow-md shadow-green-500/20
+               hover:bg-green-500 hover:shadow-green-400/40 hover:scale-105
+               transition-all duration-200 ease-in-out"
+  >
+    See All Projects
+  </button>
+</div>
       </div>
+
+
     </section>
   );
 };
