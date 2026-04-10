@@ -1,3 +1,4 @@
+import Header from "@/components/Header";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -24,34 +25,35 @@ interface Project {
 
 // ✅ Sidebar (hidden on mobile)
 const Sidebar: React.FC = () => {
-  const menu = [
-    { name: "Home", icon: "🏠" },
-    { name: "Projects", icon: "🌱", active: true },
-    { name: "Gen-C Brands", icon: "🚀" },
-    { name: "I am Gen-C", icon: "🧬" },
-    { name: "Neutralise Now", icon: "💧" },
-  ];
+const navigate = useNavigate(); // 👈 ADD THIS
+ const menu = [
+  { name: "Home", icon: "🏠", route: "/" },
+  { name: "Projects", icon: "🌱", route: "/projects", active: true },
+];
 
   return (
-    <div className="hidden lg:block w-[260px] bg-white rounded-2xl shadow-md p-5 space-y-4">
-      <div className="flex items-center gap-2 font-bold text-purple-600 text-lg">
+    
+    <div className="hidden pt-20 lg:block w-[260px] bg-white rounded-2xl shadow-md p-5 space-y-4">
+      <Header />
+      <div className="flex  items-center gap-2 font-bold text-purple-600 text-lg">
         ⚙️ COIN
       </div>
 
       <div className="space-y-2 mt-4">
-        {menu.map((item) => (
-          <div
-            key={item.name}
-            className={`flex items-center gap-3 px-4 py-3 rounded-full cursor-pointer transition ${
-              item.active
-                ? "bg-gradient-to-r from-purple-400 to-purple-600 text-white"
-                : "hover:bg-gray-100"
-            }`}
-          >
-            <span>{item.icon}</span>
-            <span className="text-sm font-medium">{item.name}</span>
-          </div>
-        ))}
+     {menu.map((item) => (
+  <div
+    key={item.name}
+    onClick={() => navigate(item.route)} // 👈 THIS DOES THE MAGIC
+    className={`flex items-center gap-3 px-4 py-3 rounded-full cursor-pointer transition ${
+      item.active
+        ? "bg-gradient-to-r from-purple-400 to-purple-600 text-white"
+        : "hover:bg-gray-100"
+    }`}
+  >
+    <span>{item.icon}</span>
+    <span className="text-sm font-medium">{item.name}</span>
+  </div>
+))}
       </div>
     </div>
   );
@@ -88,7 +90,7 @@ const Projects: React.FC = () => {
       <Sidebar />
 
       {/* Main */}
-      <div className="flex-1 space-y-6">
+      <div className="flex-1 pt-20 space-y-6">
         {/* Header */}
         <div>
           <h1 className="text-xl sm:text-2xl font-semibold">

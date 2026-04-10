@@ -443,10 +443,10 @@ const buildProjectSnapshot = (dbProject: any) => {
       <div className="bg-slate-50 min-h-screen font-sans text-slate-800 pb-20">
         <Header />
       <button
-  onClick={() => navigate("/")} // or navigate(-1) if you want browser back
+  onClick={() => navigate("/emitter-pack")} // or navigate(-1) if you want browser back
   className="fixed top-20 left-6 z-50 flex items-center gap-2 bg-white border border-slate-200 px-4 py-2 rounded-full shadow-sm hover:bg-slate-50 transition"
 >
-  <ArrowLeft className="w-4 h-4 text-slate-600" />
+  <ArrowLeft className="w-4 h-4 text-slate-600"  />
   <span className="text-sm font-medium text-slate-700">Back to Packs</span>
 </button>
 
@@ -634,9 +634,12 @@ const buildProjectSnapshot = (dbProject: any) => {
                     ₹{(pack.total_pack_price * quantity).toFixed(2)}
                  </span>
                </div>
-               <button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-xl transition-all shadow-md flex items-center justify-center gap-2">
-                 Offset Now <ArrowRight className="w-4 h-4"/>
-               </button>
+               <button
+  onClick={() => navigate(`/checkout/${pack._id}?qty=${quantity}`)}
+  className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2"
+>
+  Offset Now <ArrowRight className="w-4 h-4" />
+</button>
              </div>
           </div>
 
@@ -743,9 +746,9 @@ const buildProjectSnapshot = (dbProject: any) => {
       </div>
 
       <div className="flex gap-6 text-sm text-emerald-600">
-        <span className="flex items-center gap-1 cursor-pointer hover:underline">
+        {/* <span className="flex items-center gap-1 cursor-pointer hover:underline">
           🔗 Shareable
-        </span>
+        </span> */}
        <span
   onClick={handlePrint}
   className="flex items-center gap-1 cursor-pointer hover:underline"

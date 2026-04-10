@@ -30,15 +30,85 @@ const ProjectSubSidebar: React.FC = () => {
     <div className="hidden lg:block w-[260px] bg-white rounded-2xl shadow-md p-5 space-y-4">
       <div
         className="flex items-center gap-2 cursor-pointer"
-        onClick={() => navigate("/")}
+          onClick={() => navigate(-1)} // 👈 FIXED
       >
         ← <span className="font-medium">Projects</span>
       </div>
 
       <div className="border-t pt-4 space-y-4">
         <div className="text-purple-600 font-semibold">Impact</div>
-        <div className="text-gray-500">About</div>
-        <div className="text-gray-500">Updates</div>
+        {/* <div className="text-gray-500">About</div> */}
+        {/* <div className="text-gray-500">Updates</div> */}
+      </div>
+    </div>
+  );
+};
+
+const ExploreCarousel: React.FC<{ currentProjectId?: string }> = ({
+  currentProjectId,
+}) => {
+  const [projects, setProjects] = useState<Project[]>([]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    fetch("https://microoffsets.nettzero.world/api/projects")
+      .then((res) => res.json())
+      .then((data) => setProjects(data.data));
+  }, []);
+
+  return (
+    <div className="w-full overflow-x-auto">
+      <div className="flex gap-4 w-max px-1">
+        {projects
+          .filter((p) => p._id !== currentProjectId)
+          .map((project) => (
+            <div
+              key={project._id}
+              onClick={() => navigate(`/projects/${project._id}`)}
+              className="min-w-[280px] sm:min-w-[320px] md:min-w-[340px] relative rounded-2xl overflow-hidden shadow-lg cursor-pointer hover:scale-[1.02] transition"
+            >
+              {/* IMAGE */}
+              <img
+                src={`https://microoffsets.nettzero.world/api/uploads/${project.image}`}
+                alt={project.title}
+                className="w-full h-[200px] object-cover"
+              />
+
+              {/* OVERLAY */}
+              <div className="absolute inset-0 bg-black/50" />
+
+              {/* CONTENT */}
+              <div className="absolute inset-0 flex flex-col justify-between p-4 text-white">
+                {/* TOP */}
+                <div>
+                  <h2 className="text-sm font-bold">
+                    {project.title}
+                  </h2>
+
+                  <p className="text-xs opacity-80">
+                    {project.projectDeveloper} • {project.location}
+                  </p>
+
+                  <div className="flex gap-2 mt-2 text-[10px]">
+                    <span className="bg-green-500/80 px-2 py-1 rounded">
+                      {project.verifiedBy}
+                    </span>
+                    <span className="bg-white/20 px-2 py-1 rounded">
+                      {project.typeOfProject}
+                    </span>
+                  </div>
+                </div>
+
+                {/* BOTTOM */}
+                <div className="bg-orange-500/90 rounded-xl p-3 text-xs">
+                  <p className="font-bold">
+                    {project.available.toLocaleString()} Coins
+                  </p>
+                  <p className="opacity-80">Available</p>
+                </div>
+              </div>
+            </div>
+          ))}
       </div>
     </div>
   );
@@ -184,17 +254,19 @@ const SingleProject: React.FC = () => {
         </div>
 
         {/* EXPLORE */}
-        <div>
-          <h2 className="text-lg sm:text-xl font-semibold mb-4">
-            Explore Other Projects
-          </h2>
+       <div>
+  <h2 className="text-lg sm:text-xl font-semibold mb-4">
+    Explore Other Projects
+  </h2>
 
-          <p className="text-xs sm:text-sm text-gray-500">
-            (You can reuse your list component here for carousel later)
-          </p>
-        </div>
+  {/* CAROUSEL */}
+  <ExploreCarousel currentProjectId={id} />
+</div>
       </div>
+      
     </div>
+
+    
   );
 };
 
