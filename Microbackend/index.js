@@ -13,6 +13,8 @@ const CoinUser = require("./models/CoinUser");
 const GeneratedApi = require("./models/GeneratedApi");
 const Transaction = require("./models/Transaction");
 
+const PopUp = require("./models/PopUp");
+
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
@@ -783,6 +785,65 @@ app.get("/user-full-data/:userId", async (req, res) => {
     res.json({
       success: true,
       data: user,
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+
+//PopUp
+
+app.post("/popup", async (req, res) => {
+  try {
+    const { name, email, company_or_organization, contact_number, enquiry } = req.body;
+
+    // 🔥 Hardcoded source
+    const source = "nettzero"; // change per deployment
+
+    if (!name || !email || !enquiry) {
+      return res.status(400).json({
+        success: false,
+        message: "Name, Email, and Enquiry are required",
+      });
+    }
+
+    const newPopUp = new PopUp({
+      name,
+      email,
+      company_or_organization,
+      contact_number,
+      enquiry,
+      source,
+    });
+
+    const savedData = await newPopUp.save();
+
+    res.status(201).json({
+      success: true,
+      message: "Enquiry submitted successfully",
+      data: savedData,
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+
+app.get("/getpopup", async (req, res) => {
+  try {
+    const enquiries = await PopUp.find().sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: enquiries.length,
+      data: enquiries,
     });
 
   } catch (error) {
