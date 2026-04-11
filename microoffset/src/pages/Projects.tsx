@@ -64,6 +64,21 @@ const Projects: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  const [selectedProject, setSelectedProject] = useState(null);
+const [showModal, setShowModal] = useState(false);
+
+const [showSuccess, setShowSuccess] = useState(false);
+
+const openInterestModal = (project) => {
+  setSelectedProject(project);
+  setShowModal(true);
+};
+
+const closeModal = () => {
+  setShowModal(false);
+  setSelectedProject(null);
+};
+
   useEffect(() => {
     const fetchProjects = async () => {
       try {
@@ -106,8 +121,6 @@ const Projects: React.FC = () => {
         {/* Cards */}
         {projects.map((project) => (
           <div
-            key={project._id}
-            onClick={() => navigate(`/projects/${project._id}`)}
             className="relative rounded-2xl overflow-hidden shadow-lg cursor-pointer hover:scale-[1.01] transition"
           >
             {/* Image */}
@@ -124,7 +137,8 @@ const Projects: React.FC = () => {
             <div className="absolute inset-0 flex flex-col lg:flex-row justify-between p-4 sm:p-5 lg:p-6 text-white gap-4">
               
               {/* LEFT */}
-              <div className="max-w-xl space-y-2">
+              <div className="max-w-xl space-y-2" key={project._id}
+            onClick={() => navigate(`/projects/${project._id}`)}>
                 <h2 className="text-lg sm:text-xl font-bold">
                   {project.title}
                 </h2>
@@ -156,9 +170,15 @@ const Projects: React.FC = () => {
                 </div>
 
                 <div className="space-y-2 mt-4">
-                  <button className="w-full bg-indigo-900 text-white py-2 rounded-full text-xs sm:text-sm">
-                    Register Interest
-                  </button>
+                 <button
+  onClick={(e) => {
+    e.stopPropagation();
+    openInterestModal(project);
+  }}
+  className="pointer-events-auto w-full bg-indigo-900 text-white py-2 rounded-full text-xs sm:text-sm"
+>
+  Register Interest
+</button>
                   <button className="w-full text-white underline text-xs sm:text-sm">
                     Send Coins?
                   </button>
@@ -175,7 +195,109 @@ const Projects: React.FC = () => {
           </div>
         ))}
       </div>
+      {showModal && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    
+    <div className="bg-white w-[90%] max-w-md rounded-2xl p-6 relative">
+      
+      {/* Close */}
+      <button
+        onClick={closeModal}
+        className="absolute top-3 right-3 text-gray-500 text-lg"
+      >
+        ✕
+      </button>
+
+      {/* Title */}
+      <h2 className="text-lg font-semibold mb-4">
+        Register Interest
+      </h2>
+
+      {/* Form */}
+     <form
+onSubmit={(e) => {
+  e.preventDefault();
+
+  setShowModal(false);     // close form modal
+  setShowSuccess(true);    // show success popup
+
+  setTimeout(() => {
+    setShowSuccess(false); // auto close after 2 sec
+  }, 2000);
+}}
+  className="space-y-3"
+>
+  {/* Name */}
+  <input
+    type="text"
+    placeholder="Name"
+    required
+    className="w-full border p-2 rounded-lg"
+  />
+
+  {/* Email */}
+  <input
+    type="email"
+    placeholder="Email"
+    required
+    className="w-full border p-2 rounded-lg"
+  />
+
+  {/* Company */}
+  <input
+    type="text"
+    placeholder="Company (optional)"
+    className="w-full border p-2 rounded-lg"
+  />
+
+  {/* Subject */}
+  <input
+    type="text"
+    value={`Yes, I am interested in ${selectedProject?.title} project`}
+    readOnly
+    className="w-full border p-2 rounded-lg bg-gray-100"
+  />
+
+  {/* Body / Message */}
+  <textarea
+    defaultValue={`Please send me more information about this project.\n\nI am particularly interested in learning more about...`}
+    className="w-full border p-2 rounded-lg"
+    rows={4}
+  />
+
+  <button
+    type="submit"
+    className="w-full bg-purple-600 text-white py-2 rounded-lg"
+  >
+    Submit
+  </button>
+</form>
     </div>
+    
+  </div>
+)}
+{showSuccess && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+    
+    <div className="bg-white rounded-2xl shadow-xl p-6 w-[90%] max-w-sm text-center animate-fadeIn">
+      
+      {/* Icon */}
+      <div className="text-4xl mb-3">✅</div>
+
+      {/* Title */}
+      <h2 className="text-lg font-semibold">
+        Interest Submitted
+      </h2>
+
+      {/* Message */}
+      <p className="text-sm text-gray-500 mt-2">
+        Your interest has been successfully submitted.
+      </p>
+    </div>
+  </div>
+)}
+    </div>
+    
   );
 };
 
