@@ -35,7 +35,7 @@ const navigate = useNavigate(); // 👈 ADD THIS
     
     <div className="hidden pt-20 lg:block w-[260px] bg-white rounded-2xl shadow-md p-5 space-y-4">
       <Header />
-      <div className="flex  items-center gap-2 font-bold text-purple-600 text-lg">
+      <div className="flex  items-center gap-2 font-bold text-grey-600 text-lg">
         ⚙️ COIN
       </div>
 
@@ -46,7 +46,7 @@ const navigate = useNavigate(); // 👈 ADD THIS
     onClick={() => navigate(item.route)} // 👈 THIS DOES THE MAGIC
     className={`flex items-center gap-3 px-4 py-3 rounded-full cursor-pointer transition ${
       item.active
-        ? "bg-gradient-to-r from-purple-400 to-purple-600 text-white"
+        ? "bg-gradient-to-r from-green-400 to-green-600 text-black"
         : "hover:bg-gray-100"
     }`}
   >
@@ -119,6 +119,8 @@ const closeModal = () => {
         </div>
 
         {/* Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
+
         {projects.map((project) => (
           <div
             className="relative rounded-2xl overflow-hidden shadow-lg cursor-pointer hover:scale-[1.01] transition"
@@ -158,7 +160,7 @@ const closeModal = () => {
               </div>
 
               {/* RIGHT PANEL */}
-              <div className="bg-orange-500/90 backdrop-blur-md rounded-xl lg:rounded-2xl p-4 sm:p-5 flex flex-col justify-between w-full lg:w-[220px]">
+              <div className="bg-black-700 backdrop-blur rounded-xl lg:rounded-2xl p-4 sm:p-5 flex flex-col justify-between w-full lg:w-[220px]">
                 
                 <div>
                   <p className="text-base sm:text-lg font-bold">
@@ -175,13 +177,19 @@ const closeModal = () => {
     e.stopPropagation();
     openInterestModal(project);
   }}
-  className="pointer-events-auto w-full bg-indigo-900 text-white py-2 rounded-full text-xs sm:text-sm"
+  className="pointer-events-auto w-full bg-green-600 text-black py-2 rounded-full text-xs sm:text-sm"
 >
   Register Interest
 </button>
-                  <button className="w-full text-white underline text-xs sm:text-sm">
-                    Send Coins?
-                  </button>
+                  <button
+  onClick={(e) => {
+    e.stopPropagation();
+    navigate("/project-checkout", { state: { project } });
+  }}
+  className="w-full text-white underline text-xs sm:text-sm"
+>
+  Send Coins?
+</button>
                 </div>
               </div>
             </div>
@@ -194,6 +202,8 @@ const closeModal = () => {
             </div>
           </div>
         ))}
+      </div>
+
       </div>
       {showModal && (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">

@@ -22,6 +22,7 @@ import BuyPack from "./pages/BuyPack";
 import Projects from "./pages/Projects";
 import SingleProject from "./pages/SingleProject";
 import CheckoutPage from "./pages/CheckoutPage";
+import ProjectCheckoutPage from "./pages/ProjectCheckoutPage";
 
 const queryClient = new QueryClient();
 
@@ -50,6 +51,8 @@ const App = () => (
           <Route path="/projects/:id" element={<SingleProject />} />
 
           <Route path="/checkout/:id" element={<CheckoutPage />} />
+
+          <Route path="/project-checkout" element={<ProjectCheckoutPage />} />
 
 
         <Route
