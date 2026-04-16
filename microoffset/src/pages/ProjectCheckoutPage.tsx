@@ -1,5 +1,6 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import Header from "@/components/Header";
 
 const ProjectCheckoutPage = () => {
   const { state } = useLocation();
@@ -42,9 +43,9 @@ const ProjectCheckoutPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 pt-24 px-4">
-      
+      <Header />
       {/* HEADER */}
-      <div className="max-w-4xl mx-auto mb-6">
+      <div className="max-w-4xl mx-auto mb-6 p-6">
         <h1 className="text-3xl font-bold">Checkout</h1>
         <p className="text-gray-500 text-sm">
           Complete your purchase securely
