@@ -23,6 +23,7 @@ import Projects from "./pages/Projects";
 import SingleProject from "./pages/SingleProject";
 import CheckoutPage from "./pages/CheckoutPage";
 import ProjectCheckoutPage from "./pages/ProjectCheckoutPage";
+import CoinSite from "./pages/coinsite";
 
 const queryClient = new QueryClient();
 
@@ -53,6 +54,10 @@ const App = () => (
           <Route path="/checkout/:id" element={<CheckoutPage />} />
 
           <Route path="/project-checkout" element={<ProjectCheckoutPage />} />
+
+
+          <Route path="/coinsite" element={<CoinSite />} />
+
 
 
         <Route
