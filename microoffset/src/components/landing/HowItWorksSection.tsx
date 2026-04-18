@@ -17,7 +17,7 @@ const businessSteps = [
 
 const StepRow = ({ steps, line }: { steps: typeof customerSteps; line: string }) => (
   <div>
-    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-0">
+    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-0 font-space">
       {steps.map(({ icon: Icon, label }, i) => (
         <div key={label} className="flex items-center gap-3 sm:gap-0">
           <div className="flex items-center gap-3">
@@ -37,7 +37,7 @@ const StepRow = ({ steps, line }: { steps: typeof customerSteps; line: string })
 );
 
 const HowItWorksSection = () => (
-  <section id="how-it-works" className="py-20 md:py-28 bg-background">
+  <section id="how-it-works" className="py-20 md:py-28 bg-background font-space">
     <div className="container max-w-4xl">
       <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-3xl md:text-5xl font-bold tracking-tight text-center">
         How It Works

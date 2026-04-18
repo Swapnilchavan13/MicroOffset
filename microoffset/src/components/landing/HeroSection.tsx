@@ -6,7 +6,7 @@ const HeroSection = () => {
   const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
 
   return (
-    <section id="hero" className="bg-hero min-h-screen flex items-center pt-16">
+    <section id="hero" className="bg-hero min-h-screen flex items-center pt-16 font-space">
       <div className="container py-20 md:py-32">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -36,14 +36,14 @@ const HeroSection = () => {
           </motion.div>
 
           <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
-            <Button variant="hero" size="lg" onClick={() => scrollTo("signup")} className="h-14 px-8 text-base">
+            <Button size="lg" onClick={() => scrollTo("signup")} className="h-14 px-8 text-base">
               Join the CO₂IN Program <ArrowRight className="ml-1" size={18} />
             </Button>
             <Button
               variant="heroOutline"
               size="lg"
               onClick={() => scrollTo("explainer")}
-              className="h-14 px-8 text-base text-hero-muted border-hero-muted/20 hover:bg-foreground/5"
+              className="h-14 px-8 text-base text-hero-muted border-hero-muted/20 hover:bg-foreground/5 border border-gray-200"
             >
               <Play size={18} className="mr-1" /> Watch How It Works
             </Button>

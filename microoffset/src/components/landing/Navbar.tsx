@@ -11,7 +11,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-hero/95 backdrop-blur-md border-b border-foreground/5">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-hero/95 backdrop-blur-md border-b border-foreground/5 font-space">
       <div className="container flex items-center justify-between h-16">
         <button onClick={() => scrollTo("hero")} className="font-display font-bold text-xl text-hero">
           CO₂IN

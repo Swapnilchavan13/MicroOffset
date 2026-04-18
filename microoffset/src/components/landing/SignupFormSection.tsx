@@ -20,7 +20,7 @@ const SignupFormSection = () => {
   };
 
   return (
-    <section id="signup" className="py-20 md:py-28 bg-background">
+    <section id="signup" className="py-20 md:py-28 bg-background font-space">
       <div className="container max-w-2xl">
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12">
           <h2 className="text-3xl md:text-5xl font-bold tracking-tight">Join the CO₂IN Program</h2>

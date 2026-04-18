@@ -9,7 +9,7 @@ const bullets = [
 ];
 
 const WhatIsCoinSection = () => (
-  <section className="py-20 md:py-28 bg-section-alt">
+  <section className="py-20 md:py-28 bg-section-alt font-space">
     <div className="container max-w-4xl">
       <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center">
         <h2 className="text-3xl md:text-5xl font-bold tracking-tight">A Simple Idea</h2>

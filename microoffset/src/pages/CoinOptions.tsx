@@ -61,10 +61,11 @@ const CoinOptions = () => {
 </div>
 
             </div>
-
+<Link to="/coinsite">
             <p className="text-sm text-gray-500 underline cursor-pointer">
               Why Register?
             </p>
+</Link>
           </div>
 
           {/* RECEIVE COINS */}

@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { CheckCircle } from "lucide-react";
 
 const ExplainerSection = () => (
-  <section id="explainer" className="py-20 md:py-28 bg-background">
+  <section id="explainer" className="py-20 md:py-28 bg-background font-space">
     <div className="container max-w-4xl">
       <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center">
         <h2 className="text-3xl md:text-5xl font-bold tracking-tight">What is CO₂IN?</h2>
@@ -38,7 +38,7 @@ const ExplainerSection = () => (
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 * i }}
-            className="flex items-start gap-3 p-4 rounded-xl bg-secondary"
+            className="flex items-start gap-3 p-4 rounded-xl bg-[hsl(160,20%,94%)]"
           >
             <CheckCircle className="text-primary mt-0.5 shrink-0" size={20} />
             <span className="font-medium text-sm">{t}</span>

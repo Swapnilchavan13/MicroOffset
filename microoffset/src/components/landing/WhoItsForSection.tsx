@@ -11,7 +11,7 @@ const items = [
 ];
 
 const WhoItsForSection = () => (
-  <section className="py-20 md:py-28 bg-section-alt">
+  <section className="py-20 md:py-28 bg-section-alt font-space">
     <div className="container max-w-4xl">
       <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-3xl md:text-5xl font-bold tracking-tight text-center">
         Built For

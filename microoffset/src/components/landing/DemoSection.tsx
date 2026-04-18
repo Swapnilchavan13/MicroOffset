@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 
 const DemoSection = () => (
-  <section className="py-20 md:py-28 bg-background">
+  <section className="py-20 md:py-28 bg-background font-space">
     <div className="container max-w-4xl">
       <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center">
         <h2 className="text-3xl md:text-5xl font-bold tracking-tight">See It in Action</h2>
