@@ -1,263 +1,291 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 
 const ProjectCheckoutPage = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
-
   const project = state?.project;
 
-  const [coins, setCoins] = useState(1);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
+  const [packs, setPacks] = useState([]);
+  const [selectedPack, setSelectedPack] = useState(null);
+  const [fullContribution, setFullContribution] = useState(false);
+  const [activePack, setActivePack] = useState(null);
 
-  const [showFullDesc, setShowFullDesc] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  // FETCH PACKS
+  useEffect(() => {
+    const fetchPacks = async () => {
+      try {
+        const res = await fetch(
+          "https://microoffsets.nettzero.world/api/getemitterpacks"
+        );
+        const data = await res.json();
 
-  if (!project) {
-    return (
-      <div className="p-6 text-center">
-        <p className="mb-4">No project selected</p>
-        <button
-          onClick={() => navigate("/projects")}
-          className="bg-green-600 px-4 py-2 rounded-full"
-        >
-          Browse Projects
-        </button>
-      </div>
+        if (data.success) {
+          const filtered = data.data.filter((pack) =>
+            pack.projects?.some(
+              (p) =>
+                p.project_ref === project._id ||
+                p.projectId === project.projectId
+            )
+          );
+
+          const top3 = filtered.slice(0, 4);
+          setPacks(top3);
+          setSelectedPack(top3[0]);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    if (project) fetchPacks();
+  }, [project]);
+
+  if (!project) return <div className="p-6">No project selected</div>;
+
+  // 💳 DUMMY RAZORPAY
+  const handlePayment = () => {
+    if (!selectedPack) return;
+
+    const projectData = selectedPack.projects.find(
+      (p) =>
+        p.project_ref === project._id ||
+        p.projectId === project.projectId
     );
-  }
 
-  const total = coins * project.pricePerKgCO2;
+    const amount = fullContribution
+      ? selectedPack.total_pack_price
+      : projectData?.allocated_cost;
 
-  const isValid = name && email && phone && coins > 0;
+    const options = {
+      key: "rzp_test_SheN9UstzRI94e", // dummy test key
+      amount: amount * 100,
+      currency: "INR",
+      name: "COIN",
+      description: selectedPack.pack_name,
+      handler: function () {
+        alert("✅ Dummy Payment Successful!");
+      },
+      theme: { color: "#16a34a" },
+    };
 
-  const handleSubmit = () => {
-    setSubmitted(true);
-    if (!isValid) return;
-
-    alert("Purchase successful (mock)");
+    if (window.Razorpay) {
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } else {
+      alert("Razorpay SDK not loaded");
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 pt-24 px-4">
+    <div className="min-h-screen bg-gray-50 pt-24 px-4">
       <Header />
-      {/* HEADER */}
-      <div className="max-w-4xl mx-auto mb-6 p-6">
-        <h1 className="text-3xl font-bold">Checkout</h1>
-        <p className="text-gray-500 text-sm">
-          Complete your purchase securely
-        </p>
-      </div>
 
-      <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-6">
-        
-        {/* LEFT */}
-       <div className="bg-white rounded-3xl shadow-lg overflow-hidden border border-gray-100">
-  <img
-    src={project.image}
-    alt={project.title}
-    className="h-56 w-full object-cover"
-  />
+      <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-6">
 
-  <div className="p-6 space-y-4">
-    
-    {/* Title */}
-    <h2 className="text-xl font-bold leading-tight">
-      {project.title}
-    </h2>
+        {/* LEFT PROJECT */}
+        <div className="bg-white rounded-3xl shadow-lg overflow-hidden">
+          <img
+            src={project.image}
+            className="h-56 w-full object-cover"
+          />
 
-    {/* Meta */}
-    <p className="text-sm text-gray-500">
-      📍 {project.location}
-    </p>
+          <div className="p-6 space-y-3">
+            <h2 className="text-2xl font-bold">{project.title}</h2>
 
-    <p className="text-xs text-gray-400">
-      By <span className="font-medium text-gray-600">{project.projectDeveloper}</span>
-    </p>
+            <p className="text-sm text-gray-500">
+              📍 {project.location}
+            </p>
 
-    {/* Tags */}
-    <div className="flex flex-wrap gap-2 text-xs">
-      <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full">
-        ✔ Verified by {project.verifiedBy}
-      </span>
+            <p className="text-sm text-gray-600">
+              {project.description}
+            </p>
 
-      <span className="bg-gray-100 px-3 py-1 rounded-full">
-        {project.typeOfProject}
-      </span>
-
-      <span className="bg-gray-100 px-3 py-1 rounded-full">
-        {project.projectType}
-      </span>
-    </div>
-
-    {/* Stats */}
-    <div className="grid grid-cols-2 gap-3 text-sm mt-3">
-      <div className="bg-gray-50 p-3 rounded-xl">
-        <p className="text-gray-500 text-xs">Available</p>
-        <p className="font-semibold">
-          {project.available?.toLocaleString()}
-        </p>
-      </div>
-
-      <div className="bg-gray-50 p-3 rounded-xl">
-        <p className="text-gray-500 text-xs">Retired</p>
-        <p className="font-semibold">
-          {project.retired?.toLocaleString()}
-        </p>
-      </div>
-
-      <div className="bg-gray-50 p-3 rounded-xl col-span-2">
-        <p className="text-gray-500 text-xs">CO₂ Avoided</p>
-        <p className="font-semibold">
-          {project.co2Avoided?.toLocaleString()} kg
-        </p>
-      </div>
-    </div>
-
-    {/* Highlights */}
-    {project.projectHighlighters?.length > 0 && (
-      <div>
-        <p className="text-sm font-medium mb-2">Highlights</p>
-        <ul className="text-sm text-gray-600 list-disc pl-5 space-y-1">
-          {project.projectHighlighters.map((item, idx) => (
-            <li key={idx}>{item}</li>
-          ))}
-        </ul>
-      </div>
-    )}
-
-    {/* SDGs */}
-    {project.sdgs?.length > 0 && (
-      <div>
-        <p className="text-sm font-medium mb-2">SDGs Supported</p>
-        <div className="flex flex-wrap gap-2 text-xs">
-          {project.sdgs.map((sdg) => (
-            <span
-              key={sdg}
-              className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full"
-            >
-              SDG {sdg}
-            </span>
-          ))}
-        </div>
-      </div>
-    )}
-
-    {/* Description */}
-    <div className="text-sm text-gray-600">
-      {showFullDesc
-        ? project.description
-        : `${project.description?.slice(0, 150)}...`}
-
-      <button
-        onClick={() => setShowFullDesc(!showFullDesc)}
-        className="ml-2 text-green-600 text-xs underline"
-      >
-        {showFullDesc ? "Show less" : "Read more"}
-      </button>
-    </div>
-  </div>
-</div>
-
-        {/* RIGHT */}
-        <div className="bg-white rounded-3xl shadow-lg p-6 space-y-5">
-          
-          {/* Coins */}
-          <div>
-            <p className="text-sm mb-2">Coins</p>
-            <div className="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3">
-              <button onClick={() => setCoins((c) => Math.max(1, c - 1))}>−</button>
-              <span className="font-semibold">{coins}</span>
-              <button onClick={() => setCoins((c) => c + 1)}>+</button>
-            </div>
-          </div>
-
-          {/* Inputs */}
-          <div className="space-y-3">
-            
-            <div>
-              <input
-                type="text"
-                placeholder="Full Name *"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className={`w-full p-3 rounded-xl border ${
-                  submitted && !name ? "border-red-500" : "border-gray-200"
-                }`}
-              />
-            </div>
-
-            <div>
-              <input
-                type="email"
-                placeholder="Email Address *"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className={`w-full p-3 rounded-xl border ${
-                  submitted && !email ? "border-red-500" : "border-gray-200"
-                }`}
-              />
-            </div>
-
-            <div>
-              <input
-                type="tel"
-                placeholder="Contact Number *"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className={`w-full p-3 rounded-xl border ${
-                  submitted && !phone ? "border-red-500" : "border-gray-200"
-                }`}
-              />
-            </div>
-          </div>
-
-          {/* Summary */}
-          <div className="bg-gray-50 rounded-xl p-4 text-sm">
-            <div className="flex justify-between">
-              <span>Coins</span>
-              <span>{coins}</span>
-            </div>
-
-            <div className="flex justify-between">
-              <span>Price</span>
-              <span>
-                {project.pricePerKgCO2} {project.currency}
+            <div className="flex gap-2 flex-wrap text-xs mt-2">
+              <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                ✔ {project.verifiedBy}
+              </span>
+              <span className="bg-gray-100 px-2 py-1 rounded-full">
+                {project.projectType}
               </span>
             </div>
+          </div>
+        </div>
 
-            <div className="border-t mt-2 pt-2 flex justify-between font-semibold">
+        {/* RIGHT PACKS */}
+        <div className="bg-white rounded-3xl shadow-lg p-6 space-y-4">
+
+          <h3 className="text-lg font-semibold">Choose a Pack</h3>
+            <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-8">
+
+          {packs.map((pack) => {
+            const projectData = pack.projects.find(
+              (p) =>
+                p.project_ref === project._id ||
+                p.projectId === project.projectId
+            );
+
+            const contribution = fullContribution
+              ? pack.total_pack_price
+              : projectData?.allocated_cost;
+
+            return (
+              <div
+                key={pack._id}
+                className={`border rounded-xl p-4 transition ${
+                  selectedPack?._id === pack._id
+                    ? "border-green-500 bg-green-50"
+                    : ""
+                  }`}
+              >
+                <div className="flex items-center gap-3">
+                  <input
+                    type="radio"
+                    checked={selectedPack?._id === pack._id}
+                    onChange={() => {
+                      setSelectedPack(pack);
+                      setFullContribution(false);
+                    }}
+                    />
+
+                  <img
+                    src={`https://microoffsets.nettzero.world/api${pack.image_url}`}
+                    className="w-14 h-14 rounded-lg cursor-pointer"
+                    onClick={() => setActivePack(pack)}
+                    />
+
+                  <div
+                    className="flex-1 cursor-pointer"
+                    onClick={() => setActivePack(pack)}
+                    >
+                    <p className="font-semibold">{pack.pack_name}</p>
+                    <p className="text-xs text-gray-500">
+                      ₹ {pack.total_pack_price}
+                    </p>
+                  </div>
+                </div>
+
+                {/* CONTRIBUTION */}
+                <div className="mt-3 bg-gray-50 p-3 rounded-lg text-xs">
+                  🌱 Contribution: <b>₹ {contribution}</b>
+
+                  <button
+                    onClick={() => setFullContribution(!fullContribution)}
+                    className="block text-green-600 underline mt-1"
+                    >
+                    {fullContribution
+                      ? "Use default allocation"
+                      : "Make 100% contribution"}
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+          </div>
+
+          {/* TOTAL */}
+          {selectedPack && (
+            <div className="bg-gray-100 p-4 rounded-xl flex justify-between font-semibold">
               <span>Total</span>
               <span>
-                {total.toFixed(2)} {project.currency}
+                ₹{" "}
+                {fullContribution
+                  ? selectedPack.total_pack_price
+                  : selectedPack.projects.find(
+                      (p) =>
+                        p.project_ref === project._id ||
+                        p.projectId === project.projectId
+                    )?.allocated_cost}
               </span>
             </div>
-          </div>
-
-          {/* CTA */}
-          <button
-            onClick={handleSubmit}
-            disabled={!isValid}
-            className={`w-full py-3 rounded-full font-semibold transition ${
-              isValid
-                ? "bg-gradient-to-r from-green-400 to-green-600 text-black hover:scale-[1.02]"
-                : "bg-gray-300 text-gray-500 cursor-not-allowed"
-            }`}
-          >
-            Confirm & Send Coins
-          </button>
+          )}
 
           <button
-            onClick={() => navigate(-1)}
-            className="text-xs text-gray-500 underline w-full"
+            onClick={handlePayment}
+            className="w-full bg-green-500 text-white py-3 rounded-full font-semibold"
           >
-            ← Back
+            Proceed to Payment
           </button>
         </div>
       </div>
+
+      {/* 🔥 MODAL */}
+      {activePack && (
+        <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
+          <div className="bg-white w-full max-w-3xl rounded-2xl p-6 overflow-y-auto max-h-[90vh]">
+
+            <button
+              onClick={() => setActivePack(null)}
+              className="float-right text-gray-500"
+            >
+              ✕
+            </button>
+
+            <h2 className="text-xl font-bold mb-2">
+              {activePack.pack_name}
+            </h2>
+
+            <img
+              src={`https://microoffsets.nettzero.world/api${activePack.image_url}`}
+              className="w-full h-56 object-cover rounded-xl mb-4"
+            />
+
+            <p className="text-gray-600 mb-4">
+              {activePack.description}
+            </p>
+
+            {/* EMITTERS */}
+            <div className="mb-4">
+              <h4 className="font-semibold mb-2">Emitters</h4>
+              {activePack.emitters.map((e, i) => (
+                <div key={i} className="text-sm border-b py-2">
+                  {e.emitter_name_standard} —{" "}
+                  {e.calculated_emission_kgco2e} kgCO₂
+                </div>
+              ))}
+            </div>
+
+            {/* PROJECTS */}
+            <div>
+              <h4 className="font-semibold mb-2">
+                Project Allocation
+              </h4>
+
+              {activePack.projects.map((p, i) => {
+                const isSelected =
+                  p.project_ref === project._id ||
+                  p.projectId === project.projectId;
+
+                return (
+                  <div
+                    key={i}
+                    className={`flex items-center justify-between p-2 rounded-lg text-sm ${
+                      isSelected
+                        ? "bg-green-100 border border-green-400"
+                        : ""
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <img
+                        src={p.project_image_url}
+                        className="w-10 h-10 rounded object-cover"
+                      />
+                      <span>{p.projectId}</span>
+                    </div>
+
+                    <span>{p.allocation_percent}%</span>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="mt-4 font-semibold text-right">
+              Total: ₹ {activePack.total_pack_price}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
