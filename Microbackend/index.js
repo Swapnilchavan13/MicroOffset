@@ -1,3 +1,4 @@
+require('dns').setDefaultResultOrder('ipv4first');
 const express = require("express");
 const cors = require("cors");
 const multer = require("multer");
@@ -12,11 +13,18 @@ const CoinUser = require("./models/CoinUser");
 
 const GeneratedApi = require("./models/GeneratedApi");
 const Transaction = require("./models/Transaction");
+const Razerpay = require("./models/Razerpay");
 
 const PopUp = require("./models/PopUp");
 
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+
+const Razorpay = require("razorpay");
+const crypto = require("crypto");
+
+console.log("KEY ID:", process.env.RAZORPAY_KEY_ID);
+console.log("KEY SECRET:", process.env.RAZORPAY_KEY_SECRET);
 
 const authMiddleware = (req, res, next) => {
 
@@ -52,17 +60,27 @@ app.use("/uploads", express.static("uploads"));
 
 // MongoDB Connection
 mongoose.set("strictQuery", false);
-
 const connectDB = async () => {
+
   try {
+
     const conn = await mongoose.connect(process.env.MONGO_URL, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
+  serverSelectionTimeoutMS: 10000,
+});
+
+    console.log(
+      `MongoDB Connected: ${conn.connection.host}`
+    );
+
   } catch (error) {
-    console.error("MongoDB connection failed:", error.message);
+
+    console.log(
+      "MongoDB connection failed:",
+      error.message
+    );
+
     process.exit(1);
+
   }
 };
 
@@ -92,6 +110,11 @@ const upload = multer({
   },
 });
 
+
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID.trim(),
+  key_secret: process.env.RAZORPAY_KEY_SECRET.trim(),
+});
 
 
 
@@ -851,6 +874,166 @@ app.get("/getpopup", async (req, res) => {
       success: false,
       message: error.message,
     });
+  }
+});
+
+app.post("/create-order", async (req, res) => {
+  try {
+    const { amount, packId, quantity } = req.body;
+
+    console.log("AMOUNT RECEIVED:", amount);
+    console.log("KEY:", process.env.RAZORPAY_KEY_ID);
+
+    const options = {
+      amount: Math.round(Number(amount) * 100),
+      currency: "INR",
+      receipt: "receipt_" + Date.now(),
+    };
+
+    console.log("OPTIONS:", options);
+
+    const order = await razorpay.orders.create(options);
+
+    console.log("ORDER CREATED:", order);
+
+    res.json({
+      success: true,
+      order,
+    });
+
+  } catch (error) {
+
+    console.log("RAZORPAY ERROR:");
+    console.log(error);
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+app.post("/verify-payment", async (req, res) => {
+
+  try {
+
+    console.log("VERIFY BODY:", req.body);
+
+    const {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+      packId,
+      quantity,
+      userDetails,
+    } = req.body;
+
+    const generated_signature = crypto
+      .createHmac(
+        "sha256",
+        process.env.RAZORPAY_KEY_SECRET.trim()
+      )
+      .update(
+        `${razorpay_order_id}|${razorpay_payment_id}`
+      )
+      .digest("hex");
+
+    console.log("GENERATED:", generated_signature);
+    console.log("RECEIVED:", razorpay_signature);
+
+    if (generated_signature !== razorpay_signature) {
+
+      return res.status(400).json({
+        success: false,
+        message: "Invalid signature",
+      });
+
+    }
+
+   const pack = await EmitterPack.findById(packId);
+
+if (!pack) {
+
+  return res.status(404).json({
+    success: false,
+    message: "Pack not found",
+  });
+
+}
+
+const payment = await Razerpay.create({
+
+  razorpay_order_id,
+
+  razorpay_payment_id,
+
+  razorpay_signature,
+
+  packId,
+
+  quantity,
+
+  amount: pack.total_pack_price * quantity,
+
+  packDetails: {
+
+    pack_name: pack.pack_name,
+
+    description: pack.description,
+
+    total_emission_kgco2e:
+      pack.total_emission_kgco2e,
+
+    total_pack_price:
+      pack.total_pack_price,
+
+    currency: pack.currency || "INR",
+
+  },
+
+  userDetails,
+
+  status: "success",
+
+});
+
+  } catch (error) {
+
+    console.log("VERIFY PAYMENT ERROR:");
+    console.log(error);
+    console.log(error.message);
+
+    return res.status(500).json({
+
+      success: false,
+
+      message: error.message,
+
+    });
+
+  }
+});
+
+app.get("/razerpay-orders", async (req, res) => {
+
+  try {
+
+    const orders = await Razerpay
+      .find()
+      .sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      count: orders.length,
+      data: orders,
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+
   }
 });
 
