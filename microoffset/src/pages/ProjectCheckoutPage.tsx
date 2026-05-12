@@ -45,7 +45,8 @@ const ProjectCheckoutPage = () => {
   if (!project) return <div className="p-6">No project selected</div>;
 
   // 💳 DUMMY RAZORPAY
-  const handlePayment = () => {
+  const handlePayment = async () => {
+  try {
     if (!selectedPack) return;
 
     const projectData = selectedPack.projects.find(
@@ -54,20 +55,98 @@ const ProjectCheckoutPage = () => {
         p.projectId === project.projectId
     );
 
-    const amount = fullContribution
-      ? selectedPack.total_pack_price
-      : projectData?.allocated_cost;
+ const amount = Number(
+  fullContribution
+    ? selectedPack.total_pack_price
+    : projectData?.allocated_cost
+);
 
+    // 1️⃣ CREATE ORDER
+    const orderRes = await fetch(
+      "https://microoffsets.nettzero.world/api/create-order",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          amount,
+          packId: selectedPack._id,
+          quantity: 1,
+        }),
+      }
+    );
+
+    const orderData = await orderRes.json();
+
+    if (!orderData.success) {
+      alert("Order creation failed");
+      return;
+    }
+    console.log(orderData);
+
+    // 2️⃣ OPEN RAZORPAY
     const options = {
-      key: "rzp_test_SheN9UstzRI94e", // dummy test key
-      amount: amount * 100,
+     key: "rzp_test_SoKde6zgfgB32q",
+
+      amount: orderData.order.amount,
       currency: "INR",
       name: "COIN",
       description: selectedPack.pack_name,
-      handler: function () {
-        alert("✅ Dummy Payment Successful!");
+
+      order_id: orderData.order.id,
+
+      handler: async function (response) {
+
+        // 3️⃣ VERIFY PAYMENT & STORE IN DB
+        const verifyRes = await fetch(
+          "https://microoffsets.nettzero.world/api/verify-payment",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+
+              packId: selectedPack._id,
+
+              quantity: 1,
+
+             userDetails: {
+  name: "Test User",
+  email: "test@example.com",
+  phone: "9999999999",
+
+  projectId: project.projectId,
+  projectTitle: project.title,
+},
+            }),
+          }
+        );
+
+        const verifyData = await verifyRes.json();
+
+        if (verifyData.success) {
+          alert("✅ Payment Successful");
+
+          navigate("/success");
+        } else {
+          alert("Payment verification failed");
+        }
       },
-      theme: { color: "#16a34a" },
+
+      prefill: {
+        name: "",
+        email: "",
+        contact: "",
+      },
+
+      theme: {
+        color: "#16a34a",
+      },
     };
 
     if (window.Razorpay) {
@@ -76,7 +155,13 @@ const ProjectCheckoutPage = () => {
     } else {
       alert("Razorpay SDK not loaded");
     }
-  };
+
+  } catch (error) {
+    console.error(error);
+    alert("Payment failed");
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-gray-50 pt-24 px-4">

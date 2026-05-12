@@ -34,7 +34,6 @@ const [form, setForm] = useState({
   upi: "", // ✅ NEW
 });
 
-const [errors, setErrors] = useState<any>({});
 
   useEffect(() => {
     const fetchPack = async () => {
@@ -62,44 +61,143 @@ const [errors, setErrors] = useState<any>({});
 
   const total = (pack.total_pack_price * quantity).toFixed(2);
 
+const handlePayment = async () => {
+  try {
 
-const validateForm = () => {
-  const newErrors: any = {};
+    // 1️⃣ CREATE ORDER FROM BACKEND
+    const orderRes = await fetch(
+      "https://microoffsets.nettzero.world/api/create-order",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          amount: Number(total),
+          packId: pack._id,
+          quantity,
+        }),
+      }
+    );
 
-  if (!form.name.trim()) newErrors.name = "Name is required";
-  if (!form.email.trim()) newErrors.email = "Email is required";
-  if (!form.phone.trim()) newErrors.phone = "Phone is required";
+    const orderData = await orderRes.json();
 
-  // ✅ At least one required
-  if (!form.utr.trim() && !form.upi.trim()) {
-    newErrors.payment = "Enter UTR number or UPI ID";
-  }
-
-  setErrors(newErrors);
-
-  return Object.keys(newErrors).length === 0;
-};
-
-
-
-const handleSubmit = () => {
-  if (!validateForm()) return; // ❌ STOP if invalid
-
-  setShowPopup(false);
-  setToast(true);
-  setCountdown(10);
-
-  let time = 10;
-
-  const interval = setInterval(() => {
-    time -= 1;
-    setCountdown(time);
-
-    if (time === 0) {
-      clearInterval(interval);
-      navigate("/emitter-pack");
+    if (!orderData.success) {
+      alert("Order creation failed");
+      return;
     }
-  }, 1000);
+
+    // 2️⃣ OPEN RAZORPAY
+    const options = {
+      key: "rzp_test_SoKde6zgfgB32q",
+
+      amount: orderData.order.amount,
+
+      currency: "INR",
+
+      name: "COIN",
+
+      description: pack.pack_name,
+
+      order_id: orderData.order.id,
+
+      handler: async function (response: any) {
+
+        // 3️⃣ VERIFY PAYMENT
+        const verifyRes = await fetch(
+          "https://microoffsets.nettzero.world/api/verify-payment",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+
+            body: JSON.stringify({
+              razorpay_order_id:
+                response.razorpay_order_id,
+
+              razorpay_payment_id:
+                response.razorpay_payment_id,
+
+              razorpay_signature:
+                response.razorpay_signature,
+
+              packId: pack._id,
+
+              quantity,
+
+              userDetails: {
+                name: form.name,
+                email: form.email,
+                phone: form.phone,
+              },
+            }),
+          }
+        );
+
+        const verifyData = await verifyRes.json();
+
+        if (verifyData.success) {
+
+          setToast(true);
+
+          setCountdown(10);
+
+          let time = 10;
+
+          const interval = setInterval(() => {
+
+            time -= 1;
+
+            setCountdown(time);
+
+            if (time === 0) {
+
+              clearInterval(interval);
+
+              navigate("/emitter-pack");
+
+            }
+
+          }, 1000);
+
+        } else {
+
+          alert("Payment verification failed");
+
+        }
+      },
+
+      prefill: {
+        name: form.name,
+        email: form.email,
+        contact: form.phone,
+      },
+
+      theme: {
+        color: "#16a34a",
+      },
+    };
+
+    if (window.Razorpay) {
+
+      const rzp = new window.Razorpay(options);
+
+      rzp.open();
+
+    } else {
+
+      alert("Razorpay SDK not loaded");
+
+    }
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert("Payment failed");
+
+  }
 };
 
   return (
@@ -141,93 +239,48 @@ const handleSubmit = () => {
       </div>
 
       {/* POPUP */}
-      {showPopup && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-             {/* ❌ CLOSE BUTTON */}
-    <button
-      onClick={() => setShowPopup(false)}
-      className="absolute top-3 text-black-400 hover:text-gray-700 text-xl border"
-    >
-      ✕
-    </button>
-          <div className="bg-white rounded-2xl p-6 w-[90%] max-w-md space-y-4">
-            <h2 className="text-lg font-bold">Complete Payment</h2>
- 
-           {/* NAME */}
-<input
-  placeholder="Name"
-  className="w-full border p-2 rounded"
-  onChange={(e) =>
-    setForm({ ...form, name: e.target.value })
-  }
-/>
-{errors.name && <p className="text-red-500 text-xs">{errors.name}</p>}
+     {showPopup && (
+  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div className="bg-white rounded-2xl p-6 w-[90%] max-w-md space-y-4">
 
-{/* EMAIL */}
-<input
-  placeholder="Email"
-  className="w-full border p-2 rounded"
-  onChange={(e) =>
-    setForm({ ...form, email: e.target.value })
-  }
-/>
-{errors.email && <p className="text-red-500 text-xs">{errors.email}</p>}
+      <h2 className="text-lg font-bold">Enter Details</h2>
 
-{/* PHONE */}
-<input
-  placeholder="Phone"
-  className="w-full border p-2 rounded"
-  onChange={(e) =>
-    setForm({ ...form, phone: e.target.value })
-  }
-/>
-{errors.phone && <p className="text-red-500 text-xs">{errors.phone}</p>}
+      <input
+        placeholder="Name"
+        className="w-full border p-2 rounded"
+        onChange={(e) =>
+          setForm({ ...form, name: e.target.value })
+        }
+      />
 
-{/* QR */}
-<div className="flex justify-center">
-  <img
-    src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?am=${total}`}
-    alt="QR"
-  />
-</div>
+      <input
+        placeholder="Email"
+        className="w-full border p-2 rounded"
+        onChange={(e) =>
+          setForm({ ...form, email: e.target.value })
+        }
+      />
 
-{/* UTR */}
-<input
-  placeholder="Enter UTR Number"
-  className="w-full border p-2 rounded"
-  onChange={(e) =>
-    setForm({ ...form, utr: e.target.value })
-  }
-/>
+      <input
+        placeholder="Phone"
+        className="w-full border p-2 rounded"
+        onChange={(e) =>
+          setForm({ ...form, phone: e.target.value })
+        }
+      />
 
-{/* OR TEXT */}
-<p className="text-center text-xs text-gray-400">OR</p>
-
-{/* UPI ID */}
-<input
-  placeholder="Enter UPI ID (e.g. name@upi)"
-  className="w-full border p-2 rounded"
-  onChange={(e) =>
-    setForm({ ...form, upi: e.target.value })
-  }
-/>
-
-{/* PAYMENT ERROR */}
-{errors.payment && (
-  <p className="text-red-500 text-xs text-center">
-    {errors.payment}
-  </p>
+      <button
+        onClick={() => {
+          setShowPopup(false);
+          handlePayment();
+        }}
+        className="w-full bg-green-600 text-white py-2 rounded"
+      >
+        Pay ₹{total}
+      </button>
+    </div>
+  </div>
 )}
-
-            <button
-              onClick={handleSubmit}
-              className="w-full bg-orange-500 text-white py-2 rounded"
-            >
-              Done
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* TOAST */}
      {toast && (
