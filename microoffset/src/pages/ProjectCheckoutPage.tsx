@@ -150,8 +150,75 @@ const ProjectCheckoutPage = () => {
     };
 
     if (window.Razorpay) {
-      const rzp = new window.Razorpay(options);
-      rzp.open();
+      const rzp = new window.Razorpay({
+
+  ...options,
+
+  modal: {
+
+    ondismiss: async function () {
+
+      // USER CLOSED PAYMENT POPUP
+
+      try {
+
+        await fetch(
+          "https://microoffsets.nettzero.world/api/payment-failed",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              razorpay_order_id: orderData.order.id,
+            }),
+          }
+        );
+
+      } catch (err) {
+
+        console.log(err);
+
+      }
+
+      alert("Payment cancelled");
+
+    },
+
+  },
+
+});
+
+rzp.on("payment.failed", async function (response) {
+
+  console.log("FAILED PAYMENT:", response);
+
+  try {
+
+    await fetch(
+      "https://microoffsets.nettzero.world/api/payment-failed",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          razorpay_order_id: orderData.order.id,
+        }),
+      }
+    );
+
+  } catch (err) {
+
+    console.log(err);
+
+  }
+
+  alert("❌ Payment Failed");
+
+});
+
+rzp.open();
     } else {
       alert("Razorpay SDK not loaded");
     }
