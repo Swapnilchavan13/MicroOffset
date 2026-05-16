@@ -912,6 +912,8 @@ app.post("/create-order", async (req, res) => {
     });
   }
 });
+
+
 app.post("/verify-payment", async (req, res) => {
 
   try {
@@ -942,12 +944,20 @@ app.post("/verify-payment", async (req, res) => {
 
     if (generated_signature !== razorpay_signature) {
 
-      return res.status(400).json({
-        success: false,
-        message: "Invalid signature",
-      });
+  await Razerpay.findOneAndUpdate(
+    { razorpay_order_id },
 
+    {
+      status: "failed",
     }
+  );
+
+  return res.status(400).json({
+    success: false,
+    message: "Invalid signature",
+  });
+
+}
 
    const pack = await EmitterPack.findById(packId);
 
@@ -1035,6 +1045,34 @@ app.get("/razerpay-orders", async (req, res) => {
     });
 
   }
+});
+
+
+app.post("/payment-failed", async (req, res) => {
+
+  try {
+
+    const { razorpay_order_id } = req.body;
+
+    await Razerpay.findOneAndUpdate(
+      { razorpay_order_id },
+      { status: "failed" }
+    );
+
+    res.json({
+      success: true,
+      message: "Payment marked failed",
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+
+  }
+
 });
 
 // Server
