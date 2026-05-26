@@ -24,6 +24,8 @@ import SingleProject from "./pages/SingleProject";
 import CheckoutPage from "./pages/CheckoutPage";
 import ProjectCheckoutPage from "./pages/ProjectCheckoutPage";
 import CoinSite from "./pages/coinsite";
+import { FillForm } from "./cms/FillForm";
+
 
 const queryClient = new QueryClient();
 
@@ -57,6 +59,9 @@ const App = () => (
 
 
           <Route path="/coinsite" element={<CoinSite />} />
+
+          <Route path="/fillform" element={<FillForm />} />
+
 
 
 
