@@ -15,6 +15,8 @@ const GeneratedApi = require("./models/GeneratedApi");
 const Transaction = require("./models/Transaction");
 const Razerpay = require("./models/Razerpay");
 
+const Agreement = require('./models/Agreement');
+
 const PopUp = require("./models/PopUp");
 
 const jwt = require("jsonwebtoken");
@@ -1073,6 +1075,28 @@ app.post("/payment-failed", async (req, res) => {
 
   }
 
+});
+
+
+// 1. POST Request: नया फॉर्म डेटाबेस में सेव करने के लिए
+app.post('/agreements', async (req, res) => {
+  try {
+    const newAgreement = new Agreement(req.body);
+    const savedRecord = await newAgreement.save();
+    res.status(201).json({ success: true, data: savedRecord });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+});
+
+// 2. GET Request: सभी भरे हुए फॉर्म्स का डेटा वापस फ़ेच करने के लिए
+app.get('/getagreements', async (req, res) => {
+  try {
+    const records = await Agreement.find().sort({ createdAt: -1 });
+    res.status(200).json({ success: true, count: records.length, data: records });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
 });
 
 // Server
