@@ -102,7 +102,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage,
-  limits: { fileSize: 5 * 1024 * 1024 },
+  limits: { fileSize: 20 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith("image/")) {
       cb(null, true);
@@ -1078,10 +1078,30 @@ app.post("/payment-failed", async (req, res) => {
 });
 
 
-// 1. POST Request: नया फॉर्म डेटाबेस में सेव करने के लिए
-app.post('/agreements', async (req, res) => {
+// 1. POST Request: नया फॉर्म डेटाबेस में फ़ोटो पाथ के साथ सुरक्षित करने के लिए
+app.post('/agreements', upload.fields([
+  { name: 'agreementPage1', maxCount: 1 },
+  { name: 'agreementPage2', maxCount: 1 },
+  { name: 'agreementPage3', maxCount: 1 }
+]), async (req, res) => {
   try {
-    const newAgreement = new Agreement(req.body);
+    // फॉर्म टेक्स्ट डेटा बॉडी से निकालें
+    const agreementData = { ...req.body };
+
+    // यदि फाइलें अपलोड की गई हैं, तो उनके जनरेटेड पाथ डेटा ऑब्जेक्ट में स्टोर करें
+    if (req.files) {
+      if (req.files['agreementPage1']) {
+        agreementData.agreementPage1 = req.files['agreementPage1'][0].path;
+      }
+      if (req.files['agreementPage2']) {
+        agreementData.agreementPage2 = req.files['agreementPage2'][0].path;
+      }
+      if (req.files['agreementPage3']) {
+        agreementData.agreementPage3 = req.files['agreementPage3'][0].path;
+      }
+    }
+
+    const newAgreement = new Agreement(agreementData);
     const savedRecord = await newAgreement.save();
     res.status(201).json({ success: true, data: savedRecord });
   } catch (error) {
