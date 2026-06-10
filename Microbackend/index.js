@@ -17,6 +17,8 @@ const Razerpay = require("./models/Razerpay");
 
 const Agreement = require('./models/Agreement');
 
+const SitamarhiForm = require("./models/SitamarhiForm");
+
 const PopUp = require("./models/PopUp");
 
 const jwt = require("jsonwebtoken");
@@ -1116,6 +1118,60 @@ app.get('/getagreements', async (req, res) => {
     res.status(200).json({ success: true, count: records.length, data: records });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+
+app.post("/sitamarhiform", async (req, res) => {
+  try {
+    const {
+      name,
+      lastName,
+      mobileNumber,
+      address,
+      aadharNumber,
+      crop,
+      landArea,
+    } = req.body;
+
+    const form = await SitamarhiForm.create({
+      name,
+      lastName,
+      mobileNumber,
+      address,
+      aadharNumber,
+      crop,
+      landArea,
+    });
+
+    res.status(201).json({
+      success: true,
+      data: form,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+
+
+app.get("/getsitamarhiform", async (req, res) => {
+  try {
+    const forms = await SitamarhiForm.find().sort({
+      createdAt: -1,
+    });
+
+    res.status(200).json({
+      success: true,
+      data: forms,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 });
 
