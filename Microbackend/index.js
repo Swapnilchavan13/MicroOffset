@@ -10,6 +10,7 @@ const Emitter = require("./models/Emitter");
 const EmitterPack = require("./models/EmitterPack");
 const Project = require("./models/Project");
 const CoinUser = require("./models/CoinUser");
+const Farmer = require("./models/Farmer");
 
 const GeneratedApi = require("./models/GeneratedApi");
 const Transaction = require("./models/Transaction");
@@ -97,19 +98,49 @@ const storage = multer.diskStorage({
   destination: "uploads/",
   filename: (req, file, cb) => {
     const unique =
-      Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, unique + path.extname(file.originalname));
+      Date.now() +
+      "-" +
+      Math.round(
+        Math.random() * 1e9
+      );
+
+    cb(
+      null,
+      unique +
+        path.extname(
+          file.originalname
+        )
+    );
   },
 });
 
 const upload = multer({
   storage,
-  limits: { fileSize: 20 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith("image/")) {
+  limits: {
+    fileSize:
+      100 * 1024 * 1024,
+  },
+  fileFilter: (
+    req,
+    file,
+    cb
+  ) => {
+    const allowed =
+      file.mimetype.startsWith(
+        "image/"
+      ) ||
+      file.mimetype.startsWith(
+        "video/"
+      );
+
+    if (allowed) {
       cb(null, true);
     } else {
-      cb(new Error("Only images allowed"));
+      cb(
+        new Error(
+          "Only images and videos allowed"
+        )
+      );
     }
   },
 });
@@ -1166,6 +1197,190 @@ app.get("/getsitamarhiform", async (req, res) => {
     res.status(200).json({
       success: true,
       data: forms,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+
+
+
+
+app.post(
+  "/farmers",
+  async (req, res) => {
+    try {
+      const farmer =
+        await Farmer.create(
+          req.body
+        );
+
+      res.status(201).json({
+        success: true,
+        data: farmer,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message:
+          error.message,
+      });
+    }
+  }
+);
+
+app.post(
+  "/farmers/login",
+  async (req, res) => {
+    try {
+      const {
+        mobileNumber,
+      } = req.body;
+
+      const farmer =
+        await Farmer.findOne({
+          mobileNumber,
+        });
+
+      if (!farmer) {
+        return res
+          .status(404)
+          .json({
+            success: false,
+            message:
+              "Farmer not found",
+          });
+      }
+
+      res.json({
+        success: true,
+        data: farmer,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message:
+          error.message,
+      });
+    }
+  }
+);
+
+
+app.post(
+  "/farmers/:id/stage",
+  upload.fields([
+    {
+      name: "image",
+      maxCount: 1,
+    },
+    {
+      name: "video",
+      maxCount: 1,
+    },
+  ]),
+  async (req, res) => {
+    try {
+      const farmer =
+        await Farmer.findById(
+          req.params.id
+        );
+
+      if (!farmer) {
+        return res
+          .status(404)
+          .json({
+            success: false,
+            message:
+              "Farmer not found",
+          });
+      }
+
+      const {
+        stageNumber,
+        areaApplied,
+        remarks,
+        fertilizerName,
+        latitude,
+        longitude,
+      } = req.body;
+
+      const currentStage =
+        farmer.progress.findIndex(
+          (x) => !x
+        ) + 1;
+
+      if (
+        Number(
+          stageNumber
+        ) !== currentStage
+      ) {
+        return res
+          .status(400)
+          .json({
+            success: false,
+            message:
+              "Stages must be completed in sequence",
+          });
+      }
+
+      farmer.progress[
+        currentStage - 1
+      ] = true;
+
+      farmer.stages.push({
+        stageNumber,
+        fertilizerName,
+        areaApplied,
+        remarks,
+
+        image:
+          req.files?.image?.[0]
+            ?.filename
+            ? `/uploads/${req.files.image[0].filename}`
+            : "",
+
+        video:
+          req.files?.video?.[0]
+            ?.filename
+            ? `/uploads/${req.files.video[0].filename}`
+            : "",
+
+        location: {
+          latitude,
+          longitude,
+        },
+      });
+
+      await farmer.save();
+
+      res.json({
+        success: true,
+        data: farmer,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message:
+          error.message,
+      });
+    }
+  }
+);
+
+app.get("/getfarmers", async (req, res) => {
+  try {
+    const farmers = await Farmer.find().sort({
+      createdAt: -1,
+    });
+
+    res.status(200).json({
+      success: true,
+      count: farmers.length,
+      data: farmers,
     });
   } catch (error) {
     res.status(500).json({
