@@ -1390,6 +1390,62 @@ app.get("/getfarmers", async (req, res) => {
   }
 });
 
+app.get("/farmers/:id", async (req, res) => {
+  try {
+    const farmer = await Farmer.findById(
+      req.params.id
+    );
+
+    if (!farmer) {
+      return res.status(404).json({
+        success: false,
+        message: "Farmer not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: farmer,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+
+
+app.get(
+  "/farmers/mobile/:mobileNumber",
+  async (req, res) => {
+    try {
+      const farmer =
+        await Farmer.findOne({
+          mobileNumber:
+            req.params.mobileNumber,
+        });
+
+      if (!farmer) {
+        return res.status(404).json({
+          success: false,
+          message: "Farmer not found",
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        data: farmer,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  }
+);
+
 // Server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
