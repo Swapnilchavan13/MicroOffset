@@ -1284,19 +1284,18 @@ app.post(
   ]),
   async (req, res) => {
     try {
-      const farmer =
-        await Farmer.findById(
-          req.params.id
-        );
+      console.log("BODY:", req.body);
+      console.log("FILES:", req.files);
+
+      const farmer = await Farmer.findById(
+        req.params.id
+      );
 
       if (!farmer) {
-        return res
-          .status(404)
-          .json({
-            success: false,
-            message:
-              "Farmer not found",
-          });
+        return res.status(404).json({
+          success: false,
+          message: "Farmer not found",
+        });
       }
 
       const {
@@ -1310,66 +1309,86 @@ app.post(
 
       const currentStage =
         farmer.progress.findIndex(
-          (x) => !x
+          (item) => item === false
         ) + 1;
 
       if (
-        Number(
-          stageNumber
-        ) !== currentStage
+        Number(stageNumber) !== currentStage
       ) {
-        return res
-          .status(400)
-          .json({
-            success: false,
-            message:
-              "Stages must be completed in sequence",
-          });
+        return res.status(400).json({
+          success: false,
+          message:
+            "Stages must be completed in sequence",
+        });
       }
+
+      const imagePath =
+        req.files?.image?.[0]
+          ? `/uploads/${req.files.image[0].filename}`
+          : "";
+
+      const videoPath =
+        req.files?.video?.[0]
+          ? `/uploads/${req.files.video[0].filename}`
+          : "";
+
+      console.log(
+        "IMAGE PATH:",
+        imagePath
+      );
+
+      console.log(
+        "VIDEO PATH:",
+        videoPath
+      );
 
       farmer.progress[
         currentStage - 1
       ] = true;
 
       farmer.stages.push({
-        stageNumber,
-        fertilizerName,
-        areaApplied,
-        remarks,
-
-        image:
-          req.files?.image?.[0]
-            ?.filename
-            ? `/uploads/${req.files.image[0].filename}`
-            : "",
-
-        video:
-          req.files?.video?.[0]
-            ?.filename
-            ? `/uploads/${req.files.video[0].filename}`
-            : "",
-
+        stageNumber:
+          Number(stageNumber),
+        fertilizerName:
+          fertilizerName ||
+          farmer.fertilizerName ||
+          "",
+        areaApplied:
+          areaApplied || "",
+        remarks: remarks || "",
+        image: imagePath,
+        video: videoPath,
         location: {
-          latitude,
-          longitude,
+          latitude:
+            Number(latitude) || 0,
+          longitude:
+            Number(longitude) || 0,
         },
       });
 
       await farmer.save();
 
-      res.json({
+      res.status(200).json({
         success: true,
+        message:
+          "Stage uploaded successfully",
         data: farmer,
       });
     } catch (error) {
+      console.log(
+        "STAGE ERROR:",
+        error
+      );
+
       res.status(500).json({
         success: false,
-        message:
-          error.message,
+        message: error.message,
       });
     }
   }
 );
+
+
 
 app.get("/getfarmers", async (req, res) => {
   try {
@@ -1445,6 +1464,31 @@ app.get(
     }
   }
 );
+app.get(
+  "/admin/farmers/stages",
+  async (req, res) => {
+    try {
+      const farmers =
+        await Farmer.find()
+          .sort({
+            createdAt: -1,
+          });
+
+      res.status(200).json({
+        success: true,
+        count: farmers.length,
+        data: farmers,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message:
+          error.message,
+      });
+    }
+  }
+);
+
 
 // Server
 const PORT = process.env.PORT || 5000;
