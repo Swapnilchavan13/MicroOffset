@@ -22,6 +22,8 @@ const SitamarhiForm = require("./models/SitamarhiForm");
 
 const PopUp = require("./models/PopUp");
 
+const Activity = require("./models/Activity");
+
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
@@ -854,7 +856,6 @@ app.get("/user-full-data/:userId", async (req, res) => {
 });
 
 //PopUp
-
 app.post("/popup", async (req, res) => {
   try {
     const { name, email, company_or_organization, contact_number, enquiry } = req.body;
@@ -1207,8 +1208,6 @@ app.get("/getsitamarhiform", async (req, res) => {
 });
 
 
-
-
 app.post(
   "/farmers",
   async (req, res) => {
@@ -1268,7 +1267,6 @@ app.post(
     }
   }
 );
-
 
 app.post(
   "/farmers/:id/stage",
@@ -1388,8 +1386,6 @@ app.post(
   }
 );
 
-
-
 app.get("/getfarmers", async (req, res) => {
   try {
     const farmers = await Farmer.find().sort({
@@ -1489,6 +1485,200 @@ app.get(
   }
 );
 
+
+// Activity
+
+app.post(
+  "/activity",
+  upload.single("image"),
+  async (req, res) => {
+    try {
+      const {
+        farmerId,
+        activityType,
+        volume,
+        remarks,
+        latitude,
+        longitude,
+      } = req.body;
+
+      const farmer =
+        await Farmer.findById(farmerId);
+
+      if (!farmer) {
+        return res.status(404).json({
+          success: false,
+          message: "Farmer not found",
+        });
+      }
+
+      const image =
+        req.file
+          ? `/uploads/${req.file.filename}`
+          : "";
+
+      const activity =
+        await Activity.create({
+          farmerId,
+
+          activityType,
+
+          volume,
+
+          remarks,
+
+          image,
+
+          location: {
+            latitude,
+            longitude,
+          },
+
+          activityDate: new Date(),
+        });
+
+      res.status(201).json({
+        success: true,
+        data: activity,
+      });
+    } catch (error) {
+      console.log(error);
+
+      res.status(500).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  }
+);
+
+app.get(
+  "/activity/:farmerId",
+  async (req, res) => {
+    try {
+      const activities =
+        await Activity.find({
+          farmerId:
+            req.params.farmerId,
+        }).sort({
+          createdAt: -1,
+        });
+
+      res.json({
+        success: true,
+        count: activities.length,
+        data: activities,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  }
+);
+
+app.get(
+  "/activity/:farmerId/fertilizer",
+  async (req, res) => {
+    try {
+      const data =
+        await Activity.find({
+          farmerId:
+            req.params.farmerId,
+          activityType:
+            "fertilizer",
+        }).sort({
+          createdAt: -1,
+        });
+
+      res.json({
+        success: true,
+        data,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  }
+);
+
+app.get(
+  "/activity/:farmerId/water",
+  async (req, res) => {
+    try {
+      const data =
+        await Activity.find({
+          farmerId:
+            req.params.farmerId,
+          activityType:
+            "water",
+        }).sort({
+          createdAt: -1,
+        });
+
+      res.json({
+        success: true,
+        data,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  }
+);
+
+app.get(
+  "/activity/:farmerId/harvest",
+  async (req, res) => {
+    try {
+      const data =
+        await Activity.find({
+          farmerId:
+            req.params.farmerId,
+          activityType:
+            "harvest",
+        }).sort({
+          createdAt: -1,
+        });
+
+      res.json({
+        success: true,
+        data,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  }
+);
+
+
+app.delete(
+  "/activity/:id",
+  async (req, res) => {
+    try {
+      await Activity.findByIdAndDelete(
+        req.params.id
+      );
+
+      res.json({
+        success: true,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  }
+);
 
 // Server
 const PORT = process.env.PORT || 5000;
