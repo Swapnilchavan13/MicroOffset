@@ -1487,12 +1487,14 @@ app.get(
 
 
 // Activity
-
 app.post(
   "/activity",
   upload.single("image"),
   async (req, res) => {
     try {
+      console.log("BODY:", req.body);
+      console.log("FILE:", req.file);
+
       const {
         farmerId,
         activityType,
@@ -1500,10 +1502,13 @@ app.post(
         remarks,
         latitude,
         longitude,
+        motorHP,
+        startTime,
+        endTime,
+        durationHours,
       } = req.body;
 
-      const farmer =
-        await Farmer.findById(farmerId);
+      const farmer = await Farmer.findById(farmerId);
 
       if (!farmer) {
         return res.status(404).json({
@@ -1512,35 +1517,44 @@ app.post(
         });
       }
 
-      const image =
-        req.file
-          ? `/uploads/${req.file.filename}`
-          : "";
+      const image = req.file
+        ? `/uploads/${req.file.filename}`
+        : "";
 
-      const activity =
-        await Activity.create({
-          farmerId,
+      const activity = await Activity.create({
+        farmerId,
 
-          activityType,
+        activityType,
 
-          volume,
+        volume,
 
-          remarks,
+        remarks,
 
-          image,
+        image,
 
-          location: {
-            latitude,
-            longitude,
-          },
+        motorHP: motorHP || "",
 
-          activityDate: new Date(),
-        });
+        startTime: startTime || "",
+
+        endTime: endTime || "",
+
+        durationHours: durationHours
+          ? Number(durationHours)
+          : 0,
+
+        location: {
+          latitude: Number(latitude),
+          longitude: Number(longitude),
+        },
+
+        activityDate: new Date(),
+      });
 
       res.status(201).json({
         success: true,
         data: activity,
       });
+
     } catch (error) {
       console.log(error);
 
@@ -1551,6 +1565,7 @@ app.post(
     }
   }
 );
+
 
 app.get(
   "/activity/:farmerId",
