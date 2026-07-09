@@ -179,6 +179,8 @@ mobileNumber:{
 
 whatsappNumber:String,
 
+age:String,
+
 village:String,
 
 post:String,
