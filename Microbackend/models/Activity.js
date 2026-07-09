@@ -19,8 +19,8 @@ const ActivitySchema = new mongoose.Schema(
     },
 
     volume: {
-      type: String,
-      default: "",
+      type: Number,
+      default: 0,
     },
 
     remarks: {
@@ -36,7 +36,27 @@ const ActivitySchema = new mongoose.Schema(
     location: {
       latitude: Number,
       longitude: Number,
-      address: String,
+    },
+
+    // Water Specific
+    motorHP: {
+      type: Number,
+      default: null,
+    },
+
+    startTime: {
+      type: String,
+      default: "",
+    },
+
+    endTime: {
+      type: String,
+      default: "",
+    },
+
+    durationHours: {
+      type: Number,
+      default: 0,
     },
 
     activityDate: {
