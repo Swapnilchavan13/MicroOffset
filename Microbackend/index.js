@@ -1527,13 +1527,13 @@ paniclesPerSqm,
         });
       }
 
-      const image = req.file
-        ? `/uploads/${req.file.filename}`
-        : "";
+   const image = req.files?.image
+  ? `/uploads/${req.files.image[0].filename}`
+  : "";
 
-        const soilReport = req.files?.soilReport
-        ? `/uploads/${req.files.soilReport[0].filename}`
-        : "";
+const soilReport = req.files?.soilReport
+  ? `/uploads/${req.files.soilReport[0].filename}`
+  : "";
 
       const activity = await Activity.create({
        farmerId,
