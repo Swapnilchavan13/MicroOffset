@@ -1700,6 +1700,33 @@ app.get(
   }
 );
 
+app.get(
+  "/activity/:farmerId/soil",
+  async (req, res) => {
+    try {
+      const data =
+        await Activity.find({
+          farmerId:
+            req.params.farmerId,
+          activityType:
+            "soil",
+        }).sort({
+          createdAt: -1,
+        });
+
+      res.json({
+        success: true,
+        data,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  }
+);
+
 
 app.delete(
   "/activity/:id",
