@@ -119,28 +119,20 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage,
   limits: {
-    fileSize:
-      100 * 1024 * 1024,
+    fileSize: 100 * 1024 * 1024, // 100 MB
   },
-  fileFilter: (
-    req,
-    file,
-    cb
-  ) => {
+  fileFilter: (req, file, cb) => {
     const allowed =
-      file.mimetype.startsWith(
-        "image/"
-      ) ||
-      file.mimetype.startsWith(
-        "video/"
-      );
+      file.mimetype.startsWith("image/") ||
+      file.mimetype.startsWith("video/") ||
+      file.mimetype === "application/pdf";
 
     if (allowed) {
       cb(null, true);
     } else {
       cb(
         new Error(
-          "Only images and videos allowed"
+          "Only Images, Videos and PDF files are allowed."
         )
       );
     }
@@ -1487,26 +1479,44 @@ app.get(
 
 
 // Activity
-app.post(
+
+  app.post(
   "/activity",
-  upload.single("image"),
+  upload.fields([
+    {
+      name: "image",
+      maxCount: 1,
+    },
+    {
+      name: "soilReport",
+      maxCount: 1,
+    },
+  ]),
   async (req, res) => {
     try {
       console.log("BODY:", req.body);
       console.log("FILE:", req.file);
 
       const {
-        farmerId,
-        activityType,
-        volume,
-        remarks,
-        latitude,
-        longitude,
-        motorHP,
-        startTime,
-        endTime,
-        durationHours,
-      } = req.body;
+farmerId,
+activityType,
+volume,
+remarks,
+latitude,
+longitude,
+motorHP,
+startTime,
+endTime,
+durationHours,
+soilType,
+paniclesPerSqm,
+  plantHeight,
+  leafLength,
+  leafWidth,
+  panicleLength,
+  grainsPerPanicle,
+  thousandSeedWeight,
+}=req.body;
 
       const farmer = await Farmer.findById(farmerId);
 
@@ -1521,34 +1531,50 @@ app.post(
         ? `/uploads/${req.file.filename}`
         : "";
 
+        const soilReport = req.files?.soilReport
+        ? `/uploads/${req.files.soilReport[0].filename}`
+        : "";
+
       const activity = await Activity.create({
-        farmerId,
+       farmerId,
 
-        activityType,
+activityType,
 
-        volume,
+volume,
 
-        remarks,
+remarks,
 
-        image,
+image,
 
-        motorHP: motorHP || "",
+soilReport,
 
-        startTime: startTime || "",
+soilType,
 
-        endTime: endTime || "",
+motorHP,
 
-        durationHours: durationHours
-          ? Number(durationHours)
-          : 0,
+startTime,
 
-        location: {
-          latitude: Number(latitude),
-          longitude: Number(longitude),
-        },
+endTime,
 
-        activityDate: new Date(),
-      });
+durationHours,
+
+location:{
+latitude,
+longitude,
+},
+
+paniclesPerSqm,
+  plantHeight,
+  leafLength,
+  leafWidth,
+  panicleLength,
+  grainsPerPanicle,
+  thousandSeedWeight,
+
+activityDate:new Date(),
+
+});
+        
 
       res.status(201).json({
         success: true,
