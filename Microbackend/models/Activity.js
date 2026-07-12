@@ -39,6 +39,28 @@ const ActivitySchema = new mongoose.Schema(
       default: Date.now,
     },
 
+    // --- Fertilizer / Fertilizer + Pesticide (खाद और कीटनाशक) ---
+    khadName: {
+      type: String,
+      enum: ["b3", "Uria", "DAP", "Potash", "NPK", "Other"],
+      default: "b3",
+    },
+
+    khadMatra: {
+      type: Number,
+      default: 0,
+    },
+
+    kitnashakName: {
+      type: String,
+      default: "",
+    },
+
+    kitnashakMatra: {
+      type: Number,
+      default: 0,
+    },
+
     // Water
     motorHP: {
       type: String,

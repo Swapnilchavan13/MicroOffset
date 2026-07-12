@@ -1479,8 +1479,7 @@ app.get(
 
 
 // Activity
-
-  app.post(
+app.post(
   "/activity",
   upload.fields([
     {
@@ -1495,28 +1494,33 @@ app.get(
   async (req, res) => {
     try {
       console.log("BODY:", req.body);
-      console.log("FILE:", req.file);
+      console.log("FILE:", req.files); // req.file की जगह req.files लॉग करना सही रहेगा क्योंकि आप fields उपयोग कर रहे हैं
 
       const {
-farmerId,
-activityType,
-volume,
-remarks,
-latitude,
-longitude,
-motorHP,
-startTime,
-endTime,
-durationHours,
-soilType,
-paniclesPerSqm,
-  plantHeight,
-  leafLength,
-  leafWidth,
-  panicleLength,
-  grainsPerPanicle,
-  thousandSeedWeight,
-}=req.body;
+        farmerId,
+        activityType,
+        volume,
+        remarks,
+        latitude,
+        longitude,
+        motorHP,
+        startTime,
+        endTime,
+        durationHours,
+        soilType,
+        paniclesPerSqm,
+        plantHeight,
+        leafLength,
+        leafWidth,
+        panicleLength,
+        grainsPerPanicle,
+        thousandSeedWeight,
+        // --- नए खाद और कीटनाशक फ़ील्ड्स यहाँ जोड़े गए हैं ---
+        khadName,
+        khadMatra,
+        kitnashakName,
+        kitnashakMatra,
+      } = req.body;
 
       const farmer = await Farmer.findById(farmerId);
 
@@ -1527,54 +1531,44 @@ paniclesPerSqm,
         });
       }
 
-   const image = req.files?.image
-  ? `/uploads/${req.files.image[0].filename}`
-  : "";
+      const image = req.files?.image
+        ? `/uploads/${req.files.image[0].filename}`
+        : "";
 
-const soilReport = req.files?.soilReport
-  ? `/uploads/${req.files.soilReport[0].filename}`
-  : "";
+      const soilReport = req.files?.soilReport
+        ? `/uploads/${req.files.soilReport[0].filename}`
+        : "";
 
       const activity = await Activity.create({
-       farmerId,
-
-activityType,
-
-volume,
-
-remarks,
-
-image,
-
-soilReport,
-
-soilType,
-
-motorHP,
-
-startTime,
-
-endTime,
-
-durationHours,
-
-location:{
-latitude,
-longitude,
-},
-
-paniclesPerSqm,
-  plantHeight,
-  leafLength,
-  leafWidth,
-  panicleLength,
-  grainsPerPanicle,
-  thousandSeedWeight,
-
-activityDate:new Date(),
-
-});
-        
+        farmerId,
+        activityType,
+        volume,
+        remarks,
+        image,
+        soilReport,
+        soilType,
+        motorHP,
+        startTime,
+        endTime,
+        durationHours,
+        location: {
+          latitude,
+          longitude,
+        },
+        paniclesPerSqm,
+        plantHeight,
+        leafLength,
+        leafWidth,
+        panicleLength,
+        grainsPerPanicle,
+        thousandSeedWeight,
+        // --- डेटाबेस मॉडल में सेव करने के लिए यहाँ फ़ील्ड्स जोड़े गए हैं ---
+        khadName,
+        khadMatra,
+        kitnashakName,
+        kitnashakMatra,
+        activityDate: new Date(),
+      });
 
       res.status(201).json({
         success: true,
