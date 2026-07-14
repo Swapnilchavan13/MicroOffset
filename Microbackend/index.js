@@ -1223,6 +1223,43 @@ app.post(
   }
 );
 
+// किसान की जानकारी अपडेट करने के लिए PUT एपीआई
+app.put('/farmers/:farmerId', async (req, res) => {
+  try {
+    const { farmerId } = req.params;
+    const updatedData = req.body;
+
+    // डेटाबेस (उदा. MongoDB/Mongoose) में farmerId के आधार पर डेटा अपडेट करें
+    const updatedFarmer = await Farmer.findOneAndUpdate(
+      { farmerId: farmerId },
+      updatedData,
+      { new: true, runValidators: true } // new: true से हमें अपडेटेड डेटा वापस मिलता है
+    );
+
+    // यदि किसान डेटाबेस में नहीं मिलता है
+    if (!updatedFarmer) {
+      return res.status(404).json({
+        success: false,
+        message: "इस किसान आईडी (Farmer ID) का कोई रिकॉर्ड नहीं मिला।"
+      });
+    }
+
+    // सफलतापूर्वक अपडेट होने पर रिस्पांस भेजें
+    res.status(200).json({
+      success: true,
+      message: "किसान प्रोफ़ाइल सफलतापूर्वक अपडेट कर दी गई है।",
+      data: updatedFarmer
+    });
+
+  } catch (error) {
+    console.error("डेटा अपडेट करने में त्रुटि:", error);
+    res.status(500).json({
+      success: false,
+      message: "सर्वर त्रुटि: प्रोफाइल संपादित करने में असमर्थ।"
+    });
+  }
+});
+
 app.post(
   "/farmers/login",
   async (req, res) => {
