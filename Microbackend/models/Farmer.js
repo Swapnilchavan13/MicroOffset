@@ -262,9 +262,9 @@ b3Quantity:Number,
 
 batchNumber:String,
 
-distributionDate:Date,
+distributionDate:String,
 
-usageDate:Date,
+usageDate:String,
 
 recommendedUsage:String,
 
