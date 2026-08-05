@@ -1531,11 +1531,12 @@ app.post(
   async (req, res) => {
     try {
       console.log("BODY:", req.body);
-      console.log("FILE:", req.files); // req.file की जगह req.files लॉग करना सही रहेगा क्योंकि आप fields उपयोग कर रहे हैं
+      console.log("FILES:", req.files);
 
       const {
         farmerId,
         activityType,
+        waterSource, // 👈 1. ADDED HERE: Destructure waterSource
         volume,
         remarks,
         latitude,
@@ -1552,7 +1553,6 @@ app.post(
         panicleLength,
         grainsPerPanicle,
         thousandSeedWeight,
-        // --- नए खाद और कीटनाशक फ़ील्ड्स यहाँ जोड़े गए हैं ---
         khadName,
         khadMatra,
         kitnashakName,
@@ -1579,6 +1579,7 @@ app.post(
       const activity = await Activity.create({
         farmerId,
         activityType,
+        waterSource, // 👈 2. ADDED HERE: Save waterSource to database
         volume,
         remarks,
         image,
@@ -1599,7 +1600,6 @@ app.post(
         panicleLength,
         grainsPerPanicle,
         thousandSeedWeight,
-        // --- डेटाबेस मॉडल में सेव करने के लिए यहाँ फ़ील्ड्स जोड़े गए हैं ---
         khadName,
         khadMatra,
         kitnashakName,
@@ -1611,7 +1611,6 @@ app.post(
         success: true,
         data: activity,
       });
-
     } catch (error) {
       console.log(error);
 
