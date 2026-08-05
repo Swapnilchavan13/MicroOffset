@@ -62,6 +62,12 @@ const ActivitySchema = new mongoose.Schema(
     },
 
     // Water
+    waterSource: {
+      type: String,
+      enum: ["pump", "canal"],
+      default: "pump",
+    },
+
     motorHP: {
       type: String,
       default: "",
