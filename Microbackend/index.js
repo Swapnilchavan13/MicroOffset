@@ -1971,6 +1971,28 @@ app.delete("/location-farmers/:id", async (req, res) => {
   }
 });
 
+// Get all registered farmers
+app.get("/getlocationfarmers", async (req, res) => {
+  try {
+    const farmers = await LocationFarmer.find().sort({
+      createdAt: -1,
+    });
+
+    res.json({
+      success: true,
+      count: farmers.length,
+      farmers,
+    });
+  } catch (error) {
+    console.error("Get Farmers Error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+
 // Server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
