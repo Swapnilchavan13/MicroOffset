@@ -24,6 +24,10 @@ const PopUp = require("./models/PopUp");
 
 const Activity = require("./models/Activity");
 
+
+
+const LocationFarmer = require("./models/LocationFarmer");
+
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
@@ -1777,6 +1781,195 @@ app.delete(
     }
   }
 );
+
+
+
+
+
+// ===============================
+// LOCATION FARMER APIs
+// ===============================
+
+// Register Location Farmer
+app.post("/location-farmers", async (req, res) => {
+  try {
+    const {
+      name,
+      mobile,
+      landArea,
+      crop,
+      location,
+    } = req.body;
+
+    // Check if mobile number already exists
+    const existingFarmer = await LocationFarmer.findOne({
+      mobile,
+    });
+
+    if (existingFarmer) {
+      return res.status(409).json({
+        success: false,
+        message: "Farmer with this mobile number already exists",
+        farmer: existingFarmer,
+      });
+    }
+
+    const farmer = await LocationFarmer.create({
+      name,
+      mobile,
+      landArea,
+      crop,
+      location,
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Farmer registered successfully",
+      farmer,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+
+
+// Login using mobile number
+app.post("/location-farmers/login", async (req, res) => {
+  try {
+    const { mobile } = req.body;
+
+    if (!mobile) {
+      return res.status(400).json({
+        success: false,
+        message: "Mobile number is required",
+      });
+    }
+
+    const farmer = await LocationFarmer.findOne({
+      mobile,
+    });
+
+    if (!farmer) {
+      return res.status(404).json({
+        success: false,
+        message: "Farmer not registered",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Login successful",
+      farmer,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+
+
+// Get farmer by ID
+app.get("/location-farmers/:id", async (req, res) => {
+  try {
+    const farmer = await LocationFarmer.findById(
+      req.params.id
+    );
+
+    if (!farmer) {
+      return res.status(404).json({
+        success: false,
+        message: "Farmer not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      farmer,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+
+
+// Update farmer profile
+app.put("/location-farmers/:id", async (req, res) => {
+  try {
+    const {
+      name,
+      landArea,
+      crop,
+      location,
+    } = req.body;
+
+    const farmer = await LocationFarmer.findByIdAndUpdate(
+      req.params.id,
+      {
+        name,
+        landArea,
+        crop,
+        location,
+      },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    if (!farmer) {
+      return res.status(404).json({
+        success: false,
+        message: "Farmer not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Profile updated successfully",
+      farmer,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+
+
+// Delete farmer
+app.delete("/location-farmers/:id", async (req, res) => {
+  try {
+    const farmer = await LocationFarmer.findByIdAndDelete(
+      req.params.id
+    );
+
+    if (!farmer) {
+      return res.status(404).json({
+        success: false,
+        message: "Farmer not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Farmer deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
 
 // Server
 const PORT = process.env.PORT || 5000;
