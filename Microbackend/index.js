@@ -1798,6 +1798,8 @@ app.post("/location-farmers", async (req, res) => {
       mobile,
       landArea,
       crop,
+      thresherType,
+      collectionDate,
       location,
     } = req.body;
 
@@ -1819,6 +1821,8 @@ app.post("/location-farmers", async (req, res) => {
       mobile,
       landArea,
       crop,
+      thresherType,
+      collectionDate,
       location,
     });
 
@@ -1907,6 +1911,8 @@ app.put("/location-farmers/:id", async (req, res) => {
       name,
       landArea,
       crop,
+      thresherType,
+      collectionDate,
       location,
     } = req.body;
 
@@ -1916,6 +1922,8 @@ app.put("/location-farmers/:id", async (req, res) => {
         name,
         landArea,
         crop,
+        thresherType,
+        collectionDate,
         location,
       },
       {
@@ -1970,6 +1978,7 @@ app.delete("/location-farmers/:id", async (req, res) => {
     });
   }
 });
+
 
 // Get all registered farmers
 app.get("/getlocationfarmers", async (req, res) => {

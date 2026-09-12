@@ -27,6 +27,20 @@ const locationFarmerSchema = new mongoose.Schema(
       trim: true,
     },
 
+    thresherType: {
+      type: String,
+      required: true,
+      enum: ["Ginti", "Mixed"],
+      default: "Ginti",
+      trim: true,
+    },
+
+    collectionDate: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
     location: {
       latitude: {
         type: Number,
