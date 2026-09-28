@@ -30,8 +30,8 @@ const locationFarmerSchema = new mongoose.Schema(
     thresherType: {
       type: String,
       required: true,
-      enum: ["Ginti", "Mixed"],
-      default: "Ginti",
+      enum: ["Ginti Separate", "Mixed"],
+      default: "Ginti Separate",
       trim: true,
     },
 
