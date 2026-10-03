@@ -1783,98 +1783,253 @@ app.delete(
 );
 
 
-
-
 // ===============================
 // LOCATION FARMER APIs
 // ===============================
+const {
+  findNearestDropPoint,
+  calcDropDate,
+  calcRevenue,
+} = require("./utils/calcFarmer");
 
-// Helper logic to enforce crop-biomass rule
-const enforceCropBiomassRules = (data) => {
-  const updatedData = { ...data };
-
-  // If धान (Rice) is selected, force biomass options
-  if (updatedData.crop === "धान (Rice)") {
-    updatedData.biomassCategory = "धान (Rice)";
-    updatedData.biomassType = "मक्का का पूरा पौधा";
-  } else if (updatedData.crop === "मक्का (Maize)" && !updatedData.biomassCategory) {
-    updatedData.biomassCategory = "मक्का (Maize)";
+// ==========================================
+// Helper: normalize biomass entries
+// ==========================================
+function normalizeBiomassEntries(crop, biomassEntries, landArea) {
+  if (crop === "धान (Rice)") {
+    return [
+      {
+        type: "मक्का का पूरा पौधा",
+        acres: Number(landArea) || 0,
+      },
+    ];
   }
 
-  return updatedData;
-};
+  if (!Array.isArray(biomassEntries) || biomassEntries.length === 0) {
+    return [];
+  }
 
-// Register Location Farmer
-app.post("/location-farmers", async (req, res) => {
+  return biomassEntries
+    .filter((e) => e && e.type && Number(e.acres) > 0)
+    .map((e) => ({
+      type: e.type,
+      acres: Number(e.acres),
+    }));
+}
+
+// ==========================================
+// Helper: safely parse JSON string or return as-is
+// ==========================================
+function safeParse(value, fallback = null) {
+  if (value === undefined || value === null) return fallback;
+  if (typeof value !== "string") return value;
   try {
-    const {
-      name,
-      mobile,
-      landArea,
-      crop,
-      biomassCategory,
-      biomassType,
-      thresherType,
-      harvestDate,
-      threshingDate,
-      collectionDate,
-      transportType,
-      villageName,
-      location,
-    } = req.body;
-
-    // Validation for required fields
-    if (!name || !mobile || !landArea || !villageName || !location) {
-      return res.status(400).json({
-        success: false,
-        message: "कृपया सभी आवश्यक जानकारी (नाम, मोबाइल, क्षेत्रफल, गाँव, GPS लोकेशन) भरें।",
-      });
-    }
-
-    // Check if mobile number already exists
-    const existingFarmer = await LocationFarmer.findOne({ mobile });
-
-    if (existingFarmer) {
-      return res.status(409).json({
-        success: false,
-        message: "इस मोबाइल नंबर से किसान पहले से पंजीकृत है।",
-        farmer: existingFarmer,
-      });
-    }
-
-    // Prepare farmer data with rules enforced
-    const farmerPayload = enforceCropBiomassRules({
-      name,
-      mobile,
-      landArea,
-      crop: crop || "मक्का (Maize)",
-      biomassCategory: biomassCategory || "मक्का (Maize)",
-      biomassType: biomassType || "मक्का का भुट्टा (Cob)",
-      thresherType: thresherType || "थ्रेशर प्रकार 1",
-      harvestDate: harvestDate || collectionDate,
-      threshingDate: threshingDate || collectionDate,
-      collectionDate: collectionDate || threshingDate,
-      transportType: transportType || "self",
-      villageName,
-      location,
-    });
-
-    const farmer = await LocationFarmer.create(farmerPayload);
-
-    res.status(201).json({
-      success: true,
-      message: "किसान का पंजीकरण सफलतापूर्वक हो गया है।",
-      farmer,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    return JSON.parse(value);
+  } catch {
+    return fallback;
   }
-});
+}
 
+// ==========================================
+// Helper: build full payload with calculations
+// ==========================================
+function buildFarmerPayload(body, existingDropPoints = null, farmPhotoPath = null) {
+  const {
+    name,
+    mobile,
+    landArea,
+    crop,
+    biomassEntries,
+    biomassCategory,
+    thresherType,
+    harvestDate,
+    threshingDate,
+    collectionDate,
+    transportType,
+    villageName,
+    location,
+  } = body;
+
+  const category =
+    crop === "धान (Rice)" ? "धान (Rice)" : "मक्का (Maize)";
+
+  const parsedLocation = safeParse(location, location);
+  const parsedBiomassEntries = safeParse(biomassEntries, biomassEntries || []);
+
+  const normalizedEntries = normalizeBiomassEntries(
+    crop,
+    parsedBiomassEntries,
+    landArea
+  );
+
+  const dropPoints =
+    existingDropPoints && existingDropPoints.length > 0
+      ? existingDropPoints
+      : null;
+
+  const farmerLat = Number(parsedLocation?.latitude);
+  const farmerLng = Number(parsedLocation?.longitude);
+
+  const assignedDropPoint = dropPoints
+    ? findNearestDropPoint(farmerLat, farmerLng, dropPoints)
+    : null;
+
+  const distanceKm = assignedDropPoint?.distanceKm || 0;
+
+  const { baseAmount, distanceCost, estimatedAmount } = calcRevenue({
+    biomassEntries: normalizedEntries,
+    transportType,
+    distanceKm,
+  });
+
+  const dropDate = calcDropDate(harvestDate);
+
+  const primaryBiomassType =
+    normalizedEntries[0]?.type || "मक्का का भुट्टा (Cob)";
+
+  const payload = {
+    name,
+    mobile,
+    landArea: Number(landArea),
+    crop: crop || "मक्का (Maize)",
+    biomassCategory: category,
+    biomassEntries: normalizedEntries,
+    biomassType: primaryBiomassType,
+    thresherType: thresherType || "थ्रेशर प्रकार 1",
+    harvestDate,
+    threshingDate,
+    collectionDate: collectionDate || threshingDate,
+    dropDate,
+    transportType: transportType || "self",
+    villageName,
+    location: {
+      latitude: farmerLat,
+      longitude: farmerLng,
+      accuracy:
+        parsedLocation?.accuracy != null
+          ? Number(parsedLocation.accuracy)
+          : null,
+    },
+    assignedDropPoint,
+    baseAmount,
+    distanceCost,
+    estimatedAmount,
+  };
+
+  // Optional farm photo
+  if (farmPhotoPath) {
+    payload.farmPhoto = farmPhotoPath;
+  }
+
+  return payload;
+}
+
+// ==========================================
+// POST: Register Location Farmer (with optional photo)
+// ==========================================
+app.post(
+  "/location-farmers",
+  upload.single("farmPhoto"), // ← optional photo
+  async (req, res) => {
+    try {
+      const { name, mobile, landArea, villageName, location } = req.body;
+
+      // Parse location if it came as string (FormData)
+      const parsedLocation = safeParse(location, location);
+
+      if (!name || !mobile || !landArea || !villageName || !parsedLocation) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "कृपया सभी आवश्यक जानकारी (नाम, मोबाइल, क्षेत्रफल, गाँव, GPS लोकेशन) भरें।",
+        });
+      }
+
+      const existingFarmer = await LocationFarmer.findOne({ mobile });
+      if (existingFarmer) {
+        return res.status(409).json({
+          success: false,
+          message: "इस मोबाइल नंबर से किसान पहले से पंजीकृत है।",
+          farmer: existingFarmer,
+        });
+      }
+
+      // Photo path (optional)
+      const farmPhotoPath = req.file
+        ? `/uploads/${req.file.filename}`
+        : null;
+
+      const payload = buildFarmerPayload(req.body, null, farmPhotoPath);
+      const farmer = await LocationFarmer.create(payload);
+
+      res.status(201).json({
+        success: true,
+        message: "किसान का पंजीकरण सफलतापूर्वक हो गया है।",
+        farmer,
+      });
+    } catch (error) {
+      console.error("Register Farmer Error:", error);
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
+);
+
+// ==========================================
+// PUT: Update Location Farmer (with optional photo)
+// ==========================================
+app.put(
+  "/location-farmers/:id",
+  upload.single("farmPhoto"), // ← optional photo
+  async (req, res) => {
+    try {
+      const existing = await LocationFarmer.findById(req.params.id);
+      if (!existing) {
+        return res.status(404).json({
+          success: false,
+          message: "किसान प्रोफ़ाइल नहीं मिली।",
+        });
+      }
+
+      // Photo path (only if new photo uploaded)
+      const farmPhotoPath = req.file
+        ? `/uploads/${req.file.filename}`
+        : null;
+
+      const payload = buildFarmerPayload(
+        req.body,
+        existing.dropPoints,
+        farmPhotoPath
+      );
+
+      // Never overwrite mobile via PUT
+      delete payload.mobile;
+
+      // If no new photo was uploaded, don't touch the existing farmPhoto
+      if (!farmPhotoPath) {
+        delete payload.farmPhoto;
+      }
+
+      const farmer = await LocationFarmer.findByIdAndUpdate(
+        req.params.id,
+        { $set: payload },
+        { new: true, runValidators: true }
+      );
+
+      res.json({
+        success: true,
+        message: "प्रोफ़ाइल सफलतापूर्वक अपडेट हो गई है।",
+        farmer,
+      });
+    } catch (error) {
+      console.error("Update Farmer Error:", error);
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
+);
+
+// ==========================================
 // Login using mobile number
+// ==========================================
 app.post("/location-farmers/login", async (req, res) => {
   try {
     const { mobile } = req.body;
@@ -1908,7 +2063,9 @@ app.post("/location-farmers/login", async (req, res) => {
   }
 });
 
+// ==========================================
 // Get farmer by ID
+// ==========================================
 app.get("/location-farmers/:id", async (req, res) => {
   try {
     const farmer = await LocationFarmer.findById(req.params.id);
@@ -1932,69 +2089,9 @@ app.get("/location-farmers/:id", async (req, res) => {
   }
 });
 
-// Update farmer profile
-app.put("/location-farmers/:id", async (req, res) => {
-  try {
-    const {
-      name,
-      landArea,
-      crop,
-      biomassCategory,
-      biomassType,
-      thresherType,
-      harvestDate,
-      threshingDate,
-      collectionDate,
-      transportType,
-      villageName,
-      location,
-    } = req.body;
-
-    const updateFields = enforceCropBiomassRules({
-      name,
-      landArea,
-      crop,
-      biomassCategory,
-      biomassType,
-      thresherType,
-      harvestDate,
-      threshingDate,
-      collectionDate,
-      transportType,
-      villageName,
-      location,
-    });
-
-    const farmer = await LocationFarmer.findByIdAndUpdate(
-      req.params.id,
-      { $set: updateFields },
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
-
-    if (!farmer) {
-      return res.status(404).json({
-        success: false,
-        message: "किसान प्रोफ़ाइल नहीं मिली।",
-      });
-    }
-
-    res.json({
-      success: true,
-      message: "प्रोफ़ाइल सफलतापूर्वक अपडेट हो गई है।",
-      farmer,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-});
-
+// ==========================================
 // Delete farmer
+// ==========================================
 app.delete("/location-farmers/:id", async (req, res) => {
   try {
     const farmer = await LocationFarmer.findByIdAndDelete(req.params.id);
@@ -2018,7 +2115,9 @@ app.delete("/location-farmers/:id", async (req, res) => {
   }
 });
 
+// ==========================================
 // Get all registered farmers
+// ==========================================
 app.get("/getlocationfarmers", async (req, res) => {
   try {
     const farmers = await LocationFarmer.find().sort({
@@ -2032,13 +2131,13 @@ app.get("/getlocationfarmers", async (req, res) => {
     });
   } catch (error) {
     console.error("Get Farmers Error:", error);
-
     res.status(500).json({
       success: false,
       message: error.message,
     });
   }
 });
+
 
 // Server
 const PORT = process.env.PORT || 5000;
