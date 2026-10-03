@@ -1790,6 +1790,8 @@ const {
   findNearestDropPoint,
   calcDropDate,
   calcRevenue,
+  getSlotCount,
+  findAvailableDropDate,
 } = require("./utils/calcFarmer");
 
 // ==========================================
@@ -1833,14 +1835,13 @@ function safeParse(value, fallback = null) {
 // ==========================================
 // Helper: build full payload with calculations
 // ==========================================
-function buildFarmerPayload(body, existingDropPoints = null, farmPhotoPath = null) {
+async function buildFarmerPayload(body, existingDropPoints = null, farmPhotoPath = null) {
   const {
     name,
     mobile,
     landArea,
     crop,
     biomassEntries,
-    biomassCategory,
     thresherType,
     harvestDate,
     threshingDate,
@@ -1870,19 +1871,35 @@ function buildFarmerPayload(body, existingDropPoints = null, farmPhotoPath = nul
   const farmerLat = Number(parsedLocation?.latitude);
   const farmerLng = Number(parsedLocation?.longitude);
 
+  // 1. Find nearest drop point
   const assignedDropPoint = dropPoints
     ? findNearestDropPoint(farmerLat, farmerLng, dropPoints)
     : null;
 
   const distanceKm = assignedDropPoint?.distanceKm || 0;
 
+  // 2. How many daily slots does this farmer use?
+  const slotCount = getSlotCount(normalizedEntries);
+
+  // 3. Find available drop date (respecting daily limit 100)
+  let dropDate = calcDropDate(harvestDate); // default +5
+  if (assignedDropPoint) {
+    const result = await findAvailableDropDate({
+      LocationFarmer,
+      dropPointName: assignedDropPoint.name,
+      harvestDate,
+      slotCount,
+      dailyLimit: assignedDropPoint.dailyLimit || 100,
+    });
+    dropDate = result.dropDate;
+  }
+
+  // 4. Revenue
   const { baseAmount, distanceCost, estimatedAmount } = calcRevenue({
     biomassEntries: normalizedEntries,
     transportType,
     distanceKm,
   });
-
-  const dropDate = calcDropDate(harvestDate);
 
   const primaryBiomassType =
     normalizedEntries[0]?.type || "मक्का का भुट्टा (Cob)";
@@ -1914,9 +1931,9 @@ function buildFarmerPayload(body, existingDropPoints = null, farmPhotoPath = nul
     baseAmount,
     distanceCost,
     estimatedAmount,
+    dailySlotCount: slotCount,
   };
 
-  // Optional farm photo
   if (farmPhotoPath) {
     payload.farmPhoto = farmPhotoPath;
   }

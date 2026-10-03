@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 // ==========================================
-// EMBEDDED DROP POINTS
+// DROP POINTS + KISAN MITRA (editable in DB)
 // ==========================================
 const DEFAULT_DROP_POINTS = [
   {
@@ -10,6 +10,13 @@ const DEFAULT_DROP_POINTS = [
     latitude: 23.817694,
     longitude: 79.410778,
     isFactory: true,
+    totalCapacityTonnes: 5000,       // total limit
+    dailyLimit: 100,                 // max entries per day
+    kisanMitra: {
+      name: "राजेश कुमार",
+      mobile: "9876543210",
+      photo: "https://randomuser.me/api/portraits/men/32.jpg",
+    },
   },
   {
     name: "Drop Point 2",
@@ -17,6 +24,13 @@ const DEFAULT_DROP_POINTS = [
     latitude: 23.91,
     longitude: 79.31,
     isFactory: false,
+    totalCapacityTonnes: 5000,
+    dailyLimit: 100,
+    kisanMitra: {
+      name: "सुरेश पटेल",
+      mobile: "9876543211",
+      photo: "https://randomuser.me/api/portraits/men/45.jpg",
+    },
   },
   {
     name: "Drop Point 3",
@@ -24,6 +38,13 @@ const DEFAULT_DROP_POINTS = [
     latitude: 23.75,
     longitude: 79.3,
     isFactory: false,
+    totalCapacityTonnes: 5000,
+    dailyLimit: 100,
+    kisanMitra: {
+      name: "अनिल शर्मा",
+      mobile: "9876543212",
+      photo: "https://randomuser.me/api/portraits/men/67.jpg",
+    },
   },
   {
     name: "Drop Point 4",
@@ -31,6 +52,13 @@ const DEFAULT_DROP_POINTS = [
     latitude: 23.9,
     longitude: 79.55,
     isFactory: false,
+    totalCapacityTonnes: 5000,
+    dailyLimit: 100,
+    kisanMitra: {
+      name: "विकास यादव",
+      mobile: "9876543213",
+      photo: "https://randomuser.me/api/portraits/men/22.jpg",
+    },
   },
 ];
 
@@ -54,6 +82,15 @@ const biomassEntrySchema = new mongoose.Schema(
   { _id: false }
 );
 
+const kisanMitraSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true },
+    mobile: { type: String, required: true },
+    photo: { type: String, default: null },
+  },
+  { _id: false }
+);
+
 const dropPointSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
@@ -62,6 +99,9 @@ const dropPointSchema = new mongoose.Schema(
     longitude: { type: Number, required: true },
     isFactory: { type: Boolean, default: false },
     distanceKm: { type: Number, default: null },
+    totalCapacityTonnes: { type: Number, default: 5000 },
+    dailyLimit: { type: Number, default: 100 },
+    kisanMitra: { type: kisanMitraSchema, default: null },
   },
   { _id: false }
 );
@@ -90,18 +130,15 @@ const locationFarmerSchema = new mongoose.Schema(
       default: "मक्का (Maize)",
       trim: true,
     },
-
     biomassEntries: {
       type: [biomassEntrySchema],
       default: [],
     },
-
     biomassType: {
       type: String,
       trim: true,
       default: "मक्का का भुट्टा (Cob)",
     },
-
     thresherType: {
       type: String,
       required: true,
@@ -127,18 +164,15 @@ const locationFarmerSchema = new mongoose.Schema(
 
     // ===== Section 6: Location =====
     villageName: { type: String, required: true, trim: true },
-
     location: {
       latitude: { type: Number, required: true },
       longitude: { type: Number, required: true },
       accuracy: { type: Number, default: null },
     },
-
-    // ===== NEW: Farm Photo (OPTIONAL) =====
     farmPhoto: {
-      type: String,          // stores path like "/uploads/xxxx.jpg"
+      type: String,
       default: null,
-      required: false,       // ← NOT mandatory
+      required: false,
     },
 
     // ===== Drop points =====
@@ -146,7 +180,6 @@ const locationFarmerSchema = new mongoose.Schema(
       type: [dropPointSchema],
       default: DEFAULT_DROP_POINTS,
     },
-
     assignedDropPoint: {
       type: dropPointSchema,
       default: null,
@@ -156,11 +189,14 @@ const locationFarmerSchema = new mongoose.Schema(
     estimatedAmount: { type: Number, default: 0 },
     baseAmount: { type: Number, default: 0 },
     distanceCost: { type: Number, default: 0 },
+
+    // How many "slots" this farmer uses on dropDate
+    // = number of biomassEntries with acres > 0
+    dailySlotCount: { type: Number, default: 0 },
   },
   { timestamps: true }
 );
 
-// Pre-save rule
 locationFarmerSchema.pre("save", function () {
   if (this.crop === "धान (Rice)") {
     this.biomassCategory = "धान (Rice)";
