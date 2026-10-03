@@ -1785,10 +1785,24 @@ app.delete(
 
 
 
-
 // ===============================
 // LOCATION FARMER APIs
 // ===============================
+
+// Helper logic to enforce crop-biomass rule
+const enforceCropBiomassRules = (data) => {
+  const updatedData = { ...data };
+
+  // If धान (Rice) is selected, force biomass options
+  if (updatedData.crop === "धान (Rice)") {
+    updatedData.biomassCategory = "धान (Rice)";
+    updatedData.biomassType = "मक्का का पूरा पौधा";
+  } else if (updatedData.crop === "मक्का (Maize)" && !updatedData.biomassCategory) {
+    updatedData.biomassCategory = "मक्का (Maize)";
+  }
+
+  return updatedData;
+};
 
 // Register Location Farmer
 app.post("/location-farmers", async (req, res) => {
@@ -1798,37 +1812,58 @@ app.post("/location-farmers", async (req, res) => {
       mobile,
       landArea,
       crop,
+      biomassCategory,
+      biomassType,
       thresherType,
+      harvestDate,
+      threshingDate,
       collectionDate,
+      transportType,
+      villageName,
       location,
     } = req.body;
 
+    // Validation for required fields
+    if (!name || !mobile || !landArea || !villageName || !location) {
+      return res.status(400).json({
+        success: false,
+        message: "कृपया सभी आवश्यक जानकारी (नाम, मोबाइल, क्षेत्रफल, गाँव, GPS लोकेशन) भरें।",
+      });
+    }
+
     // Check if mobile number already exists
-    const existingFarmer = await LocationFarmer.findOne({
-      mobile,
-    });
+    const existingFarmer = await LocationFarmer.findOne({ mobile });
 
     if (existingFarmer) {
       return res.status(409).json({
         success: false,
-        message: "Farmer with this mobile number already exists",
+        message: "इस मोबाइल नंबर से किसान पहले से पंजीकृत है।",
         farmer: existingFarmer,
       });
     }
 
-    const farmer = await LocationFarmer.create({
+    // Prepare farmer data with rules enforced
+    const farmerPayload = enforceCropBiomassRules({
       name,
       mobile,
       landArea,
-      crop,
-      thresherType,
-      collectionDate,
+      crop: crop || "मक्का (Maize)",
+      biomassCategory: biomassCategory || "मक्का (Maize)",
+      biomassType: biomassType || "मक्का का भुट्टा (Cob)",
+      thresherType: thresherType || "थ्रेशर प्रकार 1",
+      harvestDate: harvestDate || collectionDate,
+      threshingDate: threshingDate || collectionDate,
+      collectionDate: collectionDate || threshingDate,
+      transportType: transportType || "self",
+      villageName,
       location,
     });
 
+    const farmer = await LocationFarmer.create(farmerPayload);
+
     res.status(201).json({
       success: true,
-      message: "Farmer registered successfully",
+      message: "किसान का पंजीकरण सफलतापूर्वक हो गया है।",
       farmer,
     });
   } catch (error) {
@@ -1838,7 +1873,6 @@ app.post("/location-farmers", async (req, res) => {
     });
   }
 });
-
 
 // Login using mobile number
 app.post("/location-farmers/login", async (req, res) => {
@@ -1848,24 +1882,22 @@ app.post("/location-farmers/login", async (req, res) => {
     if (!mobile) {
       return res.status(400).json({
         success: false,
-        message: "Mobile number is required",
+        message: "मोबाइल नंबर आवश्यक है।",
       });
     }
 
-    const farmer = await LocationFarmer.findOne({
-      mobile,
-    });
+    const farmer = await LocationFarmer.findOne({ mobile });
 
     if (!farmer) {
       return res.status(404).json({
         success: false,
-        message: "Farmer not registered",
+        message: "यह मोबाइल नंबर पंजीकृत नहीं है।",
       });
     }
 
     res.json({
       success: true,
-      message: "Login successful",
+      message: "लॉगिन सफल रहा।",
       farmer,
     });
   } catch (error) {
@@ -1875,19 +1907,16 @@ app.post("/location-farmers/login", async (req, res) => {
     });
   }
 });
-
 
 // Get farmer by ID
 app.get("/location-farmers/:id", async (req, res) => {
   try {
-    const farmer = await LocationFarmer.findById(
-      req.params.id
-    );
+    const farmer = await LocationFarmer.findById(req.params.id);
 
     if (!farmer) {
       return res.status(404).json({
         success: false,
-        message: "Farmer not found",
+        message: "किसान प्रोफ़ाइल नहीं मिली।",
       });
     }
 
@@ -1902,7 +1931,6 @@ app.get("/location-farmers/:id", async (req, res) => {
     });
   }
 });
-
 
 // Update farmer profile
 app.put("/location-farmers/:id", async (req, res) => {
@@ -1911,21 +1939,35 @@ app.put("/location-farmers/:id", async (req, res) => {
       name,
       landArea,
       crop,
+      biomassCategory,
+      biomassType,
       thresherType,
+      harvestDate,
+      threshingDate,
       collectionDate,
+      transportType,
+      villageName,
       location,
     } = req.body;
 
+    const updateFields = enforceCropBiomassRules({
+      name,
+      landArea,
+      crop,
+      biomassCategory,
+      biomassType,
+      thresherType,
+      harvestDate,
+      threshingDate,
+      collectionDate,
+      transportType,
+      villageName,
+      location,
+    });
+
     const farmer = await LocationFarmer.findByIdAndUpdate(
       req.params.id,
-      {
-        name,
-        landArea,
-        crop,
-        thresherType,
-        collectionDate,
-        location,
-      },
+      { $set: updateFields },
       {
         new: true,
         runValidators: true,
@@ -1935,13 +1977,13 @@ app.put("/location-farmers/:id", async (req, res) => {
     if (!farmer) {
       return res.status(404).json({
         success: false,
-        message: "Farmer not found",
+        message: "किसान प्रोफ़ाइल नहीं मिली।",
       });
     }
 
     res.json({
       success: true,
-      message: "Profile updated successfully",
+      message: "प्रोफ़ाइल सफलतापूर्वक अपडेट हो गई है।",
       farmer,
     });
   } catch (error) {
@@ -1952,24 +1994,21 @@ app.put("/location-farmers/:id", async (req, res) => {
   }
 });
 
-
 // Delete farmer
 app.delete("/location-farmers/:id", async (req, res) => {
   try {
-    const farmer = await LocationFarmer.findByIdAndDelete(
-      req.params.id
-    );
+    const farmer = await LocationFarmer.findByIdAndDelete(req.params.id);
 
     if (!farmer) {
       return res.status(404).json({
         success: false,
-        message: "Farmer not found",
+        message: "किसान प्रोफ़ाइल नहीं मिली।",
       });
     }
 
     res.json({
       success: true,
-      message: "Farmer deleted successfully",
+      message: "किसान प्रोफ़ाइल सफलतापूर्वक हटा दी गई है।",
     });
   } catch (error) {
     res.status(500).json({
@@ -1978,7 +2017,6 @@ app.delete("/location-farmers/:id", async (req, res) => {
     });
   }
 });
-
 
 // Get all registered farmers
 app.get("/getlocationfarmers", async (req, res) => {
