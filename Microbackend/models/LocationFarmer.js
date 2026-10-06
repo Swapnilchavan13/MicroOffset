@@ -206,4 +206,6 @@ locationFarmerSchema.pre("save", function () {
   }
 });
 
+
 module.exports = mongoose.model("LocationFarmer", locationFarmerSchema);
+module.exports.DEFAULT_DROP_POINTS = DEFAULT_DROP_POINTS;

@@ -79,7 +79,7 @@ function calcRevenue({
 
   // Distance cost
   let distanceCost = 0;
-  if (transportType === "pickup") {
+  if (transportType === "self") {
     if (distanceKm <= 25) distanceCost = 1200;
     else distanceCost = 2000; // 25+ km
   }
@@ -93,6 +93,89 @@ function calcRevenue({
   };
 }
 
+// ==========================================
+// GET SLOT COUNT
+// ==========================================
+/**
+ * How many daily slots does this farmer need?
+ * Rule: 1 slot for every 5 acres (minimum 1)
+ * You can change the divisor according to your business logic.
+ */
+function getSlotCount(biomassEntries = []) {
+  if (!Array.isArray(biomassEntries) || biomassEntries.length === 0) {
+    return 1;
+  }
+
+  const totalAcres = biomassEntries.reduce(
+    (sum, e) => sum + (Number(e.acres) || 0),
+    0
+  );
+
+  // 1 slot per 5 acres, minimum 1
+  return Math.max(1, Math.ceil(totalAcres / 5));
+}
+
+// ==========================================
+// FIND AVAILABLE DROP DATE
+// ==========================================
+/**
+ * Finds the earliest available drop date starting from harvestDate + 5 days
+ * while respecting the daily limit of the drop point.
+ */
+async function findAvailableDropDate({
+  LocationFarmer,
+  dropPointName,
+  harvestDate,
+  slotCount = 1,
+  dailyLimit = 100,
+}) {
+  // Start from harvestDate + 5 days
+  let candidate = calcDropDate(harvestDate);
+  if (!candidate) {
+    // fallback to today + 5
+    const d = new Date();
+    d.setDate(d.getDate() + 5);
+    candidate = d.toISOString().slice(0, 10);
+  }
+
+  // We will look up to 30 days ahead
+  for (let i = 0; i < 30; i++) {
+    // Count how many slots are already booked on this date for this drop point
+    const existing = await LocationFarmer.aggregate([
+      {
+        $match: {
+          "assignedDropPoint.name": dropPointName,
+          dropDate: candidate,
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalSlots: { $sum: { $ifNull: ["$dailySlotCount", 1] } },
+        },
+      },
+    ]);
+
+    const usedSlots = existing[0]?.totalSlots || 0;
+
+    // If there is still space for this farmer's slots → return this date
+    if (usedSlots + slotCount <= dailyLimit) {
+      return { dropDate: candidate };
+    }
+
+    // Otherwise move to next day
+    const next = new Date(candidate);
+    next.setDate(next.getDate() + 1);
+    candidate = next.toISOString().slice(0, 10);
+  }
+
+  // If nothing found in 30 days, just return the original candidate
+  return { dropDate: candidate };
+}
+
+// ==========================================
+// EXPORTS
+// ==========================================
 module.exports = {
   PRICE_PER_TON,
   WEIGHT_PER_ACRE,
@@ -100,4 +183,6 @@ module.exports = {
   findNearestDropPoint,
   calcDropDate,
   calcRevenue,
+  getSlotCount,           // ← added
+  findAvailableDropDate,  // ← added
 };

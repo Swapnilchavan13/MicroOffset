@@ -28,6 +28,8 @@ const Activity = require("./models/Activity");
 
 const LocationFarmer = require("./models/LocationFarmer");
 
+const DEFAULT_DROP_POINTS = LocationFarmer.DEFAULT_DROP_POINTS;
+
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
@@ -1863,18 +1865,23 @@ async function buildFarmerPayload(body, existingDropPoints = null, farmPhotoPath
     landArea
   );
 
-  const dropPoints =
-    existingDropPoints && existingDropPoints.length > 0
-      ? existingDropPoints
-      : null;
+ // ✅ Always use real drop points
+const dropPoints =
+  existingDropPoints && existingDropPoints.length > 0
+    ? existingDropPoints
+    : DEFAULT_DROP_POINTS;
 
-  const farmerLat = Number(parsedLocation?.latitude);
-  const farmerLng = Number(parsedLocation?.longitude);
+const farmerLat = Number(parsedLocation?.latitude);
+const farmerLng = Number(parsedLocation?.longitude);
 
-  // 1. Find nearest drop point
-  const assignedDropPoint = dropPoints
-    ? findNearestDropPoint(farmerLat, farmerLng, dropPoints)
-    : null;
+// ✅ Always calculate nearest drop point (includes kisanMitra)
+const assignedDropPoint = findNearestDropPoint(
+  farmerLat,
+  farmerLng,
+  dropPoints
+);
+
+// console.log("ASSIGNED:", assignedDropPoint?.name, assignedDropPoint?.kisanMitra?.name);
 
   const distanceKm = assignedDropPoint?.distanceKm || 0;
 
@@ -1930,6 +1937,7 @@ async function buildFarmerPayload(body, existingDropPoints = null, farmPhotoPath
     assignedDropPoint,
     baseAmount,
     distanceCost,
+    dropPoints,
     estimatedAmount,
     dailySlotCount: slotCount,
   };
@@ -1976,7 +1984,7 @@ app.post(
         ? `/uploads/${req.file.filename}`
         : null;
 
-      const payload = buildFarmerPayload(req.body, null, farmPhotoPath);
+      const payload = await buildFarmerPayload(req.body, null, farmPhotoPath);
       const farmer = await LocationFarmer.create(payload);
 
       res.status(201).json({
@@ -1996,7 +2004,7 @@ app.post(
 // ==========================================
 app.put(
   "/location-farmers/:id",
-  upload.single("farmPhoto"), // ← optional photo
+  upload.single("farmPhoto"),
   async (req, res) => {
     try {
       const existing = await LocationFarmer.findById(req.params.id);
@@ -2007,21 +2015,19 @@ app.put(
         });
       }
 
-      // Photo path (only if new photo uploaded)
       const farmPhotoPath = req.file
         ? `/uploads/${req.file.filename}`
         : null;
 
-      const payload = buildFarmerPayload(
+      // Always pass null for existingDropPoints so DEFAULT_DROP_POINTS + Kisan Mitra are used
+      const payload = await buildFarmerPayload(
         req.body,
-        existing.dropPoints,
+        null, // ← important: force fresh drop points + kisan mitra
         farmPhotoPath
       );
 
-      // Never overwrite mobile via PUT
-      delete payload.mobile;
+      delete payload.mobile; // never change mobile on edit
 
-      // If no new photo was uploaded, don't touch the existing farmPhoto
       if (!farmPhotoPath) {
         delete payload.farmPhoto;
       }
@@ -2034,7 +2040,7 @@ app.put(
 
       res.json({
         success: true,
-        message: "प्रोफ़ाइल सफलतापूर्वक अपडेट हो गई है।",
+        message: "प्रोफ़ाइल सफलतापूर्वक अपडेट हो गई है। ड्रॉप पॉइंट और किसान मित्र भी अपडेट हो गए।",
         farmer,
       });
     } catch (error) {
@@ -2152,6 +2158,45 @@ app.get("/getlocationfarmers", async (req, res) => {
       success: false,
       message: error.message,
     });
+  }
+});
+
+
+app.get("/fix-assigned-drop-points", async (req, res) => {
+  try {
+    const farmers = await LocationFarmer.find({
+      $or: [
+        { assignedDropPoint: null },
+        { "assignedDropPoint.kisanMitra": { $exists: false } },
+      ],
+    });
+
+    let fixed = 0;
+
+    for (const f of farmers) {
+      if (!f.location?.latitude || !f.location?.longitude) continue;
+
+      const nearest = findNearestDropPoint(
+        f.location.latitude,
+        f.location.longitude,
+        DEFAULT_DROP_POINTS
+      );
+
+      if (nearest) {
+        f.assignedDropPoint = nearest;
+        f.dropPoints = DEFAULT_DROP_POINTS;
+        await f.save();
+        fixed++;
+      }
+    }
+
+    res.json({
+      success: true,
+      message: `Fixed ${fixed} farmers`,
+      totalChecked: farmers.length,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 });
 
