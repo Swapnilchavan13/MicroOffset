@@ -2,6 +2,7 @@
 // CONSTANTS
 // ==========================================
 const PRICE_PER_TON = 250;
+const DAILY_PICKUP_LIMIT = 100;
 
 const WEIGHT_PER_ACRE = {
   "मक्का का पूरा पौधा": 1.0,
@@ -70,18 +71,17 @@ function calcRevenue({
   transportType = "self",
   distanceKm = 0,
 }) {
-  // Base amount
   let baseAmount = 0;
   for (const entry of biomassEntries) {
     const weightPerAcre = WEIGHT_PER_ACRE[entry.type] || 0;
     baseAmount += PRICE_PER_TON * weightPerAcre * (Number(entry.acres) || 0);
   }
 
-  // Distance cost
+  // Distance cost only when WE NOT pick up
   let distanceCost = 0;
   if (transportType === "self") {
     if (distanceKm <= 25) distanceCost = 1200;
-    else distanceCost = 2000; // 25+ km
+    else distanceCost = 2000;
   }
 
   const estimatedAmount = Math.round(baseAmount + distanceCost);
@@ -96,11 +96,6 @@ function calcRevenue({
 // ==========================================
 // GET SLOT COUNT
 // ==========================================
-/**
- * How many daily slots does this farmer need?
- * Rule: 1 slot for every 5 acres (minimum 1)
- * You can change the divisor according to your business logic.
- */
 function getSlotCount(biomassEntries = []) {
   if (!Array.isArray(biomassEntries) || biomassEntries.length === 0) {
     return 1;
@@ -111,17 +106,12 @@ function getSlotCount(biomassEntries = []) {
     0
   );
 
-  // 1 slot per 5 acres, minimum 1
   return Math.max(1, Math.ceil(totalAcres / 5));
 }
 
 // ==========================================
 // FIND AVAILABLE DROP DATE
 // ==========================================
-/**
- * Finds the earliest available drop date starting from harvestDate + 5 days
- * while respecting the daily limit of the drop point.
- */
 async function findAvailableDropDate({
   LocationFarmer,
   dropPointName,
@@ -129,18 +119,14 @@ async function findAvailableDropDate({
   slotCount = 1,
   dailyLimit = 100,
 }) {
-  // Start from harvestDate + 5 days
   let candidate = calcDropDate(harvestDate);
   if (!candidate) {
-    // fallback to today + 5
     const d = new Date();
     d.setDate(d.getDate() + 5);
     candidate = d.toISOString().slice(0, 10);
   }
 
-  // We will look up to 30 days ahead
   for (let i = 0; i < 30; i++) {
-    // Count how many slots are already booked on this date for this drop point
     const existing = await LocationFarmer.aggregate([
       {
         $match: {
@@ -158,19 +144,110 @@ async function findAvailableDropDate({
 
     const usedSlots = existing[0]?.totalSlots || 0;
 
-    // If there is still space for this farmer's slots → return this date
     if (usedSlots + slotCount <= dailyLimit) {
       return { dropDate: candidate };
     }
 
-    // Otherwise move to next day
     const next = new Date(candidate);
     next.setDate(next.getDate() + 1);
     candidate = next.toISOString().slice(0, 10);
   }
 
-  // If nothing found in 30 days, just return the original candidate
   return { dropDate: candidate };
+}
+
+// ==========================================
+// COUNT PICKUPS ON A DATE (ped + ginthi)
+// 1 farmer counts as 1 pickup for capacity
+// ==========================================
+async function getPickupCountOnDate(LocationFarmer, dateStr) {
+  if (!dateStr) return 0;
+
+  const count = await LocationFarmer.countDocuments({
+    $or: [{ pedPickupDate: dateStr }, { ginthiPickupDate: dateStr }],
+  });
+
+  return count;
+}
+
+/**
+ * Returns true if date still has room (under daily limit)
+ */
+async function isPickupDateAvailable(
+  LocationFarmer,
+  dateStr,
+  dailyLimit = DAILY_PICKUP_LIMIT
+) {
+  const used = await getPickupCountOnDate(LocationFarmer, dateStr);
+  return used < dailyLimit;
+}
+
+/**
+ * Capacity map for date range (for app date chips)
+ * counts[date] = number of farmers who selected that date
+ * as pedPickupDate OR ginthiPickupDate
+ */
+async function getPickupCapacityMap(LocationFarmer, fromDate, toDate) {
+  const rows = await LocationFarmer.aggregate([
+    {
+      $match: {
+        $or: [
+          { pedPickupDate: { $gte: fromDate, $lte: toDate } },
+          { ginthiPickupDate: { $gte: fromDate, $lte: toDate } },
+        ],
+      },
+    },
+    {
+      $project: {
+        dates: {
+          $setUnion: [
+            {
+              $cond: [
+                {
+                  $and: [
+                    { $ne: ["$pedPickupDate", null] },
+                    { $ne: ["$pedPickupDate", ""] },
+                  ],
+                },
+                ["$pedPickupDate"],
+                [],
+              ],
+            },
+            {
+              $cond: [
+                {
+                  $and: [
+                    { $ne: ["$ginthiPickupDate", null] },
+                    { $ne: ["$ginthiPickupDate", ""] },
+                  ],
+                },
+                ["$ginthiPickupDate"],
+                [],
+              ],
+            },
+          ],
+        },
+      },
+    },
+    { $unwind: "$dates" },
+    {
+      $match: {
+        dates: { $gte: fromDate, $lte: toDate },
+      },
+    },
+    {
+      $group: {
+        _id: "$dates",
+        count: { $sum: 1 },
+      },
+    },
+  ]);
+
+  const counts = {};
+  for (const r of rows) {
+    counts[r._id] = r.count;
+  }
+  return counts;
 }
 
 // ==========================================
@@ -178,11 +255,15 @@ async function findAvailableDropDate({
 // ==========================================
 module.exports = {
   PRICE_PER_TON,
+  DAILY_PICKUP_LIMIT,
   WEIGHT_PER_ACRE,
   haversineKm,
   findNearestDropPoint,
   calcDropDate,
   calcRevenue,
-  getSlotCount,           // ← added
-  findAvailableDropDate,  // ← added
+  getSlotCount,
+  findAvailableDropDate,
+  getPickupCountOnDate,
+  isPickupDateAvailable,
+  getPickupCapacityMap,
 };

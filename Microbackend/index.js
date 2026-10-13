@@ -1784,7 +1784,6 @@ app.delete(
   }
 );
 
-
 // ===============================
 // LOCATION FARMER APIs
 // ===============================
@@ -1794,11 +1793,12 @@ const {
   calcRevenue,
   getSlotCount,
   findAvailableDropDate,
+  DAILY_PICKUP_LIMIT,
+  getPickupCountOnDate,
+  isPickupDateAvailable,
+  getPickupCapacityMap,
 } = require("./utils/calcFarmer");
 
-// ==========================================
-// Helper: normalize biomass entries
-// ==========================================
 function normalizeBiomassEntries(crop, biomassEntries, landArea) {
   if (crop === "धान (Rice)") {
     return [
@@ -1821,9 +1821,6 @@ function normalizeBiomassEntries(crop, biomassEntries, landArea) {
     }));
 }
 
-// ==========================================
-// Helper: safely parse JSON string or return as-is
-// ==========================================
 function safeParse(value, fallback = null) {
   if (value === undefined || value === null) return fallback;
   if (typeof value !== "string") return value;
@@ -1834,13 +1831,18 @@ function safeParse(value, fallback = null) {
   }
 }
 
-// ==========================================
-// Helper: build full payload with calculations
-// ==========================================
-async function buildFarmerPayload(body, existingDropPoints = null, farmPhotoPath = null) {
+/**
+ * Build full payload — includes upiId, pedPickupDate, ginthiPickupDate
+ */
+async function buildFarmerPayload(
+  body,
+  existingDropPoints = null,
+  farmPhotoPath = null
+) {
   const {
     name,
     mobile,
+    upiId,
     landArea,
     crop,
     biomassEntries,
@@ -1848,6 +1850,8 @@ async function buildFarmerPayload(body, existingDropPoints = null, farmPhotoPath
     harvestDate,
     threshingDate,
     collectionDate,
+    pedPickupDate,
+    ginthiPickupDate,
     transportType,
     villageName,
     location,
@@ -1865,43 +1869,45 @@ async function buildFarmerPayload(body, existingDropPoints = null, farmPhotoPath
     landArea
   );
 
- // ✅ Always use real drop points
-const dropPoints =
-  existingDropPoints && existingDropPoints.length > 0
-    ? existingDropPoints
-    : DEFAULT_DROP_POINTS;
+  // Always use latest DEFAULT_DROP_POINTS (Kisan Mitra included)
+  const dropPoints = DEFAULT_DROP_POINTS || [];
 
-const farmerLat = Number(parsedLocation?.latitude);
-const farmerLng = Number(parsedLocation?.longitude);
+  const farmerLat = Number(parsedLocation?.latitude);
+  const farmerLng = Number(parsedLocation?.longitude);
 
-// ✅ Always calculate nearest drop point (includes kisanMitra)
-const assignedDropPoint = findNearestDropPoint(
-  farmerLat,
-  farmerLng,
-  dropPoints
-);
+  let assignedDropPoint = findNearestDropPoint(
+    farmerLat,
+    farmerLng,
+    dropPoints
+  );
 
-// console.log("ASSIGNED:", assignedDropPoint?.name, assignedDropPoint?.kisanMitra?.name);
+  // Fill kisanMitra if missing
+  if (assignedDropPoint && !assignedDropPoint.kisanMitra) {
+    const match = dropPoints.find((dp) => dp.name === assignedDropPoint.name);
+    if (match?.kisanMitra) {
+      assignedDropPoint = {
+        ...assignedDropPoint,
+        kisanMitra: match.kisanMitra,
+      };
+    }
+  }
 
   const distanceKm = assignedDropPoint?.distanceKm || 0;
-
-  // 2. How many daily slots does this farmer use?
   const slotCount = getSlotCount(normalizedEntries);
 
-  // 3. Find available drop date (respecting daily limit 100)
-  let dropDate = calcDropDate(harvestDate); // default +5
+  // System dropDate (harvest + 5, slot-aware) — still kept for internal use
+  let dropDate = calcDropDate(harvestDate);
   if (assignedDropPoint) {
     const result = await findAvailableDropDate({
       LocationFarmer,
       dropPointName: assignedDropPoint.name,
       harvestDate,
       slotCount,
-      dailyLimit: assignedDropPoint.dailyLimit || 100,
+      dailyLimit: assignedDropPoint.dailyLimit || DAILY_PICKUP_LIMIT,
     });
     dropDate = result.dropDate;
   }
 
-  // 4. Revenue
   const { baseAmount, distanceCost, estimatedAmount } = calcRevenue({
     biomassEntries: normalizedEntries,
     transportType,
@@ -1914,6 +1920,7 @@ const assignedDropPoint = findNearestDropPoint(
   const payload = {
     name,
     mobile,
+    upiId: (upiId || "").trim(),
     landArea: Number(landArea),
     crop: crop || "मक्का (Maize)",
     biomassCategory: category,
@@ -1924,6 +1931,9 @@ const assignedDropPoint = findNearestDropPoint(
     threshingDate,
     collectionDate: collectionDate || threshingDate,
     dropDate,
+    // User-selected pickup dates from app
+    pedPickupDate: pedPickupDate || null,
+    ginthiPickupDate: ginthiPickupDate || null,
     transportType: transportType || "self",
     villageName,
     location: {
@@ -1949,24 +1959,105 @@ const assignedDropPoint = findNearestDropPoint(
   return payload;
 }
 
+/**
+ * Validate pickup dates against daily capacity (100)
+ * excludeId = farmer id when editing (don't count self)
+ */
+async function validatePickupDates(pedPickupDate, ginthiPickupDate, excludeId) {
+  const limit = DAILY_PICKUP_LIMIT;
+
+  for (const dateStr of [pedPickupDate, ginthiPickupDate]) {
+    if (!dateStr) continue;
+
+    const query = {
+      $or: [{ pedPickupDate: dateStr }, { ginthiPickupDate: dateStr }],
+    };
+    if (excludeId) {
+      query._id = { $ne: excludeId };
+    }
+
+    const used = await LocationFarmer.countDocuments(query);
+    if (used >= limit) {
+      return {
+        ok: false,
+        message: `तारीख ${dateStr} पर पिकअप क्षमता (${limit}) पूरी हो चुकी है। कृपया दूसरी तारीख चुनें।`,
+      };
+    }
+  }
+
+  return { ok: true };
+}
+
 // ==========================================
-// POST: Register Location Farmer (with optional photo)
+// GET pickup capacity for date chips (app)
+// GET /location-farmers/pickup-capacity?from=YYYY-MM-DD&to=YYYY-MM-DD
+// ==========================================
+app.get("/location-farmers/pickup-capacity", async (req, res) => {
+  try {
+    let { from, to } = req.query;
+
+    if (!from || !to) {
+      const d = new Date();
+      from = d.toISOString().slice(0, 10);
+      const end = new Date(d);
+      end.setDate(end.getDate() + 29);
+      to = end.toISOString().slice(0, 10);
+    }
+
+    const counts = await getPickupCapacityMap(LocationFarmer, from, to);
+
+    res.json({
+      success: true,
+      from,
+      to,
+      dailyLimit: DAILY_PICKUP_LIMIT,
+      counts,
+    });
+  } catch (error) {
+    console.error("Pickup capacity error:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// ==========================================
+// POST: Register
 // ==========================================
 app.post(
   "/location-farmers",
-  upload.single("farmPhoto"), // ← optional photo
+  upload.single("farmPhoto"),
   async (req, res) => {
     try {
-      const { name, mobile, landArea, villageName, location } = req.body;
+      const {
+        name,
+        mobile,
+        upiId,
+        landArea,
+        villageName,
+        location,
+        pedPickupDate,
+        ginthiPickupDate,
+        harvestDate,
+        threshingDate,
+      } = req.body;
 
-      // Parse location if it came as string (FormData)
       const parsedLocation = safeParse(location, location);
 
-      if (!name || !mobile || !landArea || !villageName || !parsedLocation) {
+      if (
+        !name ||
+        !mobile ||
+        !landArea ||
+        !villageName ||
+        !parsedLocation ||
+        !upiId ||
+        !pedPickupDate ||
+        !ginthiPickupDate ||
+        !harvestDate ||
+        !threshingDate
+      ) {
         return res.status(400).json({
           success: false,
           message:
-            "कृपया सभी आवश्यक जानकारी (नाम, मोबाइल, क्षेत्रफल, गाँव, GPS लोकेशन) भरें।",
+            "कृपया सभी आवश्यक जानकारी भरें (नाम, मोबाइल, UPI, क्षेत्रफल, गाँव, GPS, कटाई/थ्रेशिंग/पिकअप तारीखें)।",
         });
       }
 
@@ -1979,7 +2070,18 @@ app.post(
         });
       }
 
-      // Photo path (optional)
+      const capacityCheck = await validatePickupDates(
+        pedPickupDate,
+        ginthiPickupDate,
+        null
+      );
+      if (!capacityCheck.ok) {
+        return res.status(400).json({
+          success: false,
+          message: capacityCheck.message,
+        });
+      }
+
       const farmPhotoPath = req.file
         ? `/uploads/${req.file.filename}`
         : null;
@@ -2000,7 +2102,7 @@ app.post(
 );
 
 // ==========================================
-// PUT: Update Location Farmer (with optional photo)
+// PUT: Update — reassign drop point + Kisan Mitra + new dates
 // ==========================================
 app.put(
   "/location-farmers/:id",
@@ -2015,18 +2117,29 @@ app.put(
         });
       }
 
+      const { pedPickupDate, ginthiPickupDate } = req.body;
+
+      if (pedPickupDate || ginthiPickupDate) {
+        const capacityCheck = await validatePickupDates(
+          pedPickupDate || existing.pedPickupDate,
+          ginthiPickupDate || existing.ginthiPickupDate,
+          existing._id
+        );
+        if (!capacityCheck.ok) {
+          return res.status(400).json({
+            success: false,
+            message: capacityCheck.message,
+          });
+        }
+      }
+
       const farmPhotoPath = req.file
         ? `/uploads/${req.file.filename}`
         : null;
 
-      // Always pass null for existingDropPoints so DEFAULT_DROP_POINTS + Kisan Mitra are used
-      const payload = await buildFarmerPayload(
-        req.body,
-        null, // ← important: force fresh drop points + kisan mitra
-        farmPhotoPath
-      );
+      const payload = await buildFarmerPayload(req.body, null, farmPhotoPath);
 
-      delete payload.mobile; // never change mobile on edit
+      delete payload.mobile;
 
       if (!farmPhotoPath) {
         delete payload.farmPhoto;
@@ -2040,7 +2153,8 @@ app.put(
 
       res.json({
         success: true,
-        message: "प्रोफ़ाइल सफलतापूर्वक अपडेट हो गई है। ड्रॉप पॉइंट और किसान मित्र भी अपडेट हो गए।",
+        message:
+          "प्रोफ़ाइल अपडेट हो गई। ड्रॉप पॉइंट, किसान मित्र, पिकअप तारीखें और राशि अपडेट हो गईं।",
         farmer,
       });
     } catch (error) {
@@ -2051,7 +2165,7 @@ app.put(
 );
 
 // ==========================================
-// Login using mobile number
+// Login
 // ==========================================
 app.post("/location-farmers/login", async (req, res) => {
   try {
@@ -2139,7 +2253,7 @@ app.delete("/location-farmers/:id", async (req, res) => {
 });
 
 // ==========================================
-// Get all registered farmers
+// Get all farmers
 // ==========================================
 app.get("/getlocationfarmers", async (req, res) => {
   try {
@@ -2161,13 +2275,16 @@ app.get("/getlocationfarmers", async (req, res) => {
   }
 });
 
-
+// ==========================================
+// Fix missing Kisan Mitra / drop point
+// ==========================================
 app.get("/fix-assigned-drop-points", async (req, res) => {
   try {
     const farmers = await LocationFarmer.find({
       $or: [
         { assignedDropPoint: null },
         { "assignedDropPoint.kisanMitra": { $exists: false } },
+        { "assignedDropPoint.kisanMitra": null },
       ],
     });
 
@@ -2176,11 +2293,20 @@ app.get("/fix-assigned-drop-points", async (req, res) => {
     for (const f of farmers) {
       if (!f.location?.latitude || !f.location?.longitude) continue;
 
-      const nearest = findNearestDropPoint(
+      let nearest = findNearestDropPoint(
         f.location.latitude,
         f.location.longitude,
         DEFAULT_DROP_POINTS
       );
+
+      if (nearest && !nearest.kisanMitra) {
+        const match = DEFAULT_DROP_POINTS.find(
+          (dp) => dp.name === nearest.name
+        );
+        if (match?.kisanMitra) {
+          nearest = { ...nearest, kisanMitra: match.kisanMitra };
+        }
+      }
 
       if (nearest) {
         f.assignedDropPoint = nearest;

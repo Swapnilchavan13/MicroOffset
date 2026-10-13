@@ -6,60 +6,46 @@ const mongoose = require("mongoose");
 const DEFAULT_DROP_POINTS = [
   {
     name: "NettZero Factory",
-    village: "Sagar",
+    village: "NettZero Factory",
     latitude: 23.817694,
     longitude: 79.410778,
     isFactory: true,
-    totalCapacityTonnes: 5000,       // total limit
-    dailyLimit: 100,                 // max entries per day
+    totalCapacityTonnes: 5000,
+    dailyLimit: 100,
     kisanMitra: {
-      name: "राजेश कुमार",
-      mobile: "9876543210",
-      photo: "https://randomuser.me/api/portraits/men/32.jpg",
+      name: "देवेन्द्र विश्वकर्मा",
+      mobile: "9131876930",
+      photo: "https://i.ibb.co/zVwMbHsh/Whats-App-Image-2026-10-13-at-4-08-49-PM.jpg",
     },
   },
   {
-    name: "Drop Point 2",
-    village: "Bhainsa",
-    latitude: 23.91,
-    longitude: 79.31,
+    name: "इमलिया",
+    village: "इमलिया",
+    latitude: 23.587306,
+    longitude: 79.410083,
     isFactory: false,
     totalCapacityTonnes: 5000,
     dailyLimit: 100,
     kisanMitra: {
-      name: "सुरेश पटेल",
-      mobile: "9876543211",
-      photo: "https://randomuser.me/api/portraits/men/45.jpg",
+      name: "विनोद लोधी",
+      mobile: "8839114261",
+      photo: "https://i.ibb.co/N2mcSWMp/Whats-App-Image-2026-10-13-at-4-03-09-PM.jpg",
     },
   },
   {
-    name: "Drop Point 3",
-    village: "Rahatgarh",
-    latitude: 23.75,
-    longitude: 79.3,
+    name: "नोहटा",
+    village: "नोहटा",
+    latitude: 23.670361,
+    longitude: 79.586111,
     isFactory: false,
     totalCapacityTonnes: 5000,
     dailyLimit: 100,
     kisanMitra: {
-      name: "अनिल शर्मा",
-      mobile: "9876543212",
-      photo: "https://randomuser.me/api/portraits/men/67.jpg",
+     name: "आनंद विश्वकर्मा",
+      mobile: "9343817579",
+      photo: "https://i.ibb.co/VpNK9v85/Whats-App-Image-2026-10-13-at-4-06-11-PM.jpg",
     },
-  },
-  {
-    name: "Drop Point 4",
-    village: "Khurai",
-    latitude: 23.9,
-    longitude: 79.55,
-    isFactory: false,
-    totalCapacityTonnes: 5000,
-    dailyLimit: 100,
-    kisanMitra: {
-      name: "विकास यादव",
-      mobile: "9876543213",
-      photo: "https://randomuser.me/api/portraits/men/22.jpg",
-    },
-  },
+  }
 ];
 
 const biomassEntrySchema = new mongoose.Schema(
@@ -111,6 +97,7 @@ const locationFarmerSchema = new mongoose.Schema(
     // ===== Section 1: Personal =====
     name: { type: String, required: true, trim: true },
     mobile: { type: String, required: true, unique: true, trim: true },
+    upiId: { type: String, required: true, trim: true }, // NEW
 
     // ===== Section 2: Farming =====
     landArea: { type: Number, required: true, min: 0 },
@@ -147,11 +134,15 @@ const locationFarmerSchema = new mongoose.Schema(
       trim: true,
     },
 
-    // ===== Section 4: Harvesting =====
+    // ===== Section 4: Harvesting + Pickup dates =====
     harvestDate: { type: String, required: true, trim: true },
     threshingDate: { type: String, required: true, trim: true },
     collectionDate: { type: String, required: true, trim: true },
     dropDate: { type: String, trim: true, default: null },
+
+    // NEW — user-selected pickup dates (YYYY-MM-DD)
+    pedPickupDate: { type: String, required: true, trim: true }, // पेड़ पिकअप
+    ginthiPickupDate: { type: String, required: true, trim: true }, // गिनती पिकअप
 
     // ===== Section 5: Transport =====
     transportType: {
@@ -190,8 +181,7 @@ const locationFarmerSchema = new mongoose.Schema(
     baseAmount: { type: Number, default: 0 },
     distanceCost: { type: Number, default: 0 },
 
-    // How many "slots" this farmer uses on dropDate
-    // = number of biomassEntries with acres > 0
+    // Slots used on pickup day (capacity check uses this)
     dailySlotCount: { type: Number, default: 0 },
   },
   { timestamps: true }
@@ -206,6 +196,10 @@ locationFarmerSchema.pre("save", function () {
   }
 });
 
+// Optional indexes for capacity queries by pickup date
+locationFarmerSchema.index({ pedPickupDate: 1 });
+locationFarmerSchema.index({ ginthiPickupDate: 1 });
+locationFarmerSchema.index({ dropDate: 1 });
 
 module.exports = mongoose.model("LocationFarmer", locationFarmerSchema);
 module.exports.DEFAULT_DROP_POINTS = DEFAULT_DROP_POINTS;
