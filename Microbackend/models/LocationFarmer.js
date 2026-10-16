@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 // ==========================================
-// DROP POINTS + KISAN MITRA (editable in DB)
+// DROP POINTS + KISAN MITRA
 // ==========================================
 const DEFAULT_DROP_POINTS = [
   {
@@ -15,7 +15,8 @@ const DEFAULT_DROP_POINTS = [
     kisanMitra: {
       name: "देवेन्द्र विश्वकर्मा",
       mobile: "9131876930",
-      photo: "https://i.ibb.co/zVwMbHsh/Whats-App-Image-2026-10-13-at-4-08-49-PM.jpg",
+      photo:
+        "https://i.ibb.co/zVwMbHsh/Whats-App-Image-2026-10-13-at-4-08-49-PM.jpg",
     },
   },
   {
@@ -29,7 +30,8 @@ const DEFAULT_DROP_POINTS = [
     kisanMitra: {
       name: "विनोद लोधी",
       mobile: "8839114261",
-      photo: "https://i.ibb.co/N2mcSWMp/Whats-App-Image-2026-10-13-at-4-03-09-PM.jpg",
+      photo:
+        "https://i.ibb.co/N2mcSWMp/Whats-App-Image-2026-10-13-at-4-03-09-PM.jpg",
     },
   },
   {
@@ -41,13 +43,15 @@ const DEFAULT_DROP_POINTS = [
     totalCapacityTonnes: 5000,
     dailyLimit: 100,
     kisanMitra: {
-     name: "आनंद विश्वकर्मा",
+      name: "आनंद विश्वकर्मा",
       mobile: "9343817579",
-      photo: "https://i.ibb.co/VpNK9v85/Whats-App-Image-2026-10-13-at-4-06-11-PM.jpg",
+      photo:
+        "https://i.ibb.co/VpNK9v85/Whats-App-Image-2026-10-13-at-4-06-11-PM.jpg",
     },
-  }
+  },
 ];
 
+// acres field = trolley count (app sends number of trolleys)
 const biomassEntrySchema = new mongoose.Schema(
   {
     type: {
@@ -55,10 +59,12 @@ const biomassEntrySchema = new mongoose.Schema(
       required: true,
       enum: [
         "मक्का का पूरा पौधा",
-        "मक्का का भुट्टा (Cob)",
         "भुट्टा + पत्ते (मिक्स)",
+        // kept for old records only — app no longer sends this
+        "मक्का का भुट्टा (Cob)",
       ],
     },
+    // Number of trolleys (legacy field name: acres)
     acres: {
       type: Number,
       required: true,
@@ -97,7 +103,7 @@ const locationFarmerSchema = new mongoose.Schema(
     // ===== Section 1: Personal =====
     name: { type: String, required: true, trim: true },
     mobile: { type: String, required: true, unique: true, trim: true },
-    upiId: { type: String, required: true, trim: true }, // NEW
+    upiId: { type: String, required: true, trim: true },
 
     // ===== Section 2: Farming =====
     landArea: { type: Number, required: true, min: 0 },
@@ -109,7 +115,7 @@ const locationFarmerSchema = new mongoose.Schema(
       trim: true,
     },
 
-    // ===== Section 3: Biomass =====
+    // ===== Section 3: Biomass (trolley-based) =====
     biomassCategory: {
       type: String,
       required: true,
@@ -124,7 +130,7 @@ const locationFarmerSchema = new mongoose.Schema(
     biomassType: {
       type: String,
       trim: true,
-      default: "मक्का का भुट्टा (Cob)",
+      default: "मक्का का पूरा पौधा",
     },
     thresherType: {
       type: String,
@@ -140,9 +146,8 @@ const locationFarmerSchema = new mongoose.Schema(
     collectionDate: { type: String, required: true, trim: true },
     dropDate: { type: String, trim: true, default: null },
 
-    // NEW — user-selected pickup dates (YYYY-MM-DD)
-    pedPickupDate: { type: String, required: true, trim: true }, // पेड़ पिकअप
-    ginthiPickupDate: { type: String, required: true, trim: true }, // गिनती पिकअप
+    pedPickupDate: { type: String, required: true, trim: true },
+    ginthiPickupDate: { type: String, required: true, trim: true },
 
     // ===== Section 5: Transport =====
     transportType: {
@@ -176,12 +181,15 @@ const locationFarmerSchema = new mongoose.Schema(
       default: null,
     },
 
-    // ===== Calculated fields =====
+    // ===== Calculated fields (trolley pricing) =====
+    // self: 0–10km = 1250, 10–20 = 1500, 20+ = 1750 per trolley
+    // pickup: 250 per trolley
+    totalTrolleys: { type: Number, default: 0 },
+    ratePerTrolley: { type: Number, default: 0 },
     estimatedAmount: { type: Number, default: 0 },
     baseAmount: { type: Number, default: 0 },
     distanceCost: { type: Number, default: 0 },
 
-    // Slots used on pickup day (capacity check uses this)
     dailySlotCount: { type: Number, default: 0 },
   },
   { timestamps: true }
@@ -196,7 +204,6 @@ locationFarmerSchema.pre("save", function () {
   }
 });
 
-// Optional indexes for capacity queries by pickup date
 locationFarmerSchema.index({ pedPickupDate: 1 });
 locationFarmerSchema.index({ ginthiPickupDate: 1 });
 locationFarmerSchema.index({ dropDate: 1 });

@@ -1,8 +1,14 @@
 // ==========================================
 // CONSTANTS
 // ==========================================
-const PRICE_PER_TON = 250;
+const PRICE_PER_TON = 250; // pickup rate ₹/ट्रॉली
 const DAILY_PICKUP_LIMIT = 100;
+
+// Self-delivery rates ₹/ट्रॉली by distance
+const RATE_SELF_0_10 = 1250;
+const RATE_SELF_10_20 = 1500;
+const RATE_SELF_20_PLUS = 1750;
+const RATE_PICKUP = 250; // company picks up
 
 const WEIGHT_PER_ACRE = {
   "मक्का का पूरा पौधा": 1.0,
@@ -64,49 +70,75 @@ function calcDropDate(harvestDate) {
 }
 
 // ==========================================
-// CALCULATE REVENUE
+// RATE PER TROLLEY by transport + distance
+// ==========================================
+/**
+ * self  → farmer brings trolley
+ *   0–10 km  : ₹1250 / trolley
+ *   10–20 km : ₹1500 / trolley
+ *   20+ km   : ₹1750 / trolley
+ * pickup → we pick up
+ *   any distance : ₹250 / trolley
+ */
+function getRatePerTrolley(transportType = "self", distanceKm = 0) {
+  if (transportType === "pickup") {
+    return RATE_PICKUP;
+  }
+
+  // self
+  const d = Number(distanceKm) || 0;
+  if (d <= 10) return RATE_SELF_0_10;
+  if (d <= 20) return RATE_SELF_10_20;
+  return RATE_SELF_20_PLUS; // 20–30+ km
+}
+
+// ==========================================
+// CALCULATE REVENUE (trolley-based)
+// biomassEntries[].acres = trolley count (from app)
 // ==========================================
 function calcRevenue({
   biomassEntries = [],
   transportType = "self",
   distanceKm = 0,
 }) {
-  let baseAmount = 0;
-  for (const entry of biomassEntries) {
-    const weightPerAcre = WEIGHT_PER_ACRE[entry.type] || 0;
-    baseAmount += PRICE_PER_TON * weightPerAcre * (Number(entry.acres) || 0);
-  }
+  const totalTrolleys = (biomassEntries || []).reduce(
+    (sum, e) => sum + (Number(e.acres) || Number(e.trolleys) || 0),
+    0
+  );
 
-  // Distance cost only when WE NOT pick up
-  let distanceCost = 0;
-  if (transportType === "self") {
-    if (distanceKm <= 25) distanceCost = 1200;
-    else distanceCost = 2000;
-  }
+  const ratePerTrolley = getRatePerTrolley(transportType, distanceKm);
+  const estimatedAmount = Math.round(ratePerTrolley * totalTrolleys);
 
-  const estimatedAmount = Math.round(baseAmount + distanceCost);
+  // baseAmount = payment at this rate (no separate "biomass + distance" split)
+  // distanceCost kept for transparency = 0 when pickup; when self, full amount is rate*trolleys
+  const baseAmount = estimatedAmount;
+  const distanceCost = 0;
 
   return {
-    baseAmount: Math.round(baseAmount),
+    baseAmount,
     distanceCost,
     estimatedAmount,
+    totalTrolleys,
+    ratePerTrolley,
+    distanceKm: Number(distanceKm) || 0,
   };
 }
 
 // ==========================================
-// GET SLOT COUNT
+// GET SLOT COUNT (by trolley count)
 // ==========================================
 function getSlotCount(biomassEntries = []) {
   if (!Array.isArray(biomassEntries) || biomassEntries.length === 0) {
     return 1;
   }
 
-  const totalAcres = biomassEntries.reduce(
-    (sum, e) => sum + (Number(e.acres) || 0),
+  const totalTrolleys = biomassEntries.reduce(
+    (sum, e) => sum + (Number(e.acres) || Number(e.trolleys) || 0),
     0
   );
 
-  return Math.max(1, Math.ceil(totalAcres / 5));
+  // 1 slot per 5 trolleys, minimum 1
+  return Math.max(1, Math.ceil(totalTrolleys / 5));
 }
 
 // ==========================================
@@ -158,7 +190,6 @@ async function findAvailableDropDate({
 
 // ==========================================
 // COUNT PICKUPS ON A DATE (ped + ginthi)
-// 1 farmer counts as 1 pickup for capacity
 // ==========================================
 async function getPickupCountOnDate(LocationFarmer, dateStr) {
   if (!dateStr) return 0;
@@ -170,9 +201,6 @@ async function getPickupCountOnDate(LocationFarmer, dateStr) {
   return count;
 }
 
-/**
- * Returns true if date still has room (under daily limit)
- */
 async function isPickupDateAvailable(
   LocationFarmer,
   dateStr,
@@ -182,11 +210,6 @@ async function isPickupDateAvailable(
   return used < dailyLimit;
 }
 
-/**
- * Capacity map for date range (for app date chips)
- * counts[date] = number of farmers who selected that date
- * as pedPickupDate OR ginthiPickupDate
- */
 async function getPickupCapacityMap(LocationFarmer, fromDate, toDate) {
   const rows = await LocationFarmer.aggregate([
     {
@@ -256,10 +279,15 @@ async function getPickupCapacityMap(LocationFarmer, fromDate, toDate) {
 module.exports = {
   PRICE_PER_TON,
   DAILY_PICKUP_LIMIT,
+  RATE_SELF_0_10,
+  RATE_SELF_10_20,
+  RATE_SELF_20_PLUS,
+  RATE_PICKUP,
   WEIGHT_PER_ACRE,
   haversineKm,
   findNearestDropPoint,
   calcDropDate,
+  getRatePerTrolley,
   calcRevenue,
   getSlotCount,
   findAvailableDropDate,

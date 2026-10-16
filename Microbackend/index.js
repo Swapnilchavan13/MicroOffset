@@ -1799,16 +1799,10 @@ const {
   getPickupCapacityMap,
 } = require("./utils/calcFarmer");
 
-function normalizeBiomassEntries(crop, biomassEntries, landArea) {
-  if (crop === "धान (Rice)") {
-    return [
-      {
-        type: "मक्का का पूरा पौधा",
-        acres: Number(landArea) || 0,
-      },
-    ];
-  }
+const MIN_TROLLEYS = 5;
 
+// acres from app = trolley count
+function normalizeBiomassEntries(crop, biomassEntries, landArea) {
   if (!Array.isArray(biomassEntries) || biomassEntries.length === 0) {
     return [];
   }
@@ -1817,7 +1811,7 @@ function normalizeBiomassEntries(crop, biomassEntries, landArea) {
     .filter((e) => e && e.type && Number(e.acres) > 0)
     .map((e) => ({
       type: e.type,
-      acres: Number(e.acres),
+      acres: Number(e.acres), // trolley count
     }));
 }
 
@@ -1831,8 +1825,14 @@ function safeParse(value, fallback = null) {
   }
 }
 
+function getTotalTrolleysFromBody(body) {
+  const parsed = safeParse(body.biomassEntries, body.biomassEntries || []);
+  if (!Array.isArray(parsed)) return 0;
+  return parsed.reduce((s, e) => s + (Number(e?.acres) || 0), 0);
+}
+
 /**
- * Build full payload — includes upiId, pedPickupDate, ginthiPickupDate
+ * Build full payload — trolley-based revenue
  */
 async function buildFarmerPayload(
   body,
@@ -1895,7 +1895,7 @@ async function buildFarmerPayload(
   const distanceKm = assignedDropPoint?.distanceKm || 0;
   const slotCount = getSlotCount(normalizedEntries);
 
-  // System dropDate (harvest + 5, slot-aware) — still kept for internal use
+  // System dropDate (harvest + 5, slot-aware)
   let dropDate = calcDropDate(harvestDate);
   if (assignedDropPoint) {
     const result = await findAvailableDropDate({
@@ -1908,14 +1908,25 @@ async function buildFarmerPayload(
     dropDate = result.dropDate;
   }
 
-  const { baseAmount, distanceCost, estimatedAmount } = calcRevenue({
+  // Trolley-based rates:
+  // self: 0–10 → 1250, 10–20 → 1500, 20+ → 1750
+  // pickup: 250 / trolley
+  const revenue = calcRevenue({
     biomassEntries: normalizedEntries,
-    transportType,
+    transportType: transportType || "self",
     distanceKm,
   });
 
+  const {
+    baseAmount,
+    distanceCost,
+    estimatedAmount,
+    totalTrolleys = 0,
+    ratePerTrolley = 0,
+  } = revenue;
+
   const primaryBiomassType =
-    normalizedEntries[0]?.type || "मक्का का भुट्टा (Cob)";
+    normalizedEntries[0]?.type || "मक्का का पूरा पौधा";
 
   const payload = {
     name,
@@ -1931,7 +1942,6 @@ async function buildFarmerPayload(
     threshingDate,
     collectionDate: collectionDate || threshingDate,
     dropDate,
-    // User-selected pickup dates from app
     pedPickupDate: pedPickupDate || null,
     ginthiPickupDate: ginthiPickupDate || null,
     transportType: transportType || "self",
@@ -1945,9 +1955,11 @@ async function buildFarmerPayload(
           : null,
     },
     assignedDropPoint,
+    dropPoints,
+    totalTrolleys,
+    ratePerTrolley,
     baseAmount,
     distanceCost,
-    dropPoints,
     estimatedAmount,
     dailySlotCount: slotCount,
   };
@@ -1961,7 +1973,6 @@ async function buildFarmerPayload(
 
 /**
  * Validate pickup dates against daily capacity (100)
- * excludeId = farmer id when editing (don't count self)
  */
 async function validatePickupDates(pedPickupDate, ginthiPickupDate, excludeId) {
   const limit = DAILY_PICKUP_LIMIT;
@@ -1989,8 +2000,8 @@ async function validatePickupDates(pedPickupDate, ginthiPickupDate, excludeId) {
 }
 
 // ==========================================
-// GET pickup capacity for date chips (app)
-// GET /location-farmers/pickup-capacity?from=YYYY-MM-DD&to=YYYY-MM-DD
+// GET pickup capacity for date chips
+// MUST be before /location-farmers/:id
 // ==========================================
 app.get("/location-farmers/pickup-capacity", async (req, res) => {
   try {
@@ -2070,6 +2081,14 @@ app.post(
         });
       }
 
+      const totalTrolleys = getTotalTrolleysFromBody(req.body);
+      if (totalTrolleys < MIN_TROLLEYS) {
+        return res.status(400).json({
+          success: false,
+          message: `हम कम से कम ${MIN_TROLLEYS} ट्रॉली ले रहे हैं, उससे कम नहीं।`,
+        });
+      }
+
       const capacityCheck = await validatePickupDates(
         pedPickupDate,
         ginthiPickupDate,
@@ -2102,7 +2121,7 @@ app.post(
 );
 
 // ==========================================
-// PUT: Update — reassign drop point + Kisan Mitra + new dates
+// PUT: Update
 // ==========================================
 app.put(
   "/location-farmers/:id",
@@ -2118,6 +2137,16 @@ app.put(
       }
 
       const { pedPickupDate, ginthiPickupDate } = req.body;
+
+      if (req.body.biomassEntries !== undefined) {
+        const totalTrolleys = getTotalTrolleysFromBody(req.body);
+        if (totalTrolleys > 0 && totalTrolleys < MIN_TROLLEYS) {
+          return res.status(400).json({
+            success: false,
+            message: `हम कम से कम ${MIN_TROLLEYS} ट्रॉली ले रहे हैं, उससे कम नहीं।`,
+          });
+        }
+      }
 
       if (pedPickupDate || ginthiPickupDate) {
         const capacityCheck = await validatePickupDates(
