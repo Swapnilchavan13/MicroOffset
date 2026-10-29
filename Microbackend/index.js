@@ -1783,37 +1783,21 @@ app.delete(
     }
   }
 );
+// ===============================
+// LOCATION FARMER APIs (Updated)
+// ===============================
 
-// ===============================
-// LOCATION FARMER APIs
-// ===============================
 const {
   findNearestDropPoint,
-  calcDropDate,
   calcRevenue,
-  getSlotCount,
-  findAvailableDropDate,
-  DAILY_PICKUP_LIMIT,
-  getPickupCountOnDate,
+  calculatePickupDate,
+  getPickupAcresOnDate,
   isPickupDateAvailable,
   getPickupCapacityMap,
+  DAILY_PICKUP_LIMIT,
+  PICKUP_START_DATE,
 } = require("./utils/calcFarmer");
 
-const MIN_TROLLEYS = 5;
-
-// acres from app = trolley count
-function normalizeBiomassEntries(crop, biomassEntries, landArea) {
-  if (!Array.isArray(biomassEntries) || biomassEntries.length === 0) {
-    return [];
-  }
-
-  return biomassEntries
-    .filter((e) => e && e.type && Number(e.acres) > 0)
-    .map((e) => ({
-      type: e.type,
-      acres: Number(e.acres), // trolley count
-    }));
-}
 
 function safeParse(value, fallback = null) {
   if (value === undefined || value === null) return fallback;
@@ -1825,20 +1809,23 @@ function safeParse(value, fallback = null) {
   }
 }
 
-function getTotalTrolleysFromBody(body) {
-  const parsed = safeParse(body.biomassEntries, body.biomassEntries || []);
-  if (!Array.isArray(parsed)) return 0;
-  return parsed.reduce((s, e) => s + (Number(e?.acres) || 0), 0);
+function normalizeBiomassEntries(biomassEntries) {
+  if (!Array.isArray(biomassEntries) || biomassEntries.length === 0) {
+    return [];
+  }
+
+  return biomassEntries
+    .filter((e) => e && e.type && Number(e.acres) > 0)
+    .map((e) => ({
+      type: e.type,
+      acres: Number(e.acres), // now actual acres
+    }));
 }
 
 /**
- * Build full payload — trolley-based revenue
+ * Build full payload — Acre based
  */
-async function buildFarmerPayload(
-  body,
-  existingDropPoints = null,
-  farmPhotoPath = null
-) {
+async function buildFarmerPayload(body, farmPhotoPath = null) {
   const {
     name,
     mobile,
@@ -1850,36 +1837,26 @@ async function buildFarmerPayload(
     harvestDate,
     threshingDate,
     collectionDate,
-    pedPickupDate,
-    ginthiPickupDate,
+    pickupDate,          // new single pickup date
     transportType,
     villageName,
     location,
+    referralName,
   } = body;
 
-  const category =
-    crop === "धान (Rice)" ? "धान (Rice)" : "मक्का (Maize)";
+  const isDhan = crop === "धान (Rice)";
+  const category = isDhan ? "धान (Rice)" : "मक्का (Maize)";
 
   const parsedLocation = safeParse(location, location);
   const parsedBiomassEntries = safeParse(biomassEntries, biomassEntries || []);
+  const normalizedEntries = normalizeBiomassEntries(parsedBiomassEntries);
 
-  const normalizedEntries = normalizeBiomassEntries(
-    crop,
-    parsedBiomassEntries,
-    landArea
-  );
-
-  // Always use latest DEFAULT_DROP_POINTS (Kisan Mitra included)
   const dropPoints = DEFAULT_DROP_POINTS || [];
 
   const farmerLat = Number(parsedLocation?.latitude);
   const farmerLng = Number(parsedLocation?.longitude);
 
-  let assignedDropPoint = findNearestDropPoint(
-    farmerLat,
-    farmerLng,
-    dropPoints
-  );
+  let assignedDropPoint = findNearestDropPoint(farmerLat, farmerLng, dropPoints);
 
   // Fill kisanMitra if missing
   if (assignedDropPoint && !assignedDropPoint.kisanMitra) {
@@ -1892,59 +1869,60 @@ async function buildFarmerPayload(
     }
   }
 
-  const distanceKm = assignedDropPoint?.distanceKm || 0;
-  const slotCount = getSlotCount(normalizedEntries);
-
-  // System dropDate (harvest + 5, slot-aware)
-  let dropDate = calcDropDate(harvestDate);
-  if (assignedDropPoint) {
-    const result = await findAvailableDropDate({
-      LocationFarmer,
-      dropPointName: assignedDropPoint.name,
-      harvestDate,
-      slotCount,
-      dailyLimit: assignedDropPoint.dailyLimit || DAILY_PICKUP_LIMIT,
-    });
-    dropDate = result.dropDate;
-  }
-
-  // Trolley-based rates:
-  // self: 0–10 → 1250, 10–20 → 1500, 20+ → 1750
-  // pickup: 250 / trolley
+  // Calculate revenue (Acre based)
   const revenue = calcRevenue({
+    crop: crop || "मक्का (Maize)",
     biomassEntries: normalizedEntries,
-    transportType: transportType || "self",
-    distanceKm,
   });
 
   const {
-    baseAmount,
-    distanceCost,
-    estimatedAmount,
-    totalTrolleys = 0,
-    ratePerTrolley = 0,
+    totalAcres = 0,
+    ratePerAcre = 0,
+    estimatedAmount = 0,
+    baseAmount = 0,
+    distanceCost = 0,
   } = revenue;
 
+  // Final pickup date
+  let finalPickupDate = pickupDate || null;
+
+  // If frontend didn't send it, calculate on backend
+  if (!isDhan && threshingDate && !finalPickupDate) {
+    finalPickupDate = await calculatePickupDate({
+      LocationFarmer,
+      threshingDate,
+      acres: totalAcres,
+    });
+  }
+
   const primaryBiomassType =
-    normalizedEntries[0]?.type || "मक्का का पूरा पौधा";
+    normalizedEntries[0]?.type ||
+    (isDhan ? "धान (Rice)" : "भुट्टा + पत्ते (मिक्स)");
 
   const payload = {
     name,
     mobile,
     upiId: (upiId || "").trim(),
+    referralName: referralName || null,
     landArea: Number(landArea),
     crop: crop || "मक्का (Maize)",
     biomassCategory: category,
     biomassEntries: normalizedEntries,
     biomassType: primaryBiomassType,
-    thresherType: thresherType || "थ्रेशर प्रकार 1",
-    harvestDate,
-    threshingDate,
-    collectionDate: collectionDate || threshingDate,
-    dropDate,
-    pedPickupDate: pedPickupDate || null,
-    ginthiPickupDate: ginthiPickupDate || null,
-    transportType: transportType || "self",
+    thresherType: isDhan ? "" : thresherType || "थ्रेशर प्रकार 1",
+
+    // Dates
+    harvestDate: isDhan ? null : harvestDate || null,
+    threshingDate: isDhan ? null : threshingDate || null,
+    collectionDate: isDhan ? null : collectionDate || threshingDate || null,
+    pickupDate: isDhan ? null : finalPickupDate,
+
+    // Old fields kept as null
+    pedPickupDate: null,
+    ginthiPickupDate: null,
+    dropDate: null,
+
+    transportType: "pickup", // forced
     villageName,
     location: {
       latitude: farmerLat,
@@ -1956,12 +1934,18 @@ async function buildFarmerPayload(
     },
     assignedDropPoint,
     dropPoints,
-    totalTrolleys,
-    ratePerTrolley,
+
+    // Acre based calculated fields
+    totalAcres,
+    ratePerAcre,
+    estimatedAmount,
     baseAmount,
     distanceCost,
-    estimatedAmount,
-    dailySlotCount: slotCount,
+
+    // old fields
+    totalTrolleys: 0,
+    ratePerTrolley: 0,
+    dailySlotCount: 0,
   };
 
   if (farmPhotoPath) {
@@ -1972,46 +1956,34 @@ async function buildFarmerPayload(
 }
 
 /**
- * Validate pickup dates against daily capacity (100)
+ * Validate single pickupDate against 500 acres limit
  */
-async function validatePickupDates(pedPickupDate, ginthiPickupDate, excludeId) {
-  const limit = DAILY_PICKUP_LIMIT;
+async function validatePickupDate(pickupDate, acres, excludeId = null) {
+  if (!pickupDate) return { ok: true };
 
-  for (const dateStr of [pedPickupDate, ginthiPickupDate]) {
-    if (!dateStr) continue;
+  const used = await getPickupAcresOnDate(LocationFarmer, pickupDate);
+  const total = used + (Number(acres) || 0);
 
-    const query = {
-      $or: [{ pedPickupDate: dateStr }, { ginthiPickupDate: dateStr }],
+  if (total > DAILY_PICKUP_LIMIT) {
+    return {
+      ok: false,
+      message: `तारीख ${pickupDate} पर पिकअप क्षमता (${DAILY_PICKUP_LIMIT} एकड़) पूरी हो चुकी है। कृपया दूसरी तारीख चुनें।`,
     };
-    if (excludeId) {
-      query._id = { $ne: excludeId };
-    }
-
-    const used = await LocationFarmer.countDocuments(query);
-    if (used >= limit) {
-      return {
-        ok: false,
-        message: `तारीख ${dateStr} पर पिकअप क्षमता (${limit}) पूरी हो चुकी है। कृपया दूसरी तारीख चुनें।`,
-      };
-    }
   }
-
   return { ok: true };
 }
 
 // ==========================================
-// GET pickup capacity for date chips
-// MUST be before /location-farmers/:id
+// GET pickup capacity
 // ==========================================
 app.get("/location-farmers/pickup-capacity", async (req, res) => {
   try {
     let { from, to } = req.query;
 
     if (!from || !to) {
-      const d = new Date();
-      from = d.toISOString().slice(0, 10);
-      const end = new Date(d);
-      end.setDate(end.getDate() + 29);
+      from = PICKUP_START_DATE;
+      const end = new Date(from);
+      end.setDate(end.getDate() + 60);
       to = end.toISOString().slice(0, 10);
     }
 
@@ -2045,33 +2017,56 @@ app.post(
         landArea,
         villageName,
         location,
-        pedPickupDate,
-        ginthiPickupDate,
+        crop,
         harvestDate,
         threshingDate,
+        pickupDate,
+        biomassEntries,
+        referralName,
       } = req.body;
 
+      const isDhan = crop === "धान (Rice)";
       const parsedLocation = safeParse(location, location);
+      const parsedEntries = safeParse(biomassEntries, []);
+      const totalAcres = (parsedEntries || []).reduce(
+        (s, e) => s + (Number(e?.acres) || 0),
+        0
+      );
 
+      // Basic required fields
       if (
         !name ||
         !mobile ||
         !landArea ||
         !villageName ||
         !parsedLocation ||
-        !upiId ||
-        !pedPickupDate ||
-        !ginthiPickupDate ||
-        !harvestDate ||
-        !threshingDate
+        !upiId
       ) {
         return res.status(400).json({
           success: false,
           message:
-            "कृपया सभी आवश्यक जानकारी भरें (नाम, मोबाइल, UPI, क्षेत्रफल, गाँव, GPS, कटाई/थ्रेशिंग/पिकअप तारीखें)।",
+            "कृपया सभी आवश्यक जानकारी भरें (नाम, मोबाइल, UPI, क्षेत्रफल, गाँव, GPS)।",
         });
       }
 
+      // For Makka → dates required
+      if (!isDhan) {
+        if (!harvestDate || !threshingDate) {
+          return res.status(400).json({
+            success: false,
+            message: "कटाई और थ्रेशिंग की तारीख आवश्यक है।",
+          });
+        }
+      }
+
+      if (totalAcres <= 0) {
+        return res.status(400).json({
+          success: false,
+          message: "कृपया एकड़ की संख्या दर्ज करें।",
+        });
+      }
+
+      // Check existing mobile
       const existingFarmer = await LocationFarmer.findOne({ mobile });
       if (existingFarmer) {
         return res.status(409).json({
@@ -2081,31 +2076,23 @@ app.post(
         });
       }
 
-      const totalTrolleys = getTotalTrolleysFromBody(req.body);
-      if (totalTrolleys < MIN_TROLLEYS) {
-        return res.status(400).json({
-          success: false,
-          message: `हम कम से कम ${MIN_TROLLEYS} ट्रॉली ले रहे हैं, उससे कम नहीं।`,
-        });
+      // Capacity check (only for Makka)
+      if (!isDhan && pickupDate) {
+        const capacityCheck = await validatePickupDate(
+          pickupDate,
+          totalAcres
+        );
+        if (!capacityCheck.ok) {
+          return res.status(400).json({
+            success: false,
+            message: capacityCheck.message,
+          });
+        }
       }
 
-      const capacityCheck = await validatePickupDates(
-        pedPickupDate,
-        ginthiPickupDate,
-        null
-      );
-      if (!capacityCheck.ok) {
-        return res.status(400).json({
-          success: false,
-          message: capacityCheck.message,
-        });
-      }
+      const farmPhotoPath = req.file ? `/uploads/${req.file.filename}` : null;
 
-      const farmPhotoPath = req.file
-        ? `/uploads/${req.file.filename}`
-        : null;
-
-      const payload = await buildFarmerPayload(req.body, null, farmPhotoPath);
+      const payload = await buildFarmerPayload(req.body, farmPhotoPath);
       const farmer = await LocationFarmer.create(payload);
 
       res.status(201).json({
@@ -2136,22 +2123,18 @@ app.put(
         });
       }
 
-      const { pedPickupDate, ginthiPickupDate } = req.body;
+      const isDhan = (req.body.crop || existing.crop) === "धान (Rice)";
+      const parsedEntries = safeParse(req.body.biomassEntries, []);
+      const totalAcres = (parsedEntries || []).reduce(
+        (s, e) => s + (Number(e?.acres) || 0),
+        0
+      );
 
-      if (req.body.biomassEntries !== undefined) {
-        const totalTrolleys = getTotalTrolleysFromBody(req.body);
-        if (totalTrolleys > 0 && totalTrolleys < MIN_TROLLEYS) {
-          return res.status(400).json({
-            success: false,
-            message: `हम कम से कम ${MIN_TROLLEYS} ट्रॉली ले रहे हैं, उससे कम नहीं।`,
-          });
-        }
-      }
-
-      if (pedPickupDate || ginthiPickupDate) {
-        const capacityCheck = await validatePickupDates(
-          pedPickupDate || existing.pedPickupDate,
-          ginthiPickupDate || existing.ginthiPickupDate,
+      // Capacity check
+      if (!isDhan && req.body.pickupDate) {
+        const capacityCheck = await validatePickupDate(
+          req.body.pickupDate,
+          totalAcres,
           existing._id
         );
         if (!capacityCheck.ok) {
@@ -2162,12 +2145,10 @@ app.put(
         }
       }
 
-      const farmPhotoPath = req.file
-        ? `/uploads/${req.file.filename}`
-        : null;
+      const farmPhotoPath = req.file ? `/uploads/${req.file.filename}` : null;
+      const payload = await buildFarmerPayload(req.body, farmPhotoPath);
 
-      const payload = await buildFarmerPayload(req.body, null, farmPhotoPath);
-
+      // Don't allow mobile change
       delete payload.mobile;
 
       if (!farmPhotoPath) {
@@ -2182,8 +2163,7 @@ app.put(
 
       res.json({
         success: true,
-        message:
-          "प्रोफ़ाइल अपडेट हो गई। ड्रॉप पॉइंट, किसान मित्र, पिकअप तारीखें और राशि अपडेट हो गईं।",
+        message: "प्रोफ़ाइल अपडेट हो गई।",
         farmer,
       });
     } catch (error) {
@@ -2286,9 +2266,7 @@ app.delete("/location-farmers/:id", async (req, res) => {
 // ==========================================
 app.get("/getlocationfarmers", async (req, res) => {
   try {
-    const farmers = await LocationFarmer.find().sort({
-      createdAt: -1,
-    });
+    const farmers = await LocationFarmer.find().sort({ createdAt: -1 });
 
     res.json({
       success: true,
@@ -2329,9 +2307,7 @@ app.get("/fix-assigned-drop-points", async (req, res) => {
       );
 
       if (nearest && !nearest.kisanMitra) {
-        const match = DEFAULT_DROP_POINTS.find(
-          (dp) => dp.name === nearest.name
-        );
+        const match = DEFAULT_DROP_POINTS.find((dp) => dp.name === nearest.name);
         if (match?.kisanMitra) {
           nearest = { ...nearest, kisanMitra: match.kisanMitra };
         }
@@ -2354,7 +2330,6 @@ app.get("/fix-assigned-drop-points", async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 });
-
 
 // Server
 const PORT = process.env.PORT || 5000;

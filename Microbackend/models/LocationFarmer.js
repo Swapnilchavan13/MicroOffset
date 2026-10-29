@@ -11,7 +11,7 @@ const DEFAULT_DROP_POINTS = [
     longitude: 79.410778,
     isFactory: true,
     totalCapacityTonnes: 5000,
-    dailyLimit: 100,
+    dailyLimit: 500, // updated to 500 acres
     kisanMitra: {
       name: "देवेन्द्र विश्वकर्मा",
       mobile: "9131876930",
@@ -26,7 +26,7 @@ const DEFAULT_DROP_POINTS = [
     longitude: 79.410083,
     isFactory: false,
     totalCapacityTonnes: 5000,
-    dailyLimit: 100,
+    dailyLimit: 500,
     kisanMitra: {
       name: "विनोद लोधी",
       mobile: "8839114261",
@@ -41,7 +41,7 @@ const DEFAULT_DROP_POINTS = [
     longitude: 79.586111,
     isFactory: false,
     totalCapacityTonnes: 5000,
-    dailyLimit: 100,
+    dailyLimit: 500,
     kisanMitra: {
       name: "आनंद विश्वकर्मा",
       mobile: "9343817579",
@@ -51,20 +51,23 @@ const DEFAULT_DROP_POINTS = [
   },
 ];
 
-// acres field = trolley count (app sends number of trolleys)
+// ==========================================
+// BIOMASS ENTRY (now Acre based)
+// ==========================================
 const biomassEntrySchema = new mongoose.Schema(
   {
     type: {
       type: String,
       required: true,
       enum: [
+        "भुट्टा + पत्ते (मिक्स)", // Makka Ginthi Mix
+        "धान (Rice)",
+        // old values kept for backward compatibility
         "मक्का का पूरा पौधा",
-        "भुट्टा + पत्ते (मिक्स)",
-        // kept for old records only — app no longer sends this
         "मक्का का भुट्टा (Cob)",
       ],
     },
-    // Number of trolleys (legacy field name: acres)
+    // Now this is actual Acres (not trolleys)
     acres: {
       type: Number,
       required: true,
@@ -92,18 +95,24 @@ const dropPointSchema = new mongoose.Schema(
     isFactory: { type: Boolean, default: false },
     distanceKm: { type: Number, default: null },
     totalCapacityTonnes: { type: Number, default: 5000 },
-    dailyLimit: { type: Number, default: 100 },
+    dailyLimit: { type: Number, default: 500 },
     kisanMitra: { type: kisanMitraSchema, default: null },
   },
   { _id: false }
 );
 
+// ==========================================
+// MAIN SCHEMA
+// ==========================================
 const locationFarmerSchema = new mongoose.Schema(
   {
     // ===== Section 1: Personal =====
     name: { type: String, required: true, trim: true },
     mobile: { type: String, required: true, unique: true, trim: true },
     upiId: { type: String, required: true, trim: true },
+
+    // Referral (only for new users)
+    referralName: { type: String, trim: true, default: null },
 
     // ===== Section 2: Farming =====
     landArea: { type: Number, required: true, min: 0 },
@@ -115,7 +124,7 @@ const locationFarmerSchema = new mongoose.Schema(
       trim: true,
     },
 
-    // ===== Section 3: Biomass (trolley-based) =====
+    // ===== Section 3: Biomass =====
     biomassCategory: {
       type: String,
       required: true,
@@ -130,31 +139,33 @@ const locationFarmerSchema = new mongoose.Schema(
     biomassType: {
       type: String,
       trim: true,
-      default: "मक्का का पूरा पौधा",
+      default: "भुट्टा + पत्ते (मिक्स)",
     },
     thresherType: {
       type: String,
-      required: true,
-      enum: ["थ्रेशर प्रकार 1", "थ्रेशर प्रकार 2"],
+      // not required because Dhan doesn't use it
+      enum: ["थ्रेशर प्रकार 1", "थ्रेशर प्रकार 2", ""],
       default: "थ्रेशर प्रकार 1",
       trim: true,
     },
 
-    // ===== Section 4: Harvesting + Pickup dates =====
-    harvestDate: { type: String, required: true, trim: true },
-    threshingDate: { type: String, required: true, trim: true },
-    collectionDate: { type: String, required: true, trim: true },
-    dropDate: { type: String, trim: true, default: null },
+    // ===== Section 4: Dates =====
+    harvestDate: { type: String, trim: true, default: null },       // optional for Dhan
+    threshingDate: { type: String, trim: true, default: null },     // optional for Dhan
+    collectionDate: { type: String, trim: true, default: null },    // same as threshingDate
+    pickupDate: { type: String, trim: true, default: null },        // new single pickup date
 
-    pedPickupDate: { type: String, required: true, trim: true },
-    ginthiPickupDate: { type: String, required: true, trim: true },
+    // Old fields kept for backward compatibility (not required anymore)
+    pedPickupDate: { type: String, trim: true, default: null },
+    ginthiPickupDate: { type: String, trim: true, default: null },
+    dropDate: { type: String, trim: true, default: null },
 
     // ===== Section 5: Transport =====
     transportType: {
       type: String,
       required: true,
-      enum: ["self", "pickup"],
-      default: "self",
+      enum: ["pickup"], // only pickup allowed now
+      default: "pickup",
       trim: true,
     },
 
@@ -168,7 +179,6 @@ const locationFarmerSchema = new mongoose.Schema(
     farmPhoto: {
       type: String,
       default: null,
-      required: false,
     },
 
     // ===== Drop points =====
@@ -181,29 +191,49 @@ const locationFarmerSchema = new mongoose.Schema(
       default: null,
     },
 
-    // ===== Calculated fields (trolley pricing) =====
-    // self: 0–10km = 1250, 10–20 = 1500, 20+ = 1750 per trolley
-    // pickup: 250 per trolley
-    totalTrolleys: { type: Number, default: 0 },
-    ratePerTrolley: { type: Number, default: 0 },
+    // ===== Calculated fields (Acre based) =====
+    totalAcres: { type: Number, default: 0 },
+    ratePerAcre: { type: Number, default: 0 },
     estimatedAmount: { type: Number, default: 0 },
     baseAmount: { type: Number, default: 0 },
     distanceCost: { type: Number, default: 0 },
 
+    // kept for old records
+    totalTrolleys: { type: Number, default: 0 },
+    ratePerTrolley: { type: Number, default: 0 },
     dailySlotCount: { type: Number, default: 0 },
   },
   { timestamps: true }
 );
 
+// ==========================================
+// PRE-SAVE HOOK
+// ==========================================
 locationFarmerSchema.pre("save", function () {
+  // Auto set biomassCategory based on crop
   if (this.crop === "धान (Rice)") {
     this.biomassCategory = "धान (Rice)";
-    if (!this.biomassType) {
-      this.biomassType = "मक्का का पूरा पौधा";
+    this.biomassType = "धान (Rice)";
+  } else {
+    this.biomassCategory = "मक्का (Maize)";
+    if (!this.biomassType || this.biomassType === "मक्का का पूरा पौधा") {
+      this.biomassType = "भुट्टा + पत्ते (मिक्स)";
     }
   }
+
+  // Force transportType
+  this.transportType = "pickup";
 });
 
+// ==========================================
+// INDEXES
+// ==========================================
+locationFarmerSchema.index({ pickupDate: 1 });
+locationFarmerSchema.index({ threshingDate: 1 });
+locationFarmerSchema.index({ mobile: 1 });
+locationFarmerSchema.index({ referralName: 1 });
+
+// Old indexes kept
 locationFarmerSchema.index({ pedPickupDate: 1 });
 locationFarmerSchema.index({ ginthiPickupDate: 1 });
 locationFarmerSchema.index({ dropDate: 1 });

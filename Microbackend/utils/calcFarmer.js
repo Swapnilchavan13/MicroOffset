@@ -1,20 +1,13 @@
 // ==========================================
 // CONSTANTS
 // ==========================================
-const PRICE_PER_TON = 250; // pickup rate ₹/ट्रॉली
-const DAILY_PICKUP_LIMIT = 100;
 
-// Self-delivery rates ₹/ट्रॉली by distance
-const RATE_SELF_0_10 = 1250;
-const RATE_SELF_10_20 = 1500;
-const RATE_SELF_20_PLUS = 1750;
-const RATE_PICKUP = 250; // company picks up
+const DAILY_PICKUP_LIMIT = 500; // 500 acres per day
+const PICKUP_START_DATE = "2025-11-04"; // 4th November (change year if needed)
 
-const WEIGHT_PER_ACRE = {
-  "मक्का का पूरा पौधा": 1.0,
-  "मक्का का भुट्टा (Cob)": 0.5,
-  "भुट्टा + पत्ते (मिक्स)": 0.5,
-};
+// Rates per Acre
+const RATE_MAKKA_GINTHI = 250; // ₹250 / Acre (Anumanit)
+const RATE_DHAN = 1000; // ₹1000 / Acre
 
 // ==========================================
 // HAVERSINE DISTANCE (km)
@@ -56,242 +49,204 @@ function findNearestDropPoint(farmerLat, farmerLng, dropPoints) {
 }
 
 // ==========================================
-// CALCULATE DROP DATE (harvestDate + 5 days)
+// ADD DAYS TO DATE (YYYY-MM-DD)
 // ==========================================
-function calcDropDate(harvestDate) {
-  if (!harvestDate) return null;
-  const d = new Date(harvestDate);
+function addDays(dateStr, days) {
+  if (!dateStr) return null;
+  const d = new Date(dateStr);
   if (isNaN(d.getTime())) return null;
-  d.setDate(d.getDate() + 5);
+  d.setDate(d.getDate() + days);
   const yyyy = d.getFullYear();
   const mm = String(d.getMonth() + 1).padStart(2, "0");
   const dd = String(d.getDate()).padStart(2, "0");
   return `${yyyy}-${mm}-${dd}`;
 }
 
-// ==========================================
-// RATE PER TROLLEY by transport + distance
-// ==========================================
-/**
- * self  → farmer brings trolley
- *   0–10 km  : ₹1250 / trolley
- *   10–20 km : ₹1500 / trolley
- *   20+ km   : ₹1750 / trolley
- * pickup → we pick up
- *   any distance : ₹250 / trolley
- */
-function getRatePerTrolley(transportType = "self", distanceKm = 0) {
-  if (transportType === "pickup") {
-    return RATE_PICKUP;
-  }
-
-  // self
-  const d = Number(distanceKm) || 0;
-  if (d <= 10) return RATE_SELF_0_10;
-  if (d <= 20) return RATE_SELF_10_20;
-  return RATE_SELF_20_PLUS; // 20–30+ km
+function getTodayDateString() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
 // ==========================================
-// CALCULATE REVENUE (trolley-based)
-// biomassEntries[].acres = trolley count (from app)
+// CALCULATE PICKUP DATE
+// Rule: Threshing Date + 10 days
+// Minimum start = 4th November
+// Skip past dates
+// Respect 500 acres daily limit
 // ==========================================
-function calcRevenue({
-  biomassEntries = [],
-  transportType = "self",
-  distanceKm = 0,
-}) {
-  const totalTrolleys = (biomassEntries || []).reduce(
-    (sum, e) => sum + (Number(e.acres) || Number(e.trolleys) || 0),
-    0
-  );
-
-  const ratePerTrolley = getRatePerTrolley(transportType, distanceKm);
-  const estimatedAmount = Math.round(ratePerTrolley * totalTrolleys);
-
-  // baseAmount = payment at this rate (no separate "biomass + distance" split)
-  // distanceCost kept for transparency = 0 when pickup; when self, full amount is rate*trolleys
-  const baseAmount = estimatedAmount;
-  const distanceCost = 0;
-
-  return {
-    baseAmount,
-    distanceCost,
-    estimatedAmount,
-    totalTrolleys,
-    ratePerTrolley,
-    distanceKm: Number(distanceKm) || 0,
-  };
-}
-
-// ==========================================
-// GET SLOT COUNT (by trolley count)
-// ==========================================
-function getSlotCount(biomassEntries = []) {
-  if (!Array.isArray(biomassEntries) || biomassEntries.length === 0) {
-    return 1;
-  }
-
-  const totalTrolleys = biomassEntries.reduce(
-    (sum, e) => sum + (Number(e.acres) || Number(e.trolleys) || 0),
-    0
-  );
-
-  // 1 slot per 5 trolleys, minimum 1
-  return Math.max(1, Math.ceil(totalTrolleys / 5));
-}
-
-// ==========================================
-// FIND AVAILABLE DROP DATE
-// ==========================================
-async function findAvailableDropDate({
+async function calculatePickupDate({
   LocationFarmer,
-  dropPointName,
-  harvestDate,
-  slotCount = 1,
-  dailyLimit = 100,
+  threshingDate,
+  acres = 0,
+  dailyLimit = DAILY_PICKUP_LIMIT,
 }) {
-  let candidate = calcDropDate(harvestDate);
-  if (!candidate) {
-    const d = new Date();
-    d.setDate(d.getDate() + 5);
-    candidate = d.toISOString().slice(0, 10);
+  if (!threshingDate) return null;
+
+  let candidate = addDays(threshingDate, 10);
+
+  // Force minimum start date
+  if (!candidate || candidate < PICKUP_START_DATE) {
+    candidate = PICKUP_START_DATE;
   }
 
-  for (let i = 0; i < 30; i++) {
-    const existing = await LocationFarmer.aggregate([
-      {
-        $match: {
-          "assignedDropPoint.name": dropPointName,
-          dropDate: candidate,
-        },
-      },
-      {
-        $group: {
-          _id: null,
-          totalSlots: { $sum: { $ifNull: ["$dailySlotCount", 1] } },
-        },
-      },
-    ]);
+  const today = getTodayDateString();
+  const acresNum = Number(acres) || 0;
+  let safety = 0;
 
-    const usedSlots = existing[0]?.totalSlots || 0;
-
-    if (usedSlots + slotCount <= dailyLimit) {
-      return { dropDate: candidate };
+  while (safety < 60) {
+    // Skip past dates
+    if (candidate < today) {
+      candidate = addDays(candidate, 1);
+      safety++;
+      continue;
     }
 
-    const next = new Date(candidate);
-    next.setDate(next.getDate() + 1);
-    candidate = next.toISOString().slice(0, 10);
+    const used = await getPickupAcresOnDate(LocationFarmer, candidate);
+
+    if (used + acresNum <= dailyLimit) {
+      return candidate;
+    }
+
+    // Move to next day
+    candidate = addDays(candidate, 1);
+    safety++;
   }
 
-  return { dropDate: candidate };
+  return candidate;
 }
 
 // ==========================================
-// COUNT PICKUPS ON A DATE (ped + ginthi)
+// GET TOTAL ACRES BOOKED ON A DATE
 // ==========================================
-async function getPickupCountOnDate(LocationFarmer, dateStr) {
+async function getPickupAcresOnDate(LocationFarmer, dateStr) {
   if (!dateStr) return 0;
 
-  const count = await LocationFarmer.countDocuments({
-    $or: [{ pedPickupDate: dateStr }, { ginthiPickupDate: dateStr }],
-  });
-
-  return count;
-}
-
-async function isPickupDateAvailable(
-  LocationFarmer,
-  dateStr,
-  dailyLimit = DAILY_PICKUP_LIMIT
-) {
-  const used = await getPickupCountOnDate(LocationFarmer, dateStr);
-  return used < dailyLimit;
-}
-
-async function getPickupCapacityMap(LocationFarmer, fromDate, toDate) {
-  const rows = await LocationFarmer.aggregate([
+  const result = await LocationFarmer.aggregate([
     {
       $match: {
-        $or: [
-          { pedPickupDate: { $gte: fromDate, $lte: toDate } },
-          { ginthiPickupDate: { $gte: fromDate, $lte: toDate } },
-        ],
-      },
-    },
-    {
-      $project: {
-        dates: {
-          $setUnion: [
-            {
-              $cond: [
-                {
-                  $and: [
-                    { $ne: ["$pedPickupDate", null] },
-                    { $ne: ["$pedPickupDate", ""] },
-                  ],
-                },
-                ["$pedPickupDate"],
-                [],
-              ],
-            },
-            {
-              $cond: [
-                {
-                  $and: [
-                    { $ne: ["$ginthiPickupDate", null] },
-                    { $ne: ["$ginthiPickupDate", ""] },
-                  ],
-                },
-                ["$ginthiPickupDate"],
-                [],
-              ],
-            },
-          ],
-        },
-      },
-    },
-    { $unwind: "$dates" },
-    {
-      $match: {
-        dates: { $gte: fromDate, $lte: toDate },
+        pickupDate: dateStr,
       },
     },
     {
       $group: {
-        _id: "$dates",
-        count: { $sum: 1 },
+        _id: null,
+        totalAcres: {
+          $sum: {
+            $sum: {
+              $map: {
+                input: { $ifNull: ["$biomassEntries", []] },
+                as: "entry",
+                in: { $ifNull: ["$$entry.acres", 0] },
+              },
+            },
+          },
+        },
+      },
+    },
+  ]);
+
+  return result[0]?.totalAcres || 0;
+}
+
+// ==========================================
+// CHECK IF DATE IS AVAILABLE
+// ==========================================
+async function isPickupDateAvailable(
+  LocationFarmer,
+  dateStr,
+  acres = 0,
+  dailyLimit = DAILY_PICKUP_LIMIT
+) {
+  const used = await getPickupAcresOnDate(LocationFarmer, dateStr);
+  return used + Number(acres) <= dailyLimit;
+}
+
+// ==========================================
+// GET CAPACITY MAP (for frontend)
+// ==========================================
+async function getPickupCapacityMap(LocationFarmer, fromDate, toDate) {
+  const rows = await LocationFarmer.aggregate([
+    {
+      $match: {
+        pickupDate: { $gte: fromDate, $lte: toDate },
+      },
+    },
+    {
+      $group: {
+        _id: "$pickupDate",
+        totalAcres: {
+          $sum: {
+            $sum: {
+              $map: {
+                input: { $ifNull: ["$biomassEntries", []] },
+                as: "entry",
+                in: { $ifNull: ["$$entry.acres", 0] },
+              },
+            },
+          },
+        },
       },
     },
   ]);
 
   const counts = {};
   for (const r of rows) {
-    counts[r._id] = r.count;
+    counts[r._id] = r.totalAcres || 0;
   }
   return counts;
+}
+
+// ==========================================
+// CALCULATE REVENUE (Acre based)
+// ==========================================
+function calcRevenue({ crop, biomassEntries = [] }) {
+  const totalAcres = (biomassEntries || []).reduce(
+    (sum, e) => sum + (Number(e.acres) || 0),
+    0
+  );
+
+  let ratePerAcre = RATE_MAKKA_GINTHI; // default
+
+  if (crop === "धान (Rice)" || crop === "धान") {
+    ratePerAcre = RATE_DHAN;
+  }
+
+  const estimatedAmount = Math.round(ratePerAcre * totalAcres);
+
+  return {
+    totalAcres,
+    ratePerAcre,
+    estimatedAmount,
+    baseAmount: estimatedAmount,
+    distanceCost: 0,
+  };
+}
+
+// ==========================================
+// FIND NEAREST DROP POINT + DISTANCE
+// ==========================================
+function getAssignedDropPoint(farmerLat, farmerLng, dropPoints) {
+  return findNearestDropPoint(farmerLat, farmerLng, dropPoints);
 }
 
 // ==========================================
 // EXPORTS
 // ==========================================
 module.exports = {
-  PRICE_PER_TON,
   DAILY_PICKUP_LIMIT,
-  RATE_SELF_0_10,
-  RATE_SELF_10_20,
-  RATE_SELF_20_PLUS,
-  RATE_PICKUP,
-  WEIGHT_PER_ACRE,
+  PICKUP_START_DATE,
+  RATE_MAKKA_GINTHI,
+  RATE_DHAN,
+
   haversineKm,
   findNearestDropPoint,
-  calcDropDate,
-  getRatePerTrolley,
-  calcRevenue,
-  getSlotCount,
-  findAvailableDropDate,
-  getPickupCountOnDate,
+  getAssignedDropPoint,
+  addDays,
+  getTodayDateString,
+
+  calculatePickupDate,
+  getPickupAcresOnDate,
   isPickupDateAvailable,
   getPickupCapacityMap,
+  calcRevenue,
 };
