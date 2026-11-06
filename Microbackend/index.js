@@ -25,6 +25,9 @@ const PopUp = require("./models/PopUp");
 const Activity = require("./models/Activity");
 
 
+const FarmerPickup = require("./models/FarmerPickup");
+const CleaningSchedule = require("./models/CleaningSchedule");
+
 
 const LocationFarmer = require("./models/LocationFarmer");
 
@@ -2328,6 +2331,241 @@ app.get("/fix-assigned-drop-points", async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+
+// Pick Up App//
+// ==================== FARMER APIs ====================
+
+// POST /api/farmer/check-mobile
+app.post("/api/farmer/check-mobile", async (req, res) => {
+  try {
+    const { mobile } = req.body;
+
+    if (!mobile || mobile.length < 10) {
+      return res.status(400).json({
+        success: false,
+        message: "सही मोबाइल नंबर डालें",
+      });
+    }
+
+    const farmer = await FarmerPickup.findOne({ mobile: mobile.trim() });
+
+    if (farmer) {
+      return res.json({
+        success: true,
+        exists: true,
+        farmer: {
+          _id: farmer._id,
+          mobile: farmer.mobile,
+          name: farmer.name,
+          supervisorName: farmer.supervisorName,
+          cropType: farmer.cropType,
+          acres: farmer.acres,
+          village: farmer.village,
+          location: farmer.location,
+          photo: farmer.photo,
+          isCleaned: farmer.isCleaned,
+          cleaningDate: farmer.cleaningDate,
+          createdAt: farmer.createdAt,
+        },
+      });
+    }
+
+    return res.json({
+      success: true,
+      exists: false,
+    });
+  } catch (error) {
+    console.error("check-mobile error:", error);
+    res.status(500).json({ success: false, message: "सर्वर त्रुटि" });
+  }
+});
+
+// POST /api/farmer/register
+app.post("/api/farmer/register", upload.single("photo"), async (req, res) => {
+  try {
+    const {
+      mobile,
+      name,
+      supervisorName,
+      cropType,
+      acres,
+      village,
+      latitude,
+      longitude,
+    } = req.body;
+
+    if (
+      !mobile ||
+      !name ||
+      !supervisorName ||
+      !cropType ||
+      !acres ||
+      !village ||
+      !latitude ||
+      !longitude
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "सभी जरूरी जानकारी भरें",
+      });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "खेत का फोटो जरूरी है",
+      });
+    }
+
+    const existing = await FarmerPickup.findOne({ mobile: mobile.trim() });
+    if (existing) {
+      existing.name = name.trim();
+      existing.supervisorName = supervisorName.trim();
+      existing.cropType = cropType;
+      existing.acres = parseFloat(acres);
+      existing.village = village.trim();
+      existing.location = {
+        latitude: parseFloat(latitude),
+        longitude: parseFloat(longitude),
+      };
+      existing.photo = req.file.filename;
+      existing.isCleaned = false;
+      // cleaningDate को अपडेट नहीं कर रहे (CMS से ही सेट होगी)
+      await existing.save();
+
+      return res.json({
+        success: true,
+        message: "रजिस्ट्रेशन अपडेट हो गया",
+        farmer: existing,
+      });
+    }
+
+    const farmer = new FarmerPickup({
+      mobile: mobile.trim(),
+      name: name.trim(),
+      supervisorName: supervisorName.trim(),
+      cropType,
+      acres: parseFloat(acres),
+      village: village.trim(),
+      location: {
+        latitude: parseFloat(latitude),
+        longitude: parseFloat(longitude),
+      },
+      photo: req.file.filename,
+    });
+
+    await farmer.save();
+
+    res.status(201).json({
+      success: true,
+      message: "रजिस्ट्रेशन सफल",
+      farmer,
+    });
+  } catch (error) {
+    console.error("register error:", error);
+    if (error.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: "यह मोबाइल नंबर पहले से रजिस्टर्ड है",
+      });
+    }
+    res.status(500).json({ success: false, message: "सर्वर त्रुटि" });
+  }
+});
+
+// GET /api/farmer/profile/:mobile
+app.get("/api/farmer/profile/:mobile", async (req, res) => {
+  try {
+    const farmer = await FarmerPickup.findOne({ mobile: req.params.mobile });
+
+    if (!farmer) {
+      return res.status(404).json({
+        success: false,
+        message: "किसान नहीं मिला",
+      });
+    }
+
+    res.json({
+      success: true,
+      farmer: {
+        _id: farmer._id,
+        mobile: farmer.mobile,
+        name: farmer.name,
+        supervisorName: farmer.supervisorName,
+        cropType: farmer.cropType,
+        acres: farmer.acres,
+        village: farmer.village,
+        location: farmer.location,
+        photo: farmer.photo,
+        isCleaned: farmer.isCleaned,
+        cleaningDate: farmer.cleaningDate,   // ✅ व्यक्तिगत तारीख
+        createdAt: farmer.createdAt,
+      },
+      cleaningDate: farmer.cleaningDate,     // profile में आसानी के लिए
+    });
+  } catch (error) {
+    console.error("profile error:", error);
+    res.status(500).json({ success: false, message: "सर्वर त्रुटि" });
+  }
+});
+
+// GET /api/farmer/list  → CMS के लिए सभी किसानों की लिस्ट
+app.get("/api/farmer/list", async (req, res) => {
+  try {
+    const farmers = await FarmerPickup.find()
+      .select("mobile name village cleaningDate createdAt")
+      .sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      count: farmers.length,
+      farmers,
+    });
+  } catch (error) {
+    console.error("list error:", error);
+    res.status(500).json({ success: false, message: "सर्वर त्रुटि" });
+  }
+});
+
+// POST /api/farmer/set-date  → किसी खास किसान की तारीख सेट करना
+app.post("/api/farmer/set-date", async (req, res) => {
+  try {
+    const { mobile, cleaningDate } = req.body;
+
+    if (!mobile || !cleaningDate) {
+      return res.status(400).json({
+        success: false,
+        message: "मोबाइल और तारीख दोनों जरूरी हैं",
+      });
+    }
+
+    const farmer = await FarmerPickup.findOne({ mobile: mobile.trim() });
+
+    if (!farmer) {
+      return res.status(404).json({
+        success: false,
+        message: "यह मोबाइल नंबर रजिस्टर्ड नहीं है",
+      });
+    }
+
+    farmer.cleaningDate = new Date(cleaningDate);
+    await farmer.save();
+
+    res.json({
+      success: true,
+      message: `${farmer.name} की सफाई तारीख सेट हो गई`,
+      farmer: {
+        mobile: farmer.mobile,
+        name: farmer.name,
+        cleaningDate: farmer.cleaningDate,
+      },
+    });
+  } catch (error) {
+    console.error("set-date error:", error);
+    res.status(500).json({ success: false, message: "सर्वर त्रुटि" });
   }
 });
 
