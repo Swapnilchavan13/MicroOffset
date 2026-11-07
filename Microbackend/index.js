@@ -2339,7 +2339,7 @@ app.get("/fix-assigned-drop-points", async (req, res) => {
 // ==================== FARMER APIs ====================
 
 // POST /api/farmer/check-mobile
-app.post("/api/farmer/check-mobile", async (req, res) => {
+app.post("/farmer/check-mobile", async (req, res) => {
   try {
     const { mobile } = req.body;
 
@@ -2384,7 +2384,7 @@ app.post("/api/farmer/check-mobile", async (req, res) => {
 });
 
 // POST /api/farmer/register
-app.post("/api/farmer/register", upload.single("photo"), async (req, res) => {
+app.post("/farmer/register", upload.single("photo"), async (req, res) => {
   try {
     const {
       mobile,
@@ -2477,7 +2477,7 @@ app.post("/api/farmer/register", upload.single("photo"), async (req, res) => {
 });
 
 // GET /api/farmer/profile/:mobile
-app.get("/api/farmer/profile/:mobile", async (req, res) => {
+app.get("/farmer/profile/:mobile", async (req, res) => {
   try {
     const farmer = await FarmerPickup.findOne({ mobile: req.params.mobile });
 
@@ -2513,7 +2513,7 @@ app.get("/api/farmer/profile/:mobile", async (req, res) => {
 });
 
 // GET /api/farmer/list  → CMS के लिए सभी किसानों की लिस्ट
-app.get("/api/farmer/list", async (req, res) => {
+app.get("/farmer/list", async (req, res) => {
   try {
     const farmers = await FarmerPickup.find()
       .select("mobile name village cleaningDate createdAt")
@@ -2531,7 +2531,7 @@ app.get("/api/farmer/list", async (req, res) => {
 });
 
 // POST /api/farmer/set-date  → किसी खास किसान की तारीख सेट करना
-app.post("/api/farmer/set-date", async (req, res) => {
+app.post("/farmer/set-date", async (req, res) => {
   try {
     const { mobile, cleaningDate } = req.body;
 
