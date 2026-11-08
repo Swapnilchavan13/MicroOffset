@@ -2418,6 +2418,7 @@ app.post("/farmer/check-mobile", async (req, res) => {
         location: farmer.location,
         photo: farmer.photo,
         isCleaned: farmer.isCleaned,
+        praptRashi: farmer.praptRashi || 0,
         cleaningDate: farmer.cleaningDate,
         createdAt: farmer.createdAt,
       },
@@ -2468,6 +2469,8 @@ app.post("/farmer/register", (req, res) => {
       const cleanName = String(name || "").trim();
       const cleanSupervisor = String(supervisorName || "").trim();
       const cleanVillage = String(village || "").trim();
+
+      
 
       const acreage = Number(acres);
       const lat = Number(latitude);
@@ -2593,6 +2596,7 @@ app.get("/farmer/profile/:mobile", async (req, res) => {
         village: farmer.village,
         location: farmer.location,
         photo: farmer.photo,
+        praptRashi: farmer.praptRashi || 0,
         isCleaned: farmer.isCleaned,
         cleaningDate: farmer.cleaningDate,
         createdAt: farmer.createdAt,
@@ -2641,24 +2645,19 @@ app.get("/farmer/list", async (req, res) => {
 // POST /farmer/set-date
 // ========================================
 
+// ========================================
+// POST /farmer/set-date (तारीख और प्राप्त राशि अपडेट करने के लिए)
+// ========================================
+
 app.post("/farmer/set-date", async (req, res) => {
   try {
     const mobile = String(req.body.mobile || "").trim();
-    const { cleaningDate } = req.body;
+    const { cleaningDate, praptRashi } = req.body;
 
-    if (!mobile || !cleaningDate) {
+    if (!mobile) {
       return res.status(400).json({
         success: false,
-        message: "मोबाइल और तारीख दोनों जरूरी हैं",
-      });
-    }
-
-    const parsedDate = new Date(cleaningDate);
-
-    if (Number.isNaN(parsedDate.getTime())) {
-      return res.status(400).json({
-        success: false,
-        message: "सही तारीख डालें",
+        message: "मोबाइल नंबर जरूरी है",
       });
     }
 
@@ -2671,23 +2670,38 @@ app.post("/farmer/set-date", async (req, res) => {
       });
     }
 
-    farmer.cleaningDate = parsedDate;
+    // अगर cleaningDate दी गई है तो उसे अपडेट करें
+    if (cleaningDate) {
+      const parsedDate = new Date(cleaningDate);
+      if (Number.isNaN(parsedDate.getTime())) {
+        return res.status(400).json({
+          success: false,
+          message: "सही तारीख डालें",
+        });
+      }
+      farmer.cleaningDate = parsedDate;
+    }
+
+    // अगर praptRashi दी गई है तो उसे अपडेट करें
+    if (praptRashi !== undefined) {
+      farmer.praptRashi = Number(praptRashi) || 0;
+    }
 
     await farmer.save();
 
     return res.status(200).json({
       success: true,
-      message: `${farmer.name} की सफाई तारीख सेट हो गई`,
-
+      message: `${farmer.name} का विवरण सफलतापूर्वक अपडेट हो गया`,
       farmer: {
         mobile: farmer.mobile,
         name: farmer.name,
         cleaningDate: farmer.cleaningDate,
+        praptRashi: farmer.praptRashi,
       },
     });
 
   } catch (error) {
-    console.error("SET CLEANING DATE ERROR:", error);
+    console.error("SET DETAILS ERROR:", error);
 
     return res.status(500).json({
       success: false,

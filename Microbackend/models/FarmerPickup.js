@@ -20,9 +20,13 @@ const farmerpickupSchema = new mongoose.Schema(
     },
     cropType: {
       type: String,
-      enum: ["Dhan", "Makka Dandi"],
+      enum: ["Dhan Parali/Narvai", "Makka Ginthi"],
       required: true,
     },
+    praptRashi: {
+  type: Number,
+  default: 0,
+},
     acres: {
       type: Number,
       required: true,
