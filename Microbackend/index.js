@@ -2622,7 +2622,7 @@ app.get("/farmer/profile/:mobile", async (req, res) => {
 app.get("/farmer/list", async (req, res) => {
   try {
     const farmers = await FarmerPickup.find()
-      .select("mobile name village cleaningDate createdAt")
+      .select("mobile name village supervisorName cropType acres location photo cleaningDate praptRashi createdAt")
       .sort({ createdAt: -1 });
 
     return res.status(200).json({
@@ -2630,21 +2630,11 @@ app.get("/farmer/list", async (req, res) => {
       count: farmers.length,
       farmers,
     });
-
   } catch (error) {
     console.error("FARMER LIST ERROR:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "सर्वर त्रुटि",
-    });
+    return res.status(500).json({ success: false, message: "सर्वर त्रुटि" });
   }
 });
-
-// ========================================
-// POST /farmer/set-date
-// ========================================
-
 // ========================================
 // POST /farmer/set-date (तारीख और प्राप्त राशि अपडेट करने के लिए)
 // ========================================
