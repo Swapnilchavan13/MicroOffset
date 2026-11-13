@@ -24,9 +24,9 @@ const farmerpickupSchema = new mongoose.Schema(
       required: true,
     },
     praptRashi: {
-  type: Number,
-  default: 0,
-},
+      type: Number,
+      default: 0,
+    },
     acres: {
       type: Number,
       required: true,
@@ -55,9 +55,13 @@ const farmerpickupSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    // ✅ हर किसान की अपनी अलग तारीख
     cleaningDate: {
       type: Date,
+      default: null,
+    },
+    // ✅ नया फील्ड: बलर असाइनमेंट के लिए (जैसे Baler 3, Baler 4)
+    assignedBaler: {
+      type: String,
       default: null,
     },
   },

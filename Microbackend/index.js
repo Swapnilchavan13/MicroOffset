@@ -2383,7 +2383,6 @@ const farmerUpload = multer({
 // ========================================
 // POST /farmer/check-mobile
 // ========================================
-
 app.post("/farmer/check-mobile", async (req, res) => {
   try {
     const mobile = String(req.body.mobile || "").trim();
@@ -2420,12 +2419,12 @@ app.post("/farmer/check-mobile", async (req, res) => {
         isCleaned: farmer.isCleaned,
         praptRashi: farmer.praptRashi || 0,
         cleaningDate: farmer.cleaningDate,
+        assignedBaler: farmer.assignedBaler || null,
         createdAt: farmer.createdAt,
       },
     });
   } catch (error) {
     console.error("CHECK MOBILE ERROR:", error);
-
     return res.status(500).json({
       success: false,
       message: "सर्वर त्रुटि",
@@ -2443,7 +2442,6 @@ app.post("/farmer/register", (req, res) => {
   farmerUpload.single("photo")(req, res, async (uploadError) => {
     if (uploadError) {
       console.error("FARMER PHOTO UPLOAD ERROR:", uploadError);
-
       return res.status(400).json({
         success: false,
         message: uploadError.message || "फोटो अपलोड नहीं हो पाया",
@@ -2462,15 +2460,10 @@ app.post("/farmer/register", (req, res) => {
         longitude,
       } = req.body;
 
-      console.log("FARMER FORM DATA:", req.body);
-      console.log("FARMER PHOTO:", req.file);
-
       const cleanMobile = String(mobile || "").trim();
       const cleanName = String(name || "").trim();
       const cleanSupervisor = String(supervisorName || "").trim();
       const cleanVillage = String(village || "").trim();
-
-      
 
       const acreage = Number(acres);
       const lat = Number(latitude);
@@ -2512,12 +2505,10 @@ app.post("/farmer/register", (req, res) => {
         cropType,
         acres: acreage,
         village: cleanVillage,
-
         location: {
           latitude: lat,
           longitude: lng,
         },
-
         photo: req.file.filename,
         isCleaned: false,
       };
@@ -2527,20 +2518,15 @@ app.post("/farmer/register", (req, res) => {
 
       if (existing) {
         Object.assign(existing, farmerData);
-
         farmer = await existing.save();
-
         message = "रजिस्ट्रेशन अपडेट हो गया";
       } else {
         farmer = await FarmerPickup.create({
           mobile: cleanMobile,
           ...farmerData,
         });
-
         message = "रजिस्ट्रेशन सफल";
       }
-
-      console.log("FARMER SAVED SUCCESSFULLY:", farmer._id);
 
       return res.status(existing ? 200 : 201).json({
         success: true,
@@ -2550,14 +2536,12 @@ app.post("/farmer/register", (req, res) => {
 
     } catch (error) {
       console.error("FARMER REGISTRATION ERROR:", error);
-
       if (error.code === 11000) {
         return res.status(409).json({
           success: false,
           message: "यह मोबाइल नंबर पहले से रजिस्टर्ड है",
         });
       }
-
       return res.status(500).json({
         success: false,
         message: "किसान का डेटा सेव नहीं हो पाया",
@@ -2573,7 +2557,6 @@ app.post("/farmer/register", (req, res) => {
 app.get("/farmer/profile/:mobile", async (req, res) => {
   try {
     const mobile = String(req.params.mobile || "").trim();
-
     const farmer = await FarmerPickup.findOne({ mobile });
 
     if (!farmer) {
@@ -2585,7 +2568,6 @@ app.get("/farmer/profile/:mobile", async (req, res) => {
 
     return res.status(200).json({
       success: true,
-
       farmer: {
         _id: farmer._id,
         mobile: farmer.mobile,
@@ -2599,15 +2581,14 @@ app.get("/farmer/profile/:mobile", async (req, res) => {
         praptRashi: farmer.praptRashi || 0,
         isCleaned: farmer.isCleaned,
         cleaningDate: farmer.cleaningDate,
+        assignedBaler: farmer.assignedBaler || null,
         createdAt: farmer.createdAt,
       },
-
       cleaningDate: farmer.cleaningDate,
     });
 
   } catch (error) {
     console.error("FARMER PROFILE ERROR:", error);
-
     return res.status(500).json({
       success: false,
       message: "सर्वर त्रुटि",
@@ -2622,7 +2603,7 @@ app.get("/farmer/profile/:mobile", async (req, res) => {
 app.get("/farmer/list", async (req, res) => {
   try {
     const farmers = await FarmerPickup.find()
-      .select("mobile name village supervisorName cropType acres location photo cleaningDate praptRashi createdAt")
+      .select("mobile name village supervisorName cropType acres location photo cleaningDate praptRashi assignedBaler createdAt")
       .sort({ createdAt: -1 });
 
     return res.status(200).json({
@@ -2635,14 +2616,14 @@ app.get("/farmer/list", async (req, res) => {
     return res.status(500).json({ success: false, message: "सर्वर त्रुटि" });
   }
 });
-// ========================================
-// POST /farmer/set-date (तारीख और प्राप्त राशि अपडेट करने के लिए)
-// ========================================
 
+// ========================================
+// POST /farmer/set-date (तारीख, राशि और बलर अपडेट करने के लिए)
+// ========================================
 app.post("/farmer/set-date", async (req, res) => {
   try {
     const mobile = String(req.body.mobile || "").trim();
-    const { cleaningDate, praptRashi } = req.body;
+    const { cleaningDate, praptRashi, assignedBaler } = req.body;
 
     if (!mobile) {
       return res.status(400).json({
@@ -2677,6 +2658,11 @@ app.post("/farmer/set-date", async (req, res) => {
       farmer.praptRashi = Number(praptRashi) || 0;
     }
 
+    // ✅ बलर असाइनमेंट अपडेट करें
+    if (assignedBaler !== undefined) {
+      farmer.assignedBaler = assignedBaler;
+    }
+
     await farmer.save();
 
     return res.status(200).json({
@@ -2687,12 +2673,12 @@ app.post("/farmer/set-date", async (req, res) => {
         name: farmer.name,
         cleaningDate: farmer.cleaningDate,
         praptRashi: farmer.praptRashi,
+        assignedBaler: farmer.assignedBaler,
       },
     });
 
   } catch (error) {
     console.error("SET DETAILS ERROR:", error);
-
     return res.status(500).json({
       success: false,
       message: "सर्वर त्रुटि",
